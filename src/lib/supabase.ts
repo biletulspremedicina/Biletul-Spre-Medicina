@@ -22,8 +22,8 @@ export type Simulation = {
   id: string;
   title: string;
   description: string;
-  start_at: string;
-  end_at: string;
+  start_at: string | null;
+  end_at: string | null;
   duration_minutes: number;
   fee_ron: number;
   requires_subscription: boolean;
@@ -67,14 +67,21 @@ export type Question = {
   created_at: string;
 };
 
-export type Payment = {
+export type ExamQuestion = {
   id: string;
-  user_id: string;
   simulation_id: string;
-  amount_ron: number;
-  status: 'pending' | 'paid' | 'failed';
-  created_at: string;
-  paid_at: string | null;
+  type: 'CS' | 'CG';
+  q_position: number;
+  question_text: string;
+  option_a: string;
+  option_b: string;
+  option_c: string;
+  option_d: string;
+  option_e: string;
+  statement_1: string;
+  statement_2: string;
+  statement_3: string;
+  statement_4: string;
 };
 
 export type Attempt = {
@@ -88,4 +95,40 @@ export type Attempt = {
   submitted_at: string | null;
   expired: boolean;
   is_archive_retake: boolean;
+};
+
+export type AttemptResult = {
+  attempt_id: string;
+  sim_id: string;
+  answers: Record<string, string>;
+  score: number;
+  max_score: number;
+  started_at: string;
+  submitted_at: string;
+  expired: boolean;
+  question_id: string;
+  q_type: 'CS' | 'CG';
+  q_pos: number;
+  question_text: string;
+  option_a: string;
+  option_b: string;
+  option_c: string;
+  option_d: string;
+  option_e: string;
+  statement_1: string;
+  statement_2: string;
+  statement_3: string;
+  statement_4: string;
+  correct_answer: 'A' | 'B' | 'C' | 'D' | 'E';
+  explanation: string;
+};
+
+export type Payment = {
+  id: string;
+  user_id: string;
+  simulation_id: string;
+  amount_ron: number;
+  status: 'pending' | 'paid' | 'failed';
+  created_at: string;
+  paid_at: string | null;
 };

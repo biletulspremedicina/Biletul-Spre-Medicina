@@ -1,9 +1,9 @@
 import { useEffect, useState, useCallback } from 'react';
-import { supabase, type Simulation, type Question, type Attempt, type Profile, type Subscription, type AppSettings } from '@/lib/supabase';
+import { supabase, type Simulation, type Question, type Attempt, type Profile, type Subscription } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import {
-  LayoutDashboard, Calendar, Users, Plus, Edit2, Trash2, Eye, EyeOff,
-  ChevronLeft, Save, X, Loader2, Trophy, CreditCard, BookOpen, Clock, Lock, Settings
+  LayoutDashboard, Users, Plus, Edit2, Trash2, Eye, EyeOff,
+  ChevronLeft, Save, X, Loader2, Trophy, CreditCard, BookOpen, Clock, Settings, CheckCircle2, AlertTriangle
 } from 'lucide-react';
 import Logo from '@/components/Logo';
 import Loading from '@/components/Loading';
@@ -26,7 +26,7 @@ export default function AdminDashboard({ onExit }: Props) {
     const { data } = await supabase
       .from('simulations')
       .select('*')
-      .order('start_at', { ascending: false });
+      .order('created_at', { ascending: false });
     setSimulations((data || []) as Simulation[]);
     setLoading(false);
   }, []);
@@ -39,7 +39,6 @@ export default function AdminDashboard({ onExit }: Props) {
 
   return (
     <div className="min-h-screen bg-stone-50">
-      {/* Header */}
       <header className="sticky top-0 z-10 border-b border-stone-200 bg-white/80 backdrop-blur-sm">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
@@ -54,7 +53,6 @@ export default function AdminDashboard({ onExit }: Props) {
       </header>
 
       <div className="mx-auto max-w-6xl px-6 py-8">
-        {/* Tabs */}
         <div className="mb-6 flex gap-1 rounded-xl bg-stone-100 p-1">
           <TabButton active={tab === 'simulations'} onClick={() => setTab('simulations')} icon={<LayoutDashboard size={16} />}>
             Simulări & Întrebări
@@ -99,9 +97,6 @@ function TabButton({ active, onClick, icon, children }: { active: boolean; onCli
   );
 }
 
-// ---------------------------------------------------------------------------
-// Simulations Tab
-// ---------------------------------------------------------------------------
 function SimulationsTab({
   simulations,
   onReload,
@@ -144,7 +139,7 @@ function SimulationsTab({
       <div className="grid gap-4">
         {simulations.length === 0 && (
           <div className="card p-12 text-center text-stone-500">
-            <Calendar size={40} className="mx-auto mb-4 text-stone-300" />
+            <LayoutDashboard size={40} className="mx-auto mb-4 text-stone-300" />
             <p className="text-lg font-medium">Nu există simulări.</p>
             <p className="text-sm mt-1">Creează prima simulare pentru a începe.</p>
           </div>
@@ -160,6 +155,7 @@ function SimulationsTab({
 function SimAdminCard({ sim, onReload, onEdit }: { sim: Simulation; onReload: () => void; onEdit: () => void }) {
   const [showQuestions, setShowQuestions] = useState(false);
   const [questionCount, setQuestionCount] = useState(0);
+  const [publishError, setPublishError] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -172,6 +168,35 @@ function SimAdminCard({ sim, onReload, onEdit }: { sim: Simulation; onReload: ()
   }, [sim.id]);
 
   const toggleActive = async () => {
+    setPublishError(null);
+
+    if (!sim.is_active) {
+      // Validate before publishing
+      if (!sim.title.trim()) {
+        setPublishError('Titlul lipsește.');
+        return;
+      }
+      if (!sim.duration_minutes || sim.duration_minutes <= 0) {
+        setPublishError('Durata trebuie să fie validă.');
+        return;
+      }
+      if (questionCount === 0) {
+        setPublishError('Simularea trebuie să aibă cel puțin o grilă.');
+        return;
+      }
+
+      // Check that every question has a correct_answer
+      const { data: qs } = await supabase
+        .from('questions')
+        .select('correct_answer')
+        .eq('simulation_id', sim.id);
+      const missingAnswer = (qs || []).some((q) => !q.correct_answer);
+      if (missingAnswer) {
+        setPublishError('Toate grilele trebuie să aibă un răspuns corect configurat.');
+        return;
+      }
+    }
+
     await supabase
       .from('simulations')
       .update({ is_active: !sim.is_active })
@@ -185,49 +210,46 @@ function SimAdminCard({ sim, onReload, onEdit }: { sim: Simulation; onReload: ()
     onReload();
   };
 
-  const now = new Date();
-  const isOpen = new Date(sim.start_at) <= now && now <= new Date(sim.end_at);
-  const isClosed = now > new Date(sim.end_at);
-  const isUpcoming = now < new Date(sim.start_at);
-
   return (
     <div className="card p-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1.5 flex-wrap">
             <h3 className="font-display text-base font-semibold text-stone-900">{sim.title}</h3>
-            {isClosed ? (
-              <span className="badge bg-stone-200 text-stone-600">
-                <Lock size={12} /> Încheiată
+            {sim.is_active ? (
+              <span className="badge bg-green-100 text-green-700">
+                <Eye size={12} /> Publicată
               </span>
-            ) : sim.is_active ? (
-              <span className="badge bg-green-100 text-green-700">Activă</span>
             ) : (
-              <span className="badge bg-stone-100 text-stone-500">Inactivă</span>
+              <span className="badge bg-stone-100 text-stone-500">
+                <EyeOff size={12} /> Ciornă
+              </span>
             )}
-            {isOpen && <span className="badge bg-accent-100 text-accent-700">Deschisă acum</span>}
-            {isUpcoming && <span className="badge bg-amber-100 text-amber-700">Viitoare</span>}
           </div>
+          {sim.description && (
+            <p className="text-sm text-stone-600 mb-2 line-clamp-2">{sim.description}</p>
+          )}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-stone-500">
-            <span className="flex items-center gap-1">
-              <Calendar size={13} />
-              {new Date(sim.start_at).toLocaleString('ro-RO', { dateStyle: 'short', timeStyle: 'short' })}
-              {' → '}
-              {new Date(sim.end_at).toLocaleString('ro-RO', { dateStyle: 'short', timeStyle: 'short' })}
-            </span>
             <span className="flex items-center gap-1"><Clock size={13} /> {sim.duration_minutes} min</span>
             <span className="flex items-center gap-1"><CreditCard size={13} /> {sim.requires_subscription ? 'Cu abonament' : 'Fără abonament'}</span>
             <span className="flex items-center gap-1"><BookOpen size={13} /> {questionCount} întrebări</span>
+            <span className="flex items-center gap-1">
+              {new Date(sim.created_at).toLocaleDateString('ro-RO', { day: 'numeric', month: 'short', year: 'numeric' })}
+            </span>
           </div>
+          {publishError && (
+            <div className="mt-2 flex items-center gap-2 text-xs text-red-600">
+              <AlertTriangle size={12} />
+              {publishError}
+            </div>
+          )}
         </div>
         <div className="flex flex-wrap gap-2">
           <button onClick={onEdit} className="btn-ghost"><Edit2 size={15} /> Editează</button>
-          {!isClosed && (
-            <button onClick={toggleActive} className="btn-ghost">
-              {sim.is_active ? <EyeOff size={15} /> : <Eye size={15} />}
-              {sim.is_active ? 'Dezactivează' : 'Activează'}
-            </button>
-          )}
+          <button onClick={toggleActive} className="btn-ghost">
+            {sim.is_active ? <EyeOff size={15} /> : <Eye size={15} />}
+            {sim.is_active ? 'Ascunde' : 'Publică'}
+          </button>
           <button onClick={handleDelete} className="btn-ghost text-red-600 hover:bg-red-50">
             <Trash2 size={15} /> Șterge
           </button>
@@ -246,37 +268,28 @@ function SimAdminCard({ sim, onReload, onEdit }: { sim: Simulation; onReload: ()
   );
 }
 
-// ---------------------------------------------------------------------------
-// Simulation Form (Create / Edit)
-// ---------------------------------------------------------------------------
 function SimForm({ sim, onSaved, onCancel }: { sim?: Simulation; onSaved: () => void; onCancel: () => void }) {
   const [title, setTitle] = useState(sim?.title || '');
   const [description, setDescription] = useState(sim?.description || '');
-  const [startDate, setStartDate] = useState(
-    sim ? toLocalDateTime(sim.start_at) : defaultDateTime(1)
-  );
-  const [endDate, setEndDate] = useState(
-    sim ? toLocalDateTime(sim.end_at) : defaultDateTime(2)
-  );
   const [duration, setDuration] = useState(sim?.duration_minutes?.toString() || '120');
   const [requiresSub, setRequiresSub] = useState(sim ? sim.requires_subscription : false);
+  const [isActive, setIsActive] = useState(sim ? sim.is_active : false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSave = async () => {
     setError(null);
     if (!title.trim()) { setError('Titlul este obligatoriu.'); return; }
-    if (!startDate || !endDate) { setError('Datele de start și final sunt obligatorii.'); return; }
-    if (new Date(endDate) <= new Date(startDate)) { setError('Data de final trebuie să fie după data de start.'); return; }
+    const dur = parseInt(duration) || 0;
+    if (dur <= 0) { setError('Durata trebuie să fie un număr valid de minute.'); return; }
 
     setSaving(true);
     const payload = {
       title: title.trim(),
       description: description.trim(),
-      start_at: new Date(startDate).toISOString(),
-      end_at: new Date(endDate).toISOString(),
-      duration_minutes: parseInt(duration) || 120,
+      duration_minutes: dur,
       requires_subscription: requiresSub,
+      is_active: isActive,
     };
 
     if (sim) {
@@ -288,7 +301,7 @@ function SimForm({ sim, onSaved, onCancel }: { sim?: Simulation; onSaved: () => 
     } else {
       const { error: insertError } = await supabase
         .from('simulations')
-        .insert({ ...payload, is_active: true });
+        .insert(payload);
       if (insertError) setError(insertError.message);
     }
 
@@ -302,6 +315,16 @@ function SimForm({ sim, onSaved, onCancel }: { sim?: Simulation; onSaved: () => 
         {sim ? 'Editează simularea' : 'Creează simulare nouă'}
       </h2>
 
+      {!sim && (
+        <div className="mb-4 rounded-lg bg-stone-50 border border-stone-200 px-4 py-3 text-sm text-stone-600 flex gap-3">
+          <AlertTriangle size={18} className="flex-shrink-0 mt-0.5 text-stone-400" />
+          <div>
+            Simularea se creează implicit ca <strong>ciornă (invizibilă)</strong>. Adaugă grilele,
+            verifică conținutul, apoi public-o când e gata.
+          </div>
+        </div>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="sm:col-span-2">
           <label className="label">Titlu</label>
@@ -310,14 +333,6 @@ function SimForm({ sim, onSaved, onCancel }: { sim?: Simulation; onSaved: () => 
         <div className="sm:col-span-2">
           <label className="label">Descriere</label>
           <textarea className="input min-h-[80px]" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Descriere scurtă a simulării..." />
-        </div>
-        <div>
-          <label className="label">Data și ora de start</label>
-          <input type="datetime-local" className="input" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-        </div>
-        <div>
-          <label className="label">Data și ora de final</label>
-          <input type="datetime-local" className="input" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
         </div>
         <div>
           <label className="label">Durata testului (minute)</label>
@@ -346,6 +361,24 @@ function SimForm({ sim, onSaved, onCancel }: { sim?: Simulation; onSaved: () => 
             </div>
           )}
         </div>
+        <div className="sm:col-span-2">
+          <label className="label">Vizibilitate</label>
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-2 cursor-pointer text-sm text-stone-600">
+              <input
+                type="checkbox"
+                checked={isActive}
+                onChange={(e) => setIsActive(e.target.checked)}
+                className="h-4 w-4 rounded border-stone-300 text-brand-600 focus:ring-brand-500"
+              />
+              {isActive ? (
+                <span className="flex items-center gap-1"><Eye size={14} /> Publicată (vizibilă elevilor)</span>
+              ) : (
+                <span className="flex items-center gap-1"><EyeOff size={14} /> Ciornă (invizibilă elevilor)</span>
+              )}
+            </label>
+          </div>
+        </div>
       </div>
 
       {error && (
@@ -363,9 +396,6 @@ function SimForm({ sim, onSaved, onCancel }: { sim?: Simulation; onSaved: () => 
   );
 }
 
-// ---------------------------------------------------------------------------
-// Questions Manager
-// ---------------------------------------------------------------------------
 function QuestionsManager({ simulationId }: { simulationId: string }) {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
@@ -452,9 +482,6 @@ function QuestionsManager({ simulationId }: { simulationId: string }) {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Question Form (CS / CG)
-// ---------------------------------------------------------------------------
 function QuestionForm({
   simulationId,
   question,
@@ -640,9 +667,6 @@ function QuestionForm({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Monitoring Tab
-// ---------------------------------------------------------------------------
 function MonitoringTab() {
   const [data, setData] = useState<{ profile: Profile; subscriptions: Subscription[]; attempts: Attempt[] }[]>([]);
   const [loading, setLoading] = useState(true);
@@ -657,7 +681,6 @@ function MonitoringTab() {
 
       const { data: subs } = await supabase.from('subscriptions').select('*');
       const { data: attempts } = await supabase.from('attempts').select('*');
-      const now = new Date();
 
       const enriched = (profiles || []).map((p) => ({
         profile: p as Profile,
@@ -676,10 +699,6 @@ function MonitoringTab() {
   const activeSubs = data.filter((d) =>
     d.subscriptions.some((s) => s.status === 'active' && new Date(s.end_at) > now)
   ).length;
-  const totalRevenue = data.reduce(
-    (sum, d) => sum + d.subscriptions.reduce((s, sub) => s + Number(sub.amount_ron), 0),
-    0
-  );
 
   return (
     <div>
@@ -732,7 +751,7 @@ function MonitoringTab() {
                     <td className="px-4 py-3">
                       {activeSub ? (
                         <span className="badge bg-amber-100 text-amber-700">
-                          Activ până la {new Date(activeSub.end_at).toLocaleDateString('ro-RO', { day: 'numeric', month: 'short' })}
+                          <CheckCircle2 size={12} /> Activ până la {new Date(activeSub.end_at).toLocaleDateString('ro-RO', { day: 'numeric', month: 'short' })}
                         </span>
                       ) : (
                         <span className="badge bg-stone-100 text-stone-500">Inactiv</span>
@@ -762,9 +781,6 @@ function MonitoringTab() {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Settings Tab
-// ---------------------------------------------------------------------------
 function SettingsTab() {
   const [price, setPrice] = useState('');
   const [loading, setLoading] = useState(true);
@@ -828,7 +844,7 @@ function SettingsTab() {
           <span className="text-sm text-stone-500 whitespace-nowrap">RON / lună</span>
         </div>
         <p className="mt-2 text-xs text-stone-500">
-          Acest preț va fi afișat elevilor în dashboard și va fi suma încasată la cumpărarea unui abonament.
+          Acest preț va fi afișat elevilor în dashboard.
         </p>
 
         {error && (
@@ -850,20 +866,4 @@ function SettingsTab() {
       </div>
     </div>
   );
-}
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-function toLocalDateTime(iso: string): string {
-  const d = new Date(iso);
-  const offset = d.getTimezoneOffset() * 60000;
-  return new Date(d.getTime() - offset).toISOString().slice(0, 16);
-}
-
-function defaultDateTime(daysFromNow: number): string {
-  const d = new Date(Date.now() + daysFromNow * 24 * 60 * 60 * 1000);
-  d.setHours(18, 0, 0, 0);
-  const offset = d.getTimezoneOffset() * 60000;
-  return new Date(d.getTime() - offset).toISOString().slice(0, 16);
 }

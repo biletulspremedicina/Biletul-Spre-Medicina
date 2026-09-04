@@ -21,9 +21,8 @@ function AppContent() {
   const { session, profile, loading } = useAuth();
   const [route, setRoute] = useState<Route>('landing');
   const [activeSimulationId, setActiveSimulationId] = useState<string | null>(null);
-  const [isArchiveRetake, setIsArchiveRetake] = useState(false);
+  const [activeAttemptId, setActiveAttemptId] = useState<string | null>(null);
 
-  // Route based on auth state
   useEffect(() => {
     if (loading) return;
     if (!session) {
@@ -32,7 +31,6 @@ function AppContent() {
       }
       return;
     }
-    // Authenticated
     if (route === 'landing' || route === 'signin' || route === 'signup') {
       if (profile?.role === 'admin') {
         setRoute('admin-dashboard');
@@ -46,14 +44,20 @@ function AppContent() {
   const handleSignIn = () => setRoute('signin');
   const handleBackToLanding = () => setRoute('landing');
 
-  const handleStartSimulation = (simId: string, archive = false) => {
+  const handleStartSimulation = (simId: string) => {
     setActiveSimulationId(simId);
-    setIsArchiveRetake(archive);
+    setActiveAttemptId(null);
     setRoute('simulation');
   };
 
-  const handleViewResults = (simId: string) => {
+  const handleViewResults = (simId: string, attemptId?: string) => {
     setActiveSimulationId(simId);
+    setActiveAttemptId(attemptId || null);
+    setRoute('results');
+  };
+
+  const handleSimulationComplete = (attemptId: string) => {
+    setActiveAttemptId(attemptId);
     setRoute('results');
   };
 
@@ -65,7 +69,6 @@ function AppContent() {
     );
   }
 
-  // Unauthenticated routes
   if (!session) {
     if (route === 'signin') {
       return <AuthPage mode="signin" onSuccess={() => {}} onSwitchMode={(m) => setRoute(m)} onBack={handleBackToLanding} />;
@@ -76,25 +79,29 @@ function AppContent() {
     return <LandingPage onGetStarted={handleGetStarted} onSignIn={handleSignIn} />;
   }
 
-  // Authenticated routes
   if (profile?.role === 'admin') {
     return <AdminDashboard onExit={() => setRoute('landing')} />;
   }
 
-  // Student routes
   if (route === 'simulation' && activeSimulationId) {
     return (
       <SimulationView
         simulationId={activeSimulationId}
-        onExit={() => { setRoute('student-dashboard'); setActiveSimulationId(null); setIsArchiveRetake(false); }}
-        onComplete={() => { setRoute('results'); }}
-        isArchiveRetake={isArchiveRetake}
+        onExit={() => { setRoute('student-dashboard'); setActiveSimulationId(null); }}
+        onComplete={handleSimulationComplete}
       />
     );
   }
 
   if (route === 'results' && activeSimulationId) {
-    return <ResultsView simulationId={activeSimulationId} onExit={() => { setRoute('student-dashboard'); setActiveSimulationId(null); setIsArchiveRetake(false); }} isArchiveRetake={isArchiveRetake} />;
+    return (
+      <ResultsView
+        simulationId={activeSimulationId}
+        attemptId={activeAttemptId || undefined}
+        onExit={() => { setRoute('student-dashboard'); setActiveSimulationId(null); setActiveAttemptId(null); }}
+        onRetake={handleStartSimulation}
+      />
+    );
   }
 
   return (

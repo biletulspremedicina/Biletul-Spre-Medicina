@@ -1,33 +1,32 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { supabase, type Simulation, type Question, type Attempt } from '@/lib/supabase';
+import { supabase, type Simulation, type ExamQuestion, type Attempt } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
-import { Clock, Send, AlertTriangle, Loader2, ChevronLeft } from 'lucide-react';
+import { Clock, Send, AlertTriangle, Loader2, ChevronLeft, PlayCircle, FileText } from 'lucide-react';
 import Logo from '@/components/Logo';
 import Loading from '@/components/Loading';
 
 type Props = {
   simulationId: string;
   onExit: () => void;
-  onComplete: () => void;
-  isArchiveRetake?: boolean;
+  onComplete: (attemptId: string) => void;
 };
 
 const LETTERS = ['A', 'B', 'C', 'D', 'E'] as const;
 
-export default function SimulationView({ simulationId, onExit, onComplete, isArchiveRetake = false }: Props) {
+export default function SimulationView({ simulationId, onExit, onComplete }: Props) {
   const { profile } = useAuth();
   const [simulation, setSimulation] = useState<Simulation | null>(null);
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const [questions, setQuestions] = useState<ExamQuestion[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [attempt, setAttempt] = useState<Attempt | null>(null);
   const [timeLeft, setTimeLeft] = useState(0);
   const [started, setStarted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const submittedRef = useRef(false);
 
-  // Load simulation + questions
   useEffect(() => {
     (async () => {
       const { data: sim } = await supabase
@@ -40,122 +39,58 @@ export default function SimulationView({ simulationId, onExit, onComplete, isArc
         return;
       }
       setSimulation(sim as Simulation);
-
-      const { data: qs } = await supabase
-        .from('questions')
-        .select('*')
-        .eq('simulation_id', simulationId)
-        .order('position', { ascending: true });
-      setQuestions((qs || []) as Question[]);
       setLoading(false);
     })();
   }, [simulationId]);
 
-  // Check for existing attempt
-  useEffect(() => {
+  const startAttempt = useCallback(async () => {
     if (!profile) return;
-    (async () => {
-      let query = supabase
-        .from('attempts')
-        .select('*')
-        .eq('user_id', profile.id)
-        .eq('simulation_id', simulationId);
-      if (isArchiveRetake) {
-        query = query.eq('is_archive_retake', true);
-      } else {
-        query = query.eq('is_archive_retake', false);
-      }
-      const { data: att } = await query.maybeSingle();
-      if (att) {
-        setAttempt(att as Attempt);
-        if ((att as Attempt).submitted_at) {
-          onComplete();
-          return;
-        }
-        setAnswers((att as Attempt).answers || {});
-        setStarted(true);
-      }
-    })();
-  }, [profile, simulationId, onComplete, isArchiveRetake]);
+    setError(null);
 
-  const submitAttempt = useCallback(
-    async (expired: boolean) => {
-      if (submittedRef.current || !profile || !simulation) return;
-      submittedRef.current = true;
-      setSubmitting(true);
+    const { data: att, error: startError } = await supabase
+      .rpc('start_exam_attempt', { p_simulation_id: simulationId });
 
-      const score = questions.reduce((acc, q) => {
-        return acc + (answers[q.id] === q.correct_answer ? 1 : 0);
-      }, 0);
-      const maxScore = questions.length;
-
-      if (attempt) {
-        const { error } = await supabase
-          .from('attempts')
-          .update({
-            answers,
-            score,
-            max_score: maxScore,
-            submitted_at: new Date().toISOString(),
-            expired,
-          })
-          .eq('id', attempt.id);
-        if (error) {
-          console.error('Submit error:', error);
-          submittedRef.current = false;
-          setSubmitting(false);
-        }
-      } else {
-        const { error } = await supabase.from('attempts').insert({
-          user_id: profile.id,
-          simulation_id: simulationId,
-          answers,
-          score,
-          max_score: maxScore,
-          submitted_at: new Date().toISOString(),
-          expired,
-          is_archive_retake: isArchiveRetake,
-        });
-        if (error) {
-          console.error('Submit error:', error);
-          submittedRef.current = false;
-          setSubmitting(false);
-        }
-      }
-
-      setSubmitting(false);
-      onComplete();
-    },
-    [profile, simulation, questions, answers, attempt, simulationId, onComplete]
-  );
-
-  // Timer
-  useEffect(() => {
-    if (!started || !simulation) return;
-
-    const startTime = attempt?.started_at ? new Date(attempt.started_at).getTime() : Date.now();
-    const endTime = startTime + simulation.duration_minutes * 60 * 1000;
-
-    if (!attempt) {
-      // Create attempt record on start
-      (async () => {
-        if (!profile) return;
-        const { data: att } = await supabase
-          .from('attempts')
-          .insert({
-            user_id: profile.id,
-            simulation_id: simulationId,
-            answers: {},
-            score: 0,
-            max_score: 0,
-            started_at: new Date(startTime).toISOString(),
-            is_archive_retake: isArchiveRetake,
-          })
-          .select('*')
-          .maybeSingle();
-        if (att) setAttempt(att as Attempt);
-      })();
+    if (startError) {
+      setError(startError.message);
+      return;
     }
+
+    if (!att || att.length === 0) {
+      setError('Nu s-a putut crea încercarea.');
+      return;
+    }
+
+    const newAttempt = att[0] as unknown as Attempt;
+    setAttempt(newAttempt);
+
+    if (newAttempt.submitted_at) {
+      onComplete(newAttempt.id);
+      return;
+    }
+
+    if (newAttempt.answers && Object.keys(newAttempt.answers).length > 0) {
+      setAnswers(newAttempt.answers as Record<string, string>);
+    }
+    setStarted(true);
+  }, [profile, simulationId, onComplete]);
+
+  useEffect(() => {
+    if (!started || !simulation || !attempt) return;
+
+    (async () => {
+      const { data: qs, error: qError } = await supabase
+        .rpc('get_exam_questions', { p_simulation_id: simulationId });
+
+      if (qError) {
+        setError(qError.message);
+        return;
+      }
+
+      setQuestions((qs || []) as unknown as ExamQuestion[]);
+    })();
+
+    const startTime = attempt.started_at ? new Date(attempt.started_at).getTime() : Date.now();
+    const endTime = startTime + simulation.duration_minutes * 60 * 1000;
 
     const tick = () => {
       const remaining = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
@@ -172,7 +107,36 @@ export default function SimulationView({ simulationId, onExit, onComplete, isArc
       if (timerRef.current) clearInterval(timerRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [started, simulation]);
+  }, [started, simulation, attempt]);
+
+  const submitAttempt = useCallback(
+    async (expired: boolean) => {
+      if (submittedRef.current || !profile || !simulation) return;
+      submittedRef.current = true;
+      setSubmitting(true);
+
+      const { data, error: submitError } = await supabase
+        .rpc('submit_exam_attempt', {
+          p_simulation_id: simulationId,
+          p_answers: answers,
+          p_expired: expired,
+        });
+
+      if (submitError) {
+        setError(submitError.message);
+        submittedRef.current = false;
+        setSubmitting(false);
+        return;
+      }
+
+      if (data && data.length > 0) {
+        const submitted = data[0] as unknown as Attempt;
+        setSubmitting(false);
+        onComplete(submitted.id);
+      }
+    },
+    [profile, simulation, answers, simulationId, onComplete]
+  );
 
   const formatTime = (seconds: number) => {
     const h = Math.floor(seconds / 3600);
@@ -180,10 +144,6 @@ export default function SimulationView({ simulationId, onExit, onComplete, isArc
     const s = seconds % 60;
     if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     return `${m}:${s.toString().padStart(2, '0')}`;
-  };
-
-  const handleStart = () => {
-    setStarted(true);
   };
 
   const handleAnswer = (questionId: string, letter: string) => {
@@ -200,8 +160,23 @@ export default function SimulationView({ simulationId, onExit, onComplete, isArc
     );
   }
 
-  // Pre-start screen
+  if (error) {
+    return (
+      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
+        <div className="card p-8 max-w-md text-center">
+          <AlertTriangle size={32} className="mx-auto mb-4 text-red-500" />
+          <p className="text-stone-700 font-medium mb-2">A apărut o eroare</p>
+          <p className="text-sm text-stone-500 mb-6">{error}</p>
+          <button onClick={onExit} className="btn-secondary">
+            <ChevronLeft size={16} /> Înapoi
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (!started) {
+    const isPremium = simulation.requires_subscription;
     return (
       <div className="min-h-screen bg-stone-50">
         <header className="border-b border-stone-200 bg-white">
@@ -219,27 +194,40 @@ export default function SimulationView({ simulationId, onExit, onComplete, isArc
             </div>
           </div>
           <h1 className="font-display text-2xl font-bold text-stone-900 mb-3">{simulation.title}</h1>
-          <p className="text-stone-600 mb-8">{simulation.description}</p>
+          {simulation.description && (
+            <p className="text-stone-600 mb-8">{simulation.description}</p>
+          )}
 
           <div className="card p-6 mb-8 text-left">
             <div className="grid gap-4 sm:grid-cols-2">
               <InfoRow label="Timp alocat" value={`${simulation.duration_minutes} minute`} />
-              <InfoRow label="Număr de grile" value={`${questions.length}`} />
-              <InfoRow label="Fereastră acces" value={`${new Date(simulation.start_at).toLocaleString('ro-RO', { dateStyle: 'short', timeStyle: 'short' })} — ${new Date(simulation.end_at).toLocaleString('ro-RO', { dateStyle: 'short', timeStyle: 'short' })}`} />
+              <InfoRow label="Mod de rezolvare" value="Stil de examen" />
+              <InfoRow label="Tip acces" value={isPremium ? 'Necesită abonament' : 'Fără abonament'} />
               <InfoRow label="Punctaj" value="Totul sau nimic (1 punct / grilă)" />
             </div>
             <div className="mt-4 rounded-lg bg-amber-50 border border-amber-200 p-4 text-sm text-amber-800 flex gap-3">
               <AlertTriangle size={18} className="flex-shrink-0 mt-0.5" />
               <div>
-                <strong>Atenție:</strong> Cronometrul pornește la apăsarea butonului „Start" și nu poate fi oprit.
-                La expirarea timpului, răspunsurile se trimit automat. Rezultatele și explicațiile se deblochează
-                după închiderea ferestrei de acces.
+                {isPremium ? (
+                  <>
+                    <strong>Atenție:</strong> Aceasta este o simulare cu abonament și se poate susține
+                    o <strong>singură dată</strong>. Cronometrul pornește la apăsarea butonului
+                    „Start" și nu poate fi oprit. La expirarea timpului, răspunsurile se trimit automat.
+                    Dacă închizi pagina, poți continua cu timpul rămas.
+                  </>
+                ) : (
+                  <>
+                    <strong>Atenție:</strong> Cronometrul pornește la apăsarea butonului „Start" și
+                    nu poate fi oprit. La expirarea timpului, răspunsurile se trimit automat.
+                    După finalizare, poți rezolva din nou de câte ori dorești.
+                  </>
+                )}
               </div>
             </div>
           </div>
 
-          <button onClick={handleStart} className="btn-primary text-base">
-            Start Simulare
+          <button onClick={startAttempt} className="btn-primary text-base">
+            <PlayCircle size={20} /> {isPremium ? 'Start simulare' : 'Start simulare'}
           </button>
         </div>
       </div>
@@ -250,7 +238,6 @@ export default function SimulationView({ simulationId, onExit, onComplete, isArc
 
   return (
     <div className="min-h-screen bg-stone-50">
-      {/* Sticky header with timer */}
       <header className="sticky top-0 z-20 border-b border-stone-200 bg-white/95 backdrop-blur-sm">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-3">
           <div className="flex items-center gap-3">
@@ -276,7 +263,6 @@ export default function SimulationView({ simulationId, onExit, onComplete, isArc
       </header>
 
       <div className="mx-auto max-w-4xl px-6 py-8">
-        {/* Progress */}
         <div className="mb-6 flex items-center justify-between text-sm text-stone-500">
           <span>{answeredCount} / {questions.length} întrebări răspunse</span>
           <div className="h-2 flex-1 mx-4 rounded-full bg-stone-200 overflow-hidden max-w-xs">
@@ -287,7 +273,6 @@ export default function SimulationView({ simulationId, onExit, onComplete, isArc
           </div>
         </div>
 
-        {/* Questions */}
         <div className="space-y-6">
           {questions.map((q, idx) => (
             <QuestionCard
@@ -302,11 +287,11 @@ export default function SimulationView({ simulationId, onExit, onComplete, isArc
 
         {questions.length === 0 && (
           <div className="card p-12 text-center text-stone-500">
+            <FileText size={40} className="mx-auto mb-4 text-stone-300" />
             <p>Nu există întrebări în această simulare.</p>
           </div>
         )}
 
-        {/* Submit button at bottom */}
         {questions.length > 0 && (
           <div className="mt-8 flex justify-end">
             <button
@@ -340,7 +325,7 @@ function QuestionCard({
   selectedAnswer,
   onSelect,
 }: {
-  question: Question;
+  question: ExamQuestion;
   index: number;
   selectedAnswer: string | undefined;
   onSelect: (letter: string) => void;
@@ -361,11 +346,10 @@ function QuestionCard({
         </div>
       </div>
 
-      {/* CG statements */}
       {isCG && (
         <div className="mb-4 ml-10 space-y-2">
           {[1, 2, 3, 4].map((n) => {
-            const text = question[`statement_${n}` as keyof Question] as string;
+            const text = question[`statement_${n}` as keyof ExamQuestion] as string;
             if (!text) return null;
             return (
               <div key={n} className="flex gap-2 text-sm text-stone-700">
@@ -380,12 +364,11 @@ function QuestionCard({
         </div>
       )}
 
-      {/* Options */}
       <div className="ml-10 grid gap-2">
         {LETTERS.map((letter) => {
           const optionText = isCG
             ? getCGLabel(letter)
-            : (question[`option_${letter.toLowerCase()}` as keyof Question] as string);
+            : (question[`option_${letter.toLowerCase()}` as keyof ExamQuestion] as string);
 
           if (!optionText && !isCG) return null;
 
