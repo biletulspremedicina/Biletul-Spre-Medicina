@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase, type Simulation, type Subscription, type Attempt } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
-import { Clock, CreditCard, Trophy, CheckCircle2, XCircle, Crown, Sparkles, Archive, RotateCcw, Lock, PlayCircle, AlertTriangle, BookOpen } from 'lucide-react';
+import { Clock, CreditCard, Trophy, CheckCircle2, XCircle, Crown, Sparkles, Archive, RotateCcw, Lock, PlayCircle, AlertTriangle, BookOpen, Loader2 } from 'lucide-react';
 import Logo from '@/components/Logo';
 import Loading from '@/components/Loading';
 
@@ -14,6 +14,7 @@ type SimWithStatus = Simulation & {
   attempts: Attempt[];
   hasSubmitted: boolean;
   hasInProgress: boolean;
+  questionCount: number;
 };
 
 export default function StudentDashboard({ onStartSimulation, onViewResults }: Props) {
@@ -22,6 +23,9 @@ export default function StudentDashboard({ onStartSimulation, onViewResults }: P
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [subPrice, setSubPrice] = useState(30);
+  const [buyingSub, setBuyingSub] = useState(false);
+  const [subError, setSubError] = useState<string | null>(null);
+  const [subSuccess, setSubSuccess] = useState(false);
 
   const loadDashboard = useCallback(async () => {
     if (!profile) return;
@@ -56,6 +60,20 @@ export default function StudentDashboard({ onStartSimulation, onViewResults }: P
     ) as Subscription | undefined;
     setSubscription(activeSub || null);
 
+    // Load question counts per simulation
+    const simIds = (sims || []).map((s) => s.id);
+    const questionCounts: Record<string, number> = {};
+    if (simIds.length > 0) {
+      const { data: qs } = await supabase
+        .from('questions')
+        .select('simulation_id')
+        .in('simulation_id', simIds);
+      (qs || []).forEach((q) => {
+        const sid = (q as { simulation_id: string }).simulation_id;
+        questionCounts[sid] = (questionCounts[sid] || 0) + 1;
+      });
+    }
+
     const enriched: SimWithStatus[] = (sims || []).map((sim) => {
       const simAttempts = (atts || []).filter((a) => a.simulation_id === sim.id) || [];
       const hasSubmitted = simAttempts.some((a) => a.submitted_at);
@@ -65,6 +83,7 @@ export default function StudentDashboard({ onStartSimulation, onViewResults }: P
         attempts: simAttempts,
         hasSubmitted,
         hasInProgress,
+        questionCount: questionCounts[sim.id] || 0,
       };
     });
 
@@ -75,6 +94,28 @@ export default function StudentDashboard({ onStartSimulation, onViewResults }: P
   useEffect(() => {
     loadDashboard();
   }, [loadDashboard]);
+
+  const handleBuySubscription = async () => {
+    setBuyingSub(true);
+    setSubError(null);
+    setSubSuccess(false);
+    try {
+      const { error: rpcError } = await supabase.rpc('activate_test_subscription');
+      if (rpcError) {
+        console.error('Subscription activation error:', rpcError);
+        setSubError('Nu s-a putut activa abonamentul. Încearcă din nou.');
+      } else {
+        setSubSuccess(true);
+        setTimeout(() => setSubSuccess(false), 4000);
+        await loadDashboard();
+      }
+    } catch (err) {
+      console.error('Subscription error:', err);
+      setSubError('A apărut o eroare neașteptată.');
+    } finally {
+      setBuyingSub(false);
+    }
+  };
 
   if (loading) return <Loading message="Se încarcă simulările..." />;
 
@@ -122,10 +163,28 @@ export default function StudentDashboard({ onStartSimulation, onViewResults }: P
                   </p>
                 </div>
               </div>
-              <button className="btn-accent whitespace-nowrap" disabled>
-                <Crown size={16} /> Cumpără abonament
-              </button>
+              <div className="flex flex-col gap-1 sm:items-end">
+                <button
+                  onClick={handleBuySubscription}
+                  disabled={buyingSub}
+                  className="btn-accent whitespace-nowrap"
+                >
+                  {buyingSub && <Loader2 size={16} className="animate-spin" />}
+                  <Crown size={16} /> Cumpără abonament
+                </button>
+                <span className="text-xs text-stone-400">Mod test – nu se efectuează nicio plată.</span>
+              </div>
             </div>
+            {subError && (
+              <div className="mt-3 rounded-lg bg-red-50 border border-red-200 px-4 py-2 text-sm text-red-700">
+                {subError}
+              </div>
+            )}
+            {subSuccess && (
+              <div className="mt-3 rounded-lg bg-green-50 border border-green-200 px-4 py-2 text-sm text-green-700">
+                Abonamentul a fost activat cu succes! Ai acces la toate simulările premium timp de 30 de zile.
+              </div>
+            )}
           </div>
         )}
 
@@ -183,6 +242,8 @@ export default function StudentDashboard({ onStartSimulation, onViewResults }: P
                 hasActiveSub={hasActiveSub}
                 onStart={() => onStartSimulation(sim.id)}
                 onViewResults={(attemptId) => onViewResults(sim.id, attemptId)}
+                onBuySubscription={handleBuySubscription}
+                buyingSub={buyingSub}
               />
             ))}
           </div>
@@ -210,11 +271,15 @@ function ArchiveSimCard({
   hasActiveSub,
   onStart,
   onViewResults,
+  onBuySubscription,
+  buyingSub,
 }: {
   sim: SimWithStatus;
   hasActiveSub: boolean;
   onStart: () => void;
   onViewResults: (attemptId?: string) => void;
+  onBuySubscription: () => void;
+  buyingSub: boolean;
 }) {
   const isFree = !sim.requires_subscription;
   const submittedAttempts = sim.attempts.filter((a) => a.submitted_at);
@@ -256,8 +321,12 @@ function ArchiveSimCard({
           )}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-stone-500">
             <span className="flex items-center gap-1">
-              <BookOpen size={13} />
+              <Clock size={13} />
               {sim.duration_minutes} min
+            </span>
+            <span className="flex items-center gap-1">
+              <BookOpen size={13} />
+              {sim.questionCount} grile
             </span>
             <span className="flex items-center gap-1">
               {isFree ? <Sparkles size={13} /> : <Crown size={13} />}
@@ -325,11 +394,19 @@ function ArchiveSimCard({
             </>
           )}
 
-          {/* PREMIUM + no sub: "Cumpără abonament" (informational only) */}
+          {/* PREMIUM + no sub: "Cumpără abonament" (functional in test mode) */}
           {!isFree && !hasActiveSub && !hasSubmitted && (
-            <button className="btn-accent" disabled title="Sistemul de plată va fi disponibil în curând">
-              <Crown size={16} /> Cumpără abonament pentru a accesa
-            </button>
+            <div className="flex flex-col gap-1 sm:items-end">
+              <button
+                onClick={onBuySubscription}
+                disabled={buyingSub}
+                className="btn-accent"
+              >
+                {buyingSub && <Loader2 size={16} className="animate-spin" />}
+                <Crown size={16} /> Cumpără abonament pentru a accesa
+              </button>
+              <span className="text-xs text-stone-400">Mod test – nu se efectuează nicio plată.</span>
+            </div>
           )}
         </div>
       </div>

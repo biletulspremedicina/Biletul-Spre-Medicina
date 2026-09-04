@@ -51,7 +51,15 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
       .rpc('start_exam_attempt', { p_simulation_id: simulationId });
 
     if (startError) {
-      setError(startError.message);
+      console.error('start_exam_attempt error:', startError);
+      const msg = startError.message || '';
+      if (msg.includes('Abonament necesar')) {
+        setError('Ai nevoie de un abonament activ pentru a accesa această simulare.');
+      } else if (msg.includes('nu este disponibil')) {
+        setError('Simularea nu este disponibilă momentan.');
+      } else {
+        setError('Nu s-a putut porni simularea. Încearcă din nou.');
+      }
       return;
     }
 
@@ -82,7 +90,8 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
         .rpc('get_exam_questions', { p_simulation_id: simulationId });
 
       if (qError) {
-        setError(qError.message);
+        console.error('get_exam_questions error:', qError);
+        setError('Nu s-au putut încărca întrebările.');
         return;
       }
 
@@ -123,7 +132,15 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
         });
 
       if (submitError) {
-        setError(submitError.message);
+        console.error('submit_exam_attempt error:', submitError);
+        const msg = submitError.message || '';
+        if (msg.includes('Abonament necesar')) {
+          setError('Abonamentul nu mai este activ.');
+        } else if (msg.includes('nu este disponibil')) {
+          setError('Simularea nu mai este disponibilă.');
+        } else {
+          setError('Nu s-a putut trimite simularea. Încearcă din nou.');
+        }
         submittedRef.current = false;
         setSubmitting(false);
         return;
@@ -227,7 +244,7 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
           </div>
 
           <button onClick={startAttempt} className="btn-primary text-base">
-            <PlayCircle size={20} /> {isPremium ? 'Start simulare' : 'Start simulare'}
+            <PlayCircle size={20} /> Start simulare
           </button>
         </div>
       </div>
