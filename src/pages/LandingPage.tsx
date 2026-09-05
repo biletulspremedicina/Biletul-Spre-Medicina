@@ -18,7 +18,17 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
       {/* ────────────────────────── Navbar ────────────────────────── */}
       <header className="sticky top-0 z-30 border-b border-stone-200/70 bg-white/85 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8 sm:py-4">
-          <Logo />
+          
+          {/* Logo + Text pe 3 rânduri */}
+          <div className="flex items-center gap-2.5">
+            <Logo />
+            <div className="flex flex-col text-[11px] font-extrabold uppercase tracking-wider leading-[1.1] select-none">
+              <span className="text-stone-900">Biletul</span>
+              <span className="text-stone-900">Spre</span>
+              <span className="text-brand-600">Medicină</span>
+            </div>
+          </div>
+
           <div className="flex items-center gap-2 sm:gap-3">
             <button onClick={onSignIn} className="btn-ghost">
               Loghează-te
