@@ -17,14 +17,12 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
     <div className="min-h-screen bg-stone-50">
       {/* ────────────────────────── Navbar ────────────────────────── */}
       <header className="sticky top-0 z-30 border-b border-stone-200/70 bg-white/85 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8 sm:py-4">
           
-          {/* Brand Header: Logo micșorat + Text lipit */}
-          <div className="flex items-center gap-1">
-            <div className="flex-shrink-0 scale-90 -mr-0.5">
-              <Logo />
-            </div>
-            <div className="flex flex-col text-[10px] font-extrabold uppercase tracking-wider leading-[0.82] select-none">
+          {/* Logo + Text pe 3 rânduri */}
+          <div className="flex items-center gap-2.5">
+            <Logo />
+            <div className="flex flex-col text-[11px] font-extrabold uppercase tracking-wider leading-[1.1] select-none">
               <span className="text-stone-900">Biletul</span>
               <span className="text-stone-900">Spre</span>
               <span className="text-brand-600">Medicină</span>
