@@ -50,7 +50,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
           {/* Intro text — reformatat pe două rânduri */}
           <div className="mx-auto mt-8 max-w-2xl text-center" style={{ animation: 'fadeIn 0.8s ease-out 0.3s both' }}>
             <p className="text-xl font-light italic leading-relaxed text-stone-600 sm:text-2xl">
-              Înțelegem presiunea, efortul.<br />
+              Înțelegem presiunea, efortul si miza uriașă.<br />
               <span className="font-medium text-brand-700">Suntem aici să-ți facem drumul mai ușor.</span>
             </p>
           </div>
