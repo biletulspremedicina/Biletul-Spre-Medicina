@@ -102,7 +102,7 @@ export default function ResultsView({ simulationId, attemptId, onExit, onRetake 
   return (
     <div className="min-h-screen bg-stone-50">
       <header className="sticky top-0 z-10 border-b border-stone-200 bg-white/80 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 py-4">
           <Logo size="sm" />
           <button onClick={onExit} className="btn-ghost">
             <ChevronLeft size={16} /> Înapoi la arhivă
@@ -110,7 +110,7 @@ export default function ResultsView({ simulationId, attemptId, onExit, onRetake 
         </div>
       </header>
 
-      <div className="mx-auto max-w-4xl px-6 py-8">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8">
         <h1 className="font-display text-2xl font-bold text-stone-900 mb-1">{simulation.title}</h1>
         <p className="text-stone-500 text-sm mb-6">Rezultate și explicații</p>
 
@@ -181,7 +181,8 @@ export default function ResultsView({ simulationId, attemptId, onExit, onRetake 
             )}
 
             {/* Score summary */}
-            <div className="card p-8 mb-6 text-center">
+            <div className="grid gap-6 md:grid-cols-3 mb-6">
+        <div className="card p-8 text-center md:col-span-1">
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-100 text-brand-600">
                 <Trophy size={32} />
               </div>
@@ -207,9 +208,11 @@ export default function ResultsView({ simulationId, attemptId, onExit, onRetake 
               )}
             </div>
 
+            {/* Side panel: retake + attempt history on desktop */}
+            <div className="md:col-span-2 space-y-6">
             {/* Retake button for free sims */}
             {isFree && onRetake && (
-              <div className="mb-6 flex justify-center">
+              <div className="flex justify-center md:justify-start">
                 <button onClick={() => onRetake(simulationId)} className="btn-primary">
                   <RotateCcw size={16} /> Rezolvă din nou
                 </button>
@@ -342,6 +345,8 @@ export default function ResultsView({ simulationId, attemptId, onExit, onRetake 
                 </div>
               </div>
             )}
+            </div>
+          </div>
 
             {resultsLoading && (
               <div className="flex justify-center py-8">

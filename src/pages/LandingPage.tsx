@@ -17,7 +17,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
     <div className="min-h-screen bg-stone-50">
       {/* ────────────────────────── Navbar ────────────────────────── */}
       <header className="sticky top-0 z-30 border-b border-stone-200/70 bg-white/85 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3.5 sm:px-6 sm:py-4">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8 sm:py-4">
           <Logo />
           <div className="flex items-center gap-2 sm:gap-3">
             <button onClick={onSignIn} className="btn-ghost">
@@ -37,7 +37,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
         <div className="absolute inset-0 bg-gradient-to-b from-brand-50/80 via-stone-50/40 to-stone-50" />
         <div className="absolute -top-24 left-1/2 h-72 w-[36rem] -translate-x-1/2 rounded-full bg-brand-200/30 blur-3xl" />
 
-        <div className="relative mx-auto max-w-5xl px-6 pt-12 pb-16 sm:pt-16 sm:pb-20">
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-12 pb-16 sm:pt-16 sm:pb-20">
           {/* Main heading */}
           <h1 className="text-center font-display text-4xl font-extrabold leading-[1.1] tracking-tight text-stone-900 text-balance sm:text-5xl md:text-6xl">
             De ce să aleg{' '}
@@ -48,7 +48,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
           </h1>
 
           {/* Intro text — reformatat pe două rânduri */}
-          <div className="mx-auto mt-8 max-w-xl text-center" style={{ animation: 'fadeIn 0.8s ease-out 0.3s both' }}>
+          <div className="mx-auto mt-8 max-w-2xl text-center" style={{ animation: 'fadeIn 0.8s ease-out 0.3s both' }}>
             <p className="text-xl font-light italic leading-relaxed text-stone-600 sm:text-2xl">
               Atunci când spunem că îți oferim<br />
               <span className="font-medium text-brand-700">eficiență maximă</span> în pregătirea ta, nu o facem la superlativ.
@@ -63,7 +63,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
       </section>
 
       {/* ────────────────────────── "Ce îți oferim?" ────────────────────────── */}
-      <section className="relative mx-auto max-w-6xl px-6 py-20 sm:py-24">
+      <section className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 sm:py-24">
         <Reveal className="mb-12 text-center">
           <h2 className="font-display text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
             Ce îți oferim?
@@ -86,7 +86,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
         <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-brand-500/10 blur-3xl" />
         <div className="absolute -left-20 -bottom-20 h-72 w-72 rounded-full bg-accent-500/10 blur-3xl" />
 
-        <div className="relative mx-auto max-w-5xl px-6">
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <Reveal className="mb-10 text-center">
             <h2 className="font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
               Progresul tău, mereu vizibil
@@ -109,7 +109,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
       </section>
 
       {/* ────────────────────────── Features ────────────────────────── */}
-      <section className="mx-auto max-w-6xl px-6 py-20 sm:py-24">
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 sm:py-24">
         <Reveal className="mb-12 text-center">
           <h2 className="font-display text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
             Cum te pregătești
@@ -127,7 +127,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
       </section>
 
       {/* ────────────────────────── How it works ────────────────────────── */}
-      <section className="mx-auto max-w-6xl px-6 pb-20 sm:pb-24">
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-20 sm:pb-24">
         <Reveal className="mb-12 text-center">
           <h2 className="font-display text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
             Cum funcționează
@@ -147,7 +147,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
       </section>
 
       {/* ────────────────────────── Final CTA ────────────────────────── */}
-      <section className="mx-auto max-w-6xl px-6 pb-24">
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-24">
         <Reveal>
           <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand-700 via-brand-700 to-brand-800 px-8 py-16 text-center sm:px-16 sm:py-20">
             <div className="absolute inset-0 grid-bg opacity-[0.05]" />
@@ -178,7 +178,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
 
       {/* ────────────────────────── Footer ────────────────────────── */}
       <footer className="border-t border-stone-200 py-10">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 sm:flex-row">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 sm:flex-row">
           <Logo size="sm" />
           <p className="text-sm text-stone-400">
             © {new Date().getFullYear()} Biletul spre Medicină. Toate drepturile rezervate.

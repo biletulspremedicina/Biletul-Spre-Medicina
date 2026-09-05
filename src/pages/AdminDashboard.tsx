@@ -40,7 +40,7 @@ export default function AdminDashboard({ onExit }: Props) {
   return (
     <div className="min-h-screen bg-stone-50">
       <header className="sticky top-0 z-10 border-b border-stone-200 bg-white/80 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center gap-3">
             <Logo size="sm" />
             <span className="badge bg-brand-100 text-brand-700 ml-2">Admin</span>
@@ -52,7 +52,7 @@ export default function AdminDashboard({ onExit }: Props) {
         </div>
       </header>
 
-      <div className="mx-auto max-w-6xl px-6 py-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6 flex gap-1 rounded-xl bg-stone-100 p-1">
           <TabButton active={tab === 'simulations'} onClick={() => setTab('simulations')} icon={<LayoutDashboard size={16} />}>
             Simulări & Întrebări
@@ -136,7 +136,7 @@ function SimulationsTab({
         </button>
       </div>
 
-      <div className="grid gap-4">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {simulations.length === 0 && (
           <div className="card p-12 text-center text-stone-500">
             <LayoutDashboard size={40} className="mx-auto mb-4 text-stone-300" />
@@ -729,6 +729,7 @@ function MonitoringTab() {
         </div>
       ) : (
         <div className="card overflow-hidden">
+          <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-stone-50 text-left text-xs font-semibold text-stone-500 uppercase tracking-wider">
               <tr>
@@ -775,6 +776,7 @@ function MonitoringTab() {
               })}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>
@@ -826,7 +828,7 @@ function SettingsTab() {
   if (loading) return <Loading message="Se încarcă setările..." />;
 
   return (
-    <div className="max-w-xl">
+    <div className="max-w-2xl">
       <h2 className="font-display text-xl font-bold text-stone-900 mb-6">Setări aplicație</h2>
 
       <div className="card p-6">

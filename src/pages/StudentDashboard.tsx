@@ -125,7 +125,7 @@ export default function StudentDashboard({ onStartSimulation, onViewResults }: P
   return (
     <div className="min-h-screen bg-stone-50">
       <header className="sticky top-0 z-10 border-b border-stone-200 bg-white/80 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 py-4">
           <Logo size="sm" />
           <div className="flex items-center gap-3">
             {hasActiveSub ? (
@@ -145,7 +145,7 @@ export default function StudentDashboard({ onStartSimulation, onViewResults }: P
         </div>
       </header>
 
-      <div className="mx-auto max-w-6xl px-6 py-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         {/* Subscription banner */}
         {!hasActiveSub && (
           <div className="mb-8 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 p-6">
@@ -234,7 +234,7 @@ export default function StudentDashboard({ onStartSimulation, onViewResults }: P
             <p className="text-sm mt-1">Revino mai târziu pentru simulări noi.</p>
           </div>
         ) : (
-          <div className="grid gap-4">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {simulations.map((sim) => (
               <ArchiveSimCard
                 key={sim.id}

@@ -59,13 +59,15 @@ export default function AuthPage({ mode, onSuccess, onSwitchMode, onBack }: Prop
 
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-b from-brand-50 to-stone-50">
-      <header className="px-6 py-5">
+      <header className="px-4 sm:px-6 lg:px-8 py-5">
+        <div className="mx-auto max-w-7xl">
         <button onClick={onBack} className="btn-ghost">
           ← Înapoi
         </button>
+        </div>
       </header>
 
-      <div className="flex flex-1 items-center justify-center px-6 pb-20">
+      <div className="flex flex-1 items-center justify-center px-4 sm:px-6 lg:px-8 pb-20">
         <div className="w-full max-w-md">
           <div className="mb-8 flex flex-col items-center gap-4">
             <Logo size="lg" />

@@ -197,14 +197,14 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
     return (
       <div className="min-h-screen bg-stone-50">
         <header className="border-b border-stone-200 bg-white">
-          <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
+          <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 py-4">
             <Logo size="sm" />
             <button onClick={onExit} className="btn-ghost">
               <ChevronLeft size={16} /> Ieși
             </button>
           </div>
         </header>
-        <div className="mx-auto max-w-2xl px-6 py-16 text-center">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-16 text-center">
           <div className="mb-6 flex justify-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-100 text-brand-600">
               <Clock size={32} />
@@ -256,7 +256,7 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
   return (
     <div className="min-h-screen bg-stone-50">
       <header className="sticky top-0 z-20 border-b border-stone-200 bg-white/95 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-3">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center gap-3">
             <Logo size="sm" showText={false} />
             <span className="text-sm font-medium text-stone-700 hidden sm:inline">{simulation.title}</span>
@@ -279,7 +279,7 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
         </div>
       </header>
 
-      <div className="mx-auto max-w-4xl px-6 py-8">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6 flex items-center justify-between text-sm text-stone-500">
           <span>{answeredCount} / {questions.length} întrebări răspunse</span>
           <div className="h-2 flex-1 mx-4 rounded-full bg-stone-200 overflow-hidden max-w-xs">
