@@ -414,7 +414,7 @@ function TicketCard() {
         <div className="flex items-center justify-between border-t border-stone-200/70 bg-stone-50/80 px-6 py-2.5 sm:px-10">
           <span className="text-xs text-stone-400">Asistență dedicată · Corectare automată</span>
   <span className="font-sans text-xs font-bold uppercase tracking-wider text-brand-600">
-  {Math.max(0, Math.ceil((new Date("2027-07-15").getTime() - new Date().setHours(0, 0, 0, 0)) / 86400000))} zile rămase
+  {Math.max(0, Math.ceil((new Date("2027-08-15").getTime() - new Date().setHours(0, 0, 0, 0)) / 86400000))} zile rămase
 </span>
         </div>
       </div>
