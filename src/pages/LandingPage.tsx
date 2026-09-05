@@ -388,7 +388,7 @@ function TicketCard() {
 
         {/* Bottom info bar */}
         <div className="flex items-center justify-between border-t border-stone-200/70 bg-stone-50/80 px-6 py-2.5 sm:px-10">
-          <span className="text-xs text-stone-400">Simulări săptămânale · Corectare automată</span>
+          <span className="text-xs text-stone-400">Asistență dedicată · Corectare automată</span>
           <span className="font-mono text-xs font-semibold text-brand-600">№ 2027-001</span>
         </div>
       </div>
