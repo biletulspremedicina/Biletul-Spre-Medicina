@@ -413,32 +413,7 @@ function TicketCard() {
         {/* Bottom info bar */}
         <div className="flex items-center justify-between border-t border-stone-200/70 bg-stone-50/80 px-6 py-2.5 sm:px-10">
           <span className="text-xs text-stone-400">Asistență dedicată · Corectare automată</span>
-          import React, { useState, useEffect } from 'react';
-
-export const ExamCountdown = ({ targetDate = "2027-07-15" }) => {
-  const [daysLeft, setDaysLeft] = useState(0);
-
-  useEffect(() => {
-    const calculateDays = () => {
-      const now = new Date();
-      const target = new Date(targetDate);
-      const diffTime = target - now;
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      setDaysLeft(diffDays > 0 ? diffDays : 0);
-    };
-
-    calculateDays();
-    const timer = setInterval(calculateDays, 3600000);
-    return () => clearInterval(timer);
-  }, [targetDate]);
-
-  return (
-    <span className="inline-flex items-center gap-1.5 font-mono text-xs font-semibold text-brand-600">
-      <span className="h-1.5 w-1.5 rounded-full bg-brand-500 animate-pulse" />
-      {daysLeft} zile rămase
-    </span>
-  );
-};
+          <span className="font-mono text-xs font-semibold text-brand-600">2027 </span>
         </div>
       </div>
     </div>
