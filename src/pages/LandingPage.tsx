@@ -50,8 +50,8 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
           {/* Intro text — reformatat pe două rânduri */}
           <div className="mx-auto mt-8 max-w-2xl text-center" style={{ animation: 'fadeIn 0.8s ease-out 0.3s both' }}>
             <p className="text-xl font-light italic leading-relaxed text-stone-600 sm:text-2xl">
-              Atunci când spunem că îți oferim<br />
-              <span className="font-medium text-brand-700">eficiență maximă</span> în pregătirea ta, nu o facem la superlativ.
+              Înțelegem presiunea.<br />
+              <span className="font-medium text-brand-700">Suntem aici să-ți facem drumul mai ușor.</span>
             </p>
           </div>
 
