@@ -391,6 +391,7 @@ function TicketCard() {
           <div className="relative flex flex-col justify-between border-l-0 border-y-2 border-dashed border-stone-200 px-0 py-4 sm:border-l-2 sm:border-y-0 sm:border-r-0 sm:px-8 sm:py-0">
             <div>
               <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
                   <Activity size={24} />
                 </div>
                 <div>
