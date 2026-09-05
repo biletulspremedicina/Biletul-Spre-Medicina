@@ -374,7 +374,6 @@ function TicketCard() {
                 </div>
               </div>
             </div>
-
             {/* CTA — bottom-right corner of ticket body */}
             <div className="mt-5 flex flex-col items-start gap-1.5 sm:items-end">
               <button className="group inline-flex items-center justify-center gap-2.5 rounded-xl bg-brand-600 px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-brand-600/25 transition-all duration-300 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-xl hover:shadow-brand-600/30 active:translate-y-0 active:scale-[0.98]">
