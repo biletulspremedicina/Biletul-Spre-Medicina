@@ -391,9 +391,6 @@ function TicketCard() {
           <div className="relative flex flex-col justify-between border-l-0 border-y-2 border-dashed border-stone-200 px-0 py-4 sm:border-l-2 sm:border-y-0 sm:border-r-0 sm:px-8 sm:py-0">
             <div>
               <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
-                  <Activity size={24} />
-                </div>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wider text-stone-400">UMFCD | Medicină Generală & Dentară</p>
                   <p className="font-display text-lg font-bold text-stone-900">Zeci de simulări cronometrate</p>
