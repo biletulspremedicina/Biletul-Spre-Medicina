@@ -44,7 +44,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
             <span className="bg-gradient-to-r from-brand-600 to-brand-500 bg-clip-text text-transparent">
               Medicină
             </span>
-            
+            .
           </h1>
 
           {/* Intro text — reformatat pe două rânduri */}
