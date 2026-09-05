@@ -381,7 +381,7 @@ function TicketCard() {
                 Ia-ți biletul spre Medicină
                 <ArrowRight size={18} className="transition-transform duration-300 group-hover:translate-x-1" />
               </button>
-              <p className="text-[11px] text-stone-400">Fără card. Începe gratuit cu simulările de probă.</p>
+              <p className="text-[11px] text-stone-400">Fără cÎncepe gratuit cu simulările de probă.</p>
             </div>
           </div>
         </div>
