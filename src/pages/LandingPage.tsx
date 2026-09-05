@@ -370,7 +370,7 @@ function TicketCard() {
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wider text-stone-400">UMFCD
                     + FMD</p>
-                  <p className="font-display text-lg font-bold text-stone-900">Accesează =</p>
+                  <p className="font-display text-lg font-bold text-stone-900">Accesează zeci de simulari</p>
                   <p className="text-sm text-stone-500">CS · CG · Explicații</p>
                 </div>
               </div>
