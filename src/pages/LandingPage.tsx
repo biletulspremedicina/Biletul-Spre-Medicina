@@ -40,9 +40,9 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-12 pb-16 sm:pt-16 sm:pb-20">
           {/* Main heading */}
           <h1 className="text-center font-display text-4xl font-extrabold leading-[1.1] tracking-tight text-stone-900 text-balance sm:text-5xl md:text-6xl">
-            De ce să aleg{' '}
+            Standardul modern în pregătirea pentru{' '}
             <span className="bg-gradient-to-r from-brand-600 to-brand-500 bg-clip-text text-transparent">
-              Biletul spre Medicină
+              Medicină.
             </span>
             ?
           </h1>
