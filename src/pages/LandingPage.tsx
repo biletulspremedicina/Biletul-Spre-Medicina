@@ -369,7 +369,7 @@ function TicketCard() {
                 </div>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wider text-stone-400">Clasă</p>
-                  <p className="font-display text-lg font-bold text-stone-900">Accesează</p>
+                  <p className="font-display text-lg font-bold text-stone-900">Accesează =</p>
                   <p className="text-sm text-stone-500">CS · CG · Explicații</p>
                 </div>
               </div>
@@ -381,7 +381,7 @@ function TicketCard() {
                 Ia-ți biletul spre Medicină
                 <ArrowRight size={18} className="transition-transform duration-300 group-hover:translate-x-1" />
               </button>
-              <p className="text-[11px] text-stone-400">Începe gratuit cu simulările de probă.          </p>
+              <p className="text-[11px] text-stone-400">Fă-ti cont. Începe gratuit cu simulările de probă.</p>
             </div>
           </div>
         </div>
