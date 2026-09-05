@@ -368,7 +368,8 @@ function TicketCard() {
                   <Activity size={24} />
                 </div>
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-stone-400">UMF"CD" + FMD</p>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-stone-400">UMFCD
+                    + FMD</p>
                   <p className="font-display text-lg font-bold text-stone-900">Accesează =</p>
                   <p className="text-sm text-stone-500">CS · CG · Explicații</p>
                 </div>
