@@ -42,7 +42,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
           <h1 className="text-center font-display text-4xl font-extrabold leading-[1.1] tracking-tight text-stone-900 text-balance sm:text-5xl md:text-6xl">
             Standardul modern în pregătirea pentru{' '}
             <span className="bg-gradient-to-r from-brand-600 to-brand-500 bg-clip-text text-transparent">
-              Medicină.
+              Medicină
             </span>
             
           </h1>
