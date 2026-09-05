@@ -343,21 +343,48 @@ function TicketCard() {
             </div>
 
             {/* ECG line — organic, printed look */}
-            <svg
-              viewBox="0 0 200 40"
-              className="mt-4 h-8 w-full text-brand-400/70"
-              preserveAspectRatio="none"
-            >
-              <path
-                d="M0 20 L30 20 L38 20 L42 10 L48 30 L54 6 L60 34 L66 20 L80 20 L88 20 L92 12 L98 28 L104 20 L120 20 L128 20 L132 8 L138 32 L144 20 L160 20 L200 20"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                style={{ filter: 'drop-shadow(0 0 0.5px rgba(42,107,78,0.3))' }}
-              />
-            </svg>
+            <svg viewBox="0 0 300 50" className="w-full h-auto overflow-visible">
+  <defs>
+    <style>{`
+      @keyframes ecgSweep {
+        0% {
+          stroke-dashoffset: 300;
+        }
+        100% {
+          stroke-dashoffset: -300;
+        }
+      }
+      .animate-ecg-pulse {
+        stroke-dasharray: 80 220;
+        stroke-dashoffset: 300;
+        animation: ecgSweep 5s linear infinite;
+      }
+    `}</style>
+  </defs>
+
+  {/* Linia de fundal (subtilă și discretă) */}
+  <path 
+    d="M 0 25 L 20 25 Q 25 18 30 25 L 40 25 L 43 29 L 48 3 L 53 38 L 57 25 L 62 25 Q 72 12 82 25 L 140 25 Q 145 18 150 25 L 160 25 L 163 29 L 168 3 L 173 38 L 177 25 L 182 25 Q 192 12 202 25 L 260 25 Q 265 18 270 25 L 280 25 L 283 29 L 288 3 L 293 38 L 297 25 L 300 25" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeOpacity={0.15} 
+    strokeWidth="1.5" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+  />
+
+  {/* Pulsul animat (lumină mai deschisă / pastel neon) */}
+  <path 
+    className="animate-ecg-pulse" 
+    d="M 0 25 L 20 25 Q 25 18 30 25 L 40 25 L 43 29 L 48 3 L 53 38 L 57 25 L 62 25 Q 72 12 82 25 L 140 25 Q 145 18 150 25 L 160 25 L 163 29 L 168 3 L 173 38 L 177 25 L 182 25 Q 192 12 202 25 L 260 25 Q 265 18 270 25 L 280 25 L 283 29 L 288 3 L 293 38 L 297 25 L 300 25" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    style={{ filter: 'drop-shadow(0px 0px 5px rgba(134, 239, 172, 0.85))' }} 
+  />
+</svg>
           </div>
 
           {/* Right: class info + CTA button in bottom-right */}
