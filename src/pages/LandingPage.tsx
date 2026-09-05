@@ -369,8 +369,8 @@ function TicketCard() {
                 </div>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wider text-stone-400">UMFCD | Medicină Generală & Dentară</p>
-                  <p className="font-display text-lg font-bold text-stone-900">Accesează zeci de simulari</p>
-                  <p className="text-sm text-stone-500">CS · CG · Explicații</p>
+                  <p className="font-display text-lg font-bold text-stone-900">Zeci de simulări cronometrate</p>
+                  <p className="text-sm text-stone-500">Complement Simplu & Multiplu · Grilă cu explicații</p>
                 </div>
               </div>
             </div>
