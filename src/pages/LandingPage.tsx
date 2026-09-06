@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import {
   ArrowRight,
   Clock, CheckCircle2, Lock, BookOpen,
@@ -79,18 +80,29 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
         <div className="absolute -left-20 -bottom-20 h-72 w-72 rounded-full bg-accent-500/10 blur-3xl" />
 
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Reveal className="mb-10 text-center">
+          {/* Rândul 1: Titlul */}
+          <Reveal className="mb-8 text-center">
             <h2 className="font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
               O simulare nouă se postează în:
             </h2>
-            <p className="mx-auto mt-4 max-w-xl text-stone-400">
+          </Reveal>
+
+          {/* Rândul 2: Cronometru invers */}
+          <Reveal delay={80}>
+            <CountdownTimer />
+          </Reveal>
+
+          {/* Rândul 3: Subtitlul mutat sub cronometru */}
+          <Reveal delay={150}>
+            <p className="mx-auto mt-8 max-w-xl text-center text-stone-400">
               Platforma nu înseamnă doar grile. Înseamnă că știi exact unde te afli și cât mai
               ai de lucrat.
             </p>
           </Reveal>
 
-          <Reveal delay={150}>
-            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {/* Rândul 4: Grid-ul celor 4 carduri de statistici */}
+          <Reveal delay={220}>
+            <div className="mt-10 grid grid-cols-2 gap-4 lg:grid-cols-4">
               <StatCard icon={<Activity size={20} />} label="Simulări rezolvate" value="124" />
               <StatCard icon={<CheckCircle2 size={20} />} label="Răspunsuri corecte" value="87%" />
               <StatCard icon={<TrendingUp size={20} />} label="Ultima simulare" value="9.20" />
@@ -341,6 +353,110 @@ function TicketCard({ onGetStarted }: { onGetStarted: () => void }) {
       </div>
     </div>
   );
+}
+
+/* ════════════════════════════════════════════════════════════════
+   COUNTDOWN TIMER
+   ════════════════════════════════════════════════════════════════ */
+
+function getNextSimDate(): Date {
+  const now = new Date();
+  const next = new Date(now);
+  next.setHours(20, 0, 0, 0);
+  if (now.getHours() >= 20) {
+    next.setDate(next.getDate() + 1);
+  }
+  return next;
+}
+
+function pad(n: number): string {
+  return n.toString().padStart(2, '0');
+}
+
+type TimeLeft = {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+};
+
+function CountdownTimer() {
+  const [target] = useState(getNextSimDate);
+  const [timeLeft, setTimeLeft] = useState<TimeLeft>(() => calcTimeLeft(target));
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setTimeLeft(calcTimeLeft(target));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [target]);
+
+  const units: { value: number; label: string }[] = [
+    { value: timeLeft.days, label: 'ZILE' },
+    { value: timeLeft.hours, label: 'ORE' },
+    { value: timeLeft.minutes, label: 'MIN' },
+    { value: timeLeft.seconds, label: 'SEC' },
+  ];
+
+  return (
+    <div className="mx-auto flex max-w-2xl flex-wrap items-center justify-center gap-3 sm:gap-4">
+      {units.map((unit, i) => (
+        <div key={unit.label} className="flex items-center gap-3 sm:gap-4">
+          <FlipUnit value={unit.value} label={unit.label} />
+          {i < units.length - 1 && (
+            <span className="font-display text-3xl font-extrabold text-brand-500/40 sm:text-4xl" aria-hidden="true">:</span>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function FlipUnit({ value, label }: { value: number; label: string }) {
+  const display = pad(value);
+  return (
+    <div className="flex flex-col items-center">
+      <div className="rounded-xl border border-brand-500/20 bg-stone-800/80 px-4 py-3 shadow-lg sm:px-6 sm:py-4">
+        <div className="flex gap-1.5">
+          {display.split('').map((digit, idx) => (
+            <FlipDigit key={idx} digit={digit} />
+          ))}
+        </div>
+      </div>
+      <span className="mt-2 text-xs font-bold uppercase tracking-wider text-stone-400">{label}</span>
+    </div>
+  );
+}
+
+function FlipDigit({ digit }: { digit: string }) {
+  const [displayDigit, setDisplayDigit] = useState(digit);
+
+  useEffect(() => {
+    if (digit !== displayDigit) {
+      setDisplayDigit(digit);
+    }
+  }, [digit, displayDigit]);
+
+  return (
+    <div className="relative h-12 w-8 overflow-hidden sm:h-14 sm:w-10" aria-hidden="true">
+      <span
+        key={displayDigit}
+        className="absolute inset-0 flex items-center justify-center font-display text-3xl font-extrabold tabular-nums text-white sm:text-4xl animate-[slideDownIn_0.3s_ease-out]"
+      >
+        {displayDigit}
+      </span>
+    </div>
+  );
+}
+
+function calcTimeLeft(target: Date): TimeLeft {
+  const diff = Math.max(0, target.getTime() - Date.now());
+  return {
+    days: Math.floor(diff / 86400000),
+    hours: Math.floor((diff % 86400000) / 3600000),
+    minutes: Math.floor((diff % 3600000) / 60000),
+    seconds: Math.floor((diff % 60000) / 1000),
+  };
 }
 
 function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
