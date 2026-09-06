@@ -61,10 +61,10 @@ const BENEFIT_CHECKS: Benefit[] = [
 ];
 
 const EXAM_BENEFITS: Benefit[] = [
- {
+{
   text: 'Ne lăudăm cu grile complexe și atent concepute, fără AI, totul din materie.',
   emphasis: '60 grile la noi = 200 pe alte platforme',
-  emphasisClassName: 'text-center block',
+  emphasisClassName: 'block w-full text-center',
 },
   {
     text: 'Cronometru integrat, pentru gestionarea eficientă a timpului.',
