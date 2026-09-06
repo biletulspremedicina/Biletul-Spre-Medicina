@@ -169,13 +169,11 @@ export default function WhyChooseUs() {
           </Reveal>
 
           <Reveal className="md:col-span-2 lg:col-span-7 motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none" delay={240}>
-           <AdvantageCard
-  id="support"
-  icon={<Headphones size={24} />}
-  title="Ai o întrebare? Suntem aici să te ajutăm"
-  intro="Beneficiezi de suport dedicat pe parcursul pregătirii, pentru orice nelămurire legată de platformă, simulări sau modul de utilizare:"
-  titleClassName="text-left"
-/>
+            <AdvantageCard
+              id="support"
+              icon={<Headphones size={24} />}
+              title="Ai o întrebare? Suntem aici să te ajutăm"
+              intro="Beneficiezi de suport dedicat pe parcursul pregătirii, pentru orice nelămurire legată de platformă, simulări sau modul de utilizare:"
               benefits={[
                 { text: 'Asistență de luni până vineri, în intervalul 08:00–17:00.' },
                 { text: 'Răspunsuri rapide la întrebările și problemele întâmpinate.' },
