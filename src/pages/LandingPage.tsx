@@ -102,11 +102,11 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
       </section>
 
       {/* ────────────────────────── Features ────────────────────────── */}
-      <section className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-  <Reveal className="mb-6 text-center">
-    <h2 className="font-display text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
-      
-    </h2>
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 sm:py-24">
+        <Reveal className="mb-12 text-center">
+          <h2 className="font-display text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
+            
+          </h2>
           
         </Reveal>
 
