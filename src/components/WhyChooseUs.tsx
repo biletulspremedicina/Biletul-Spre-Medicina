@@ -76,12 +76,13 @@ const EXAM_BENEFITS: Benefit[] = [
 ];
 
 const DASHBOARD_ITEMS = [
-{ icon: <BarChart3 size={17} />, label: 'Performanță pentru fiecare capitol', tone: 'brand' },
-{ icon: <Clock3 size={17} />, label: 'Timp mediu de rezolvare', tone: 'accent' },
-{ icon: <TrendingUp size={17} />, label: 'Evoluția scorului în timp', tone: 'brand' },
-{ icon: <ClipboardCheck size={17} />, label: 'Număr simulări rezolvate', tone: 'brand' },
-{ icon: <Bookmark size={17} />, label: 'Opțiunea „Grile de revăzut”', tone: 'accent' },
-{ icon: <PieChart size={17} />, label: 'Rata medie de răspunsuri corecte', tone: 'brand' },
+  { icon: <BarChart3 size={17} />, label: 'Performanță pentru fiecare capitol', tone: 'brand' },
+  { icon: <Clock3 size={17} />, label: 'Timp mediu de rezolvare', tone: 'accent' },
+  { icon: <TrendingUp size={17} />, label: 'Evoluția scorului în timp', tone: 'brand' },
+  { icon: <ClipboardCheck size={17} />, label: 'Număr simulări rezolvate', tone: 'brand' },
+  { icon: <Bookmark size={17} />, label: 'Opțiunea „Grile de revăzut”', tone: 'accent' },
+  { icon: <PieChart size={17} />, label: 'Rata medie de răspunsuri corecte', tone: 'brand' },
+] as const;
 
 export default function WhyChooseUs() {
   const [activeCard, setActiveCard] = useState<CardId | null>(null);
