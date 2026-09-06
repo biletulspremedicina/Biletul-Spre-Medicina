@@ -83,7 +83,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
           {/* Rândul 1: Titlul */}
           <Reveal className="mb-8 text-center">
             <h2 className="font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              O simulare nouă se postează în:
+              Simulări noi în:
             </h2>
           </Reveal>
 
