@@ -44,9 +44,13 @@ const BENEFIT_CHECKS: Benefit[] = [
     </>
   ),
 },
-  {
-    text: 'Simulări structurate pe capitole, ideale pentru aprofundarea și verificarea fiecărui subiect.',
-  },
+ {
+  text: (
+    <>
+      <strong>Simulări structurate pe capitole</strong>, ideale pentru aprofundarea și verificarea fiecărui subiect.
+    </>
+  ),
+},
   {
     text: 'Simulările și examenele de admitere oferite în anii anteriori de UMFCD, pentru o pregătire cât mai apropiată de experiența examenului real.',
   },
