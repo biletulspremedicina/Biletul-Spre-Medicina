@@ -1,21 +1,26 @@
 type Props = {
   size?: 'sm' | 'md' | 'lg';
-  showText?: boolean;
+  className?: string;
 };
 
-export default function Logo({ size = 'md' }: Props) {
-  const sizeClass = size === 'sm' ? 'h-14 w-56' : size === 'lg' ? 'h-20 w-80' : 'h-16 w-64';
+export default function Logo({ size = 'md', className = '' }: Props) {
+  const sizeClass =
+    size === 'sm'
+      ? 'h-10'
+      : size === 'lg'
+        ? 'h-16'
+        : 'h-12';
 
   return (
     <a
       href="/"
       aria-label="Biletul spre Medicină"
-      className={`inline-flex ${sizeClass} items-center transition-transform duration-200 hover:scale-[1.02]`}
+      className={`inline-flex flex-shrink-0 items-center transition-transform duration-200 hover:scale-[1.02] ${sizeClass} ${className}`}
     >
       <img
         src="/Logo_final.png"
         alt="Biletul spre Medicină"
-        className="h-full w-full object-contain object-center"
+        className="h-full w-auto object-contain object-center"
       />
     </a>
   );
