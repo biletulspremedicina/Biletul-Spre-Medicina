@@ -110,7 +110,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
           
         </Reveal>
 
-        <div className="flex flex-wrap justify-center gap-6 max-w-5xl mx-auto">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {FEATURES.map((f, i) => (
             <Reveal key={f.title} delay={i * 70}>
               <FeatureCard icon={f.icon} title={f.title} desc={f.desc} />
