@@ -90,7 +90,7 @@ export default function WhyChooseUs() {
   return (
     <section
       aria-labelledby="why-choose-us-title"
-      className="relative overflow-hidden bg-stone-50 px-4 py-12 sm:px-6 sm:py-16 lg:px-8"
+      className="relative overflow-hidden bg-stone-50 px-4 pt-4 pb-12 sm:px-6 sm:pt-6 sm:pb-16 lg:px-8"
     >
       <div className="pointer-events-none absolute left-1/2 top-24 h-72 w-72 -translate-x-1/2 rounded-full bg-brand-100/35 blur-3xl" />
 
