@@ -1,10 +1,35 @@
-<section className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-  <div className="mb-4 text-center">
-    <h2 className="font-display text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
-      {/* Titlul tău */}
-    </h2>
-    {/* Linia verde a fost eliminată */}
-  </div>
-  
-  {/* Conținutul secțiunii */}
-</section>
+import { useState } from 'react';
+
+type Props = {
+  children: React.ReactNode;
+  delay?: number;
+  className?: string;
+};
+
+export default function Reveal({ children, delay = 0, className = '' }: Props) {
+  const [shown, setShown] = useState(false);
+
+  return (
+    <div
+      ref={(el) => {
+        if (!el || shown) return;
+        const observer = new IntersectionObserver(
+          ([entry]) => {
+            if (entry.isIntersecting) {
+              setShown(true);
+              observer.disconnect();
+            }
+          },
+          { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+        );
+        observer.observe(el);
+      }}
+      className={`${className} transition-all duration-700 ease-out ${
+        shown ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+      }`}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      {children}
+    </div>
+  );
+}
