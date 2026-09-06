@@ -186,7 +186,9 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
    DATA
    ════════════════════════════════════════════════════════════════ */
 
-
+const FEATURES = [
+  
+] as const;
 
 const STEPS = [
   { number: 1, title: 'Creează cont', desc: 'Înregistrează-te cu email și parolă. Contul tău îți oferă acces la toate simulările.' },
