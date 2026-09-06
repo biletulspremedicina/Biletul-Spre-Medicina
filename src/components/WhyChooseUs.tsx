@@ -196,7 +196,9 @@ export default function WhyChooseUs() {
               onActivate={setActiveCard}
             >
               <div className="mt-5 space-y-3 font-sans text-sm leading-relaxed text-stone-600 sm:text-base">
-                <p>Suntem o echipă formată din profesori și studenți, uniți de aceeași experiență și de dorința de a face pregătirea mai eficientă.</p>
+               <p class="font-bold indent-4">
+  Suntem o echipă formată din profesori și studenți, uniți de aceeași experiență și de dorința de a face pregătirea mai eficientă.
+</p>
                 <p>Am înțeles și perfecționat metodele de pregătire pentru unul dintre cele mai solicitante examene, transformând experiența noastră într-un sistem de simulări adaptat nevoilor reale ale elevilor.</p>
               </div>
             </AdvantageCard>
