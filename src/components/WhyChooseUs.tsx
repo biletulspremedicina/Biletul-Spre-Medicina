@@ -102,9 +102,9 @@ export default function WhyChooseUs() {
           <h2
             id="why-choose-us-title"
             className="font-display text-3xl font-extrabold tracking-tight text-brand-900 sm:text-4xl lg:text-5xl"
-          >
-            De ce să alegi <span className="text-accent-500">Biletul Spre Medicină</span>?
-          </h2>
+            >
+              De ce să alegi <span className="text-accent-500">Biletul Spre Medicină</span>?
+            </h2>
           <p className="mx-auto mt-5 max-w-2xl font-sans text-base leading-relaxed text-stone-600 sm:text-lg">
             Tot ce ai nevoie pentru o pregătire organizată, realistă și eficientă pentru admiterea la medicină.
           </p>
@@ -169,11 +169,13 @@ export default function WhyChooseUs() {
           </Reveal>
 
           <Reveal className="md:col-span-2 lg:col-span-7 motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none" delay={240}>
-            <AdvantageCard
-              id="support"
-              icon={<Headphones size={24} />}
-              title="Ai o întrebare? Suntem aici să te ajutăm"
-              intro="Beneficiezi de suport dedicat pe parcursul pregătirii, pentru orice nelămurire legată de platformă, simulări sau modul de utilizare:"
+           <AdvantageCard
+  id="support"
+  icon={<Headphones size={24} />}
+  title="Ai o întrebare? Suntem aici să te ajutăm"
+  intro="Beneficiezi de suport dedicat pe parcursul pregătirii, pentru orice nelămurire legată de platformă, simulări sau modul de utilizare:"
+  titleClassName="text-left"
+/>
               benefits={[
                 { text: 'Asistență de luni până vineri, în intervalul 08:00–17:00.' },
                 { text: 'Răspunsuri rapide la întrebările și problemele întâmpinate.' },
