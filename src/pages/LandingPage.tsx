@@ -103,7 +103,6 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
 
       {/* ────────────────────────── Features ────────────────────────── */}
       
-          </h2>
           
         </Reveal>
 
