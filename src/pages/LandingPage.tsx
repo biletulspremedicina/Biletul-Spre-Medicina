@@ -190,7 +190,7 @@ const FEATURES = [
 
 const STEPS = [
   { number: 1, title: 'Creează cont', desc: 'Înregistrează-te cu email și parolă. Contul tău îți oferă acces la toate simulările.' },
-  { number: 2, title: 'Abonează-te', desc: 'Un singur abonament, acces nelimitat la toate simulările de pe platformă' },
+  { number: 2, title: 'Abonează-te', desc: 'Un singur abonament, acces nelimitat la toate simulările de pe platformă.' },
   { number: 3, title: 'Susține simularea', desc: 'Pornește cronometrul, rezolvă grilele, iar la final primește nota și explicațiile.' },
 ] as const;
 
