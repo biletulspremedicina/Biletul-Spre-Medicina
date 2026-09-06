@@ -187,10 +187,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
    ════════════════════════════════════════════════════════════════ */
 
 const FEATURES = [
-  { icon: <Clock size={20} />, title: 'Cronometru strict', desc: 'Fiecare simulare are un timer individual care pornește la apăsarea butonului Start.' },
-  { icon: <CheckCircle2 size={20} />, title: 'Corectare automată', desc: 'Notele se calculează instant, totul sau nimic, exact ca la examenul real.' },
-  { icon: <Lock size={20} />, title: 'Rezultate instantanee', desc: 'Imediat după trimitere, vezi punctajul, răspunsurile corecte și explicațiile detaliate.' },
-  { icon: <BookOpen size={20} />, title: 'Grile Carol Davila', desc: 'Complement simplu și complement grupat, cu explicații bibliografice complete.' },
+  
 ] as const;
 
 const STEPS = [
