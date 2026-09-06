@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import {
   ArrowRight,
-  Clock, CheckCircle2, Lock, BookOpen,
-  Stethoscope, Activity, TrendingUp, GraduationCap,
+  Clock, Lock, BookOpen,
+  Stethoscope,
 } from 'lucide-react';
 import Logo from '@/components/Logo';
 import Reveal from '@/components/Reveal';
@@ -98,16 +98,6 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
               Platforma nu înseamnă doar grile. Înseamnă că știi exact unde te afli și cât mai
               ai de lucrat.
             </p>
-          </Reveal>
-
-          {/* Rândul 4: Grid-ul celor 4 carduri de statistici */}
-          <Reveal delay={220}>
-            <div className="mt-10 grid grid-cols-2 gap-4 lg:grid-cols-4">
-              <StatCard icon={<Activity size={20} />} label="Simulări rezolvate" value="124" />
-              <StatCard icon={<CheckCircle2 size={20} />} label="Răspunsuri corecte" value="87%" />
-              <StatCard icon={<TrendingUp size={20} />} label="Ultima simulare" value="9.20" />
-              <StatCard icon={<GraduationCap size={20} />} label="Capitole finalizate" value="18/24" />
-            </div>
           </Reveal>
         </div>
       </section>
@@ -399,12 +389,12 @@ function CountdownTimer() {
   ];
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-wrap items-center justify-center gap-3 sm:gap-4">
+    <div className="mx-auto flex items-center justify-center gap-2 sm:gap-3 md:gap-4 overflow-x-auto">
       {units.map((unit, i) => (
         <div key={unit.label} className="flex items-center gap-3 sm:gap-4">
           <FlipUnit value={unit.value} label={unit.label} />
           {i < units.length - 1 && (
-            <span className="font-display text-3xl font-extrabold text-brand-500/40 sm:text-4xl" aria-hidden="true">:</span>
+            <span className="font-display text-2xl font-extrabold text-brand-500/40 sm:text-3xl md:text-4xl" aria-hidden="true">:</span>
           )}
         </div>
       ))}
@@ -416,14 +406,14 @@ function FlipUnit({ value, label }: { value: number; label: string }) {
   const display = pad(value);
   return (
     <div className="flex flex-col items-center">
-      <div className="rounded-xl border border-brand-500/20 bg-stone-800/80 px-4 py-3 shadow-lg sm:px-6 sm:py-4">
-        <div className="flex gap-1.5">
+      <div className="rounded-xl border border-brand-500/20 bg-stone-800/80 px-2.5 py-2 shadow-lg sm:px-4 sm:py-3 md:px-6 md:py-4">
+        <div className="flex gap-1 sm:gap-1.5">
           {display.split('').map((digit, idx) => (
             <FlipDigit key={idx} digit={digit} />
           ))}
         </div>
       </div>
-      <span className="mt-2 text-xs font-bold uppercase tracking-wider text-stone-400">{label}</span>
+      <span className="mt-2 text-[10px] font-bold uppercase tracking-wider text-stone-400 sm:text-xs">{label}</span>
     </div>
   );
 }
@@ -438,10 +428,10 @@ function FlipDigit({ digit }: { digit: string }) {
   }, [digit, displayDigit]);
 
   return (
-    <div className="relative h-12 w-8 overflow-hidden sm:h-14 sm:w-10" aria-hidden="true">
+    <div className="relative h-10 w-6 overflow-hidden sm:h-12 sm:w-8 md:h-14 md:w-10" aria-hidden="true">
       <span
         key={displayDigit}
-        className="absolute inset-0 flex items-center justify-center font-display text-3xl font-extrabold tabular-nums text-white sm:text-4xl animate-[slideDownIn_0.3s_ease-out]"
+        className="absolute inset-0 flex items-center justify-center font-display text-2xl font-extrabold tabular-nums text-white sm:text-3xl md:text-4xl animate-[slideDownIn_0.3s_ease-out]"
       >
         {displayDigit}
       </span>
@@ -457,18 +447,6 @@ function calcTimeLeft(target: Date): TimeLeft {
     minutes: Math.floor((diff % 3600000) / 60000),
     seconds: Math.floor((diff % 60000) / 1000),
   };
-}
-
-function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return (
-    <div className="group rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm transition-all duration-300 hover:border-white/20 hover:bg-white/10">
-      <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-brand-500/20 text-brand-300 transition-colors group-hover:bg-brand-500 group-hover:text-white">
-        {icon}
-      </div>
-      <p className="font-display text-3xl font-extrabold text-white">{value}</p>
-      <p className="mt-1 text-xs font-medium text-stone-400">{label}</p>
-    </div>
-  );
 }
 
 function FeatureCard({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
