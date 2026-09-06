@@ -81,7 +81,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <Reveal className="mb-10 text-center">
             <h2 className="font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              Progresul tău, mereu vizibil
+              O simulare nouă se postează în:
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-stone-400">
               Platforma nu înseamnă doar grile. Înseamnă că știi exact unde te afli și cât mai
