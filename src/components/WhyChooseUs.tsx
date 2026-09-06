@@ -153,12 +153,12 @@ export default function WhyChooseUs() {
                 {DASHBOARD_ITEMS.map((item) => (
                   <div
                     key={item.label}
-                    className="group/metric rounded-xl border border-stone-200 bg-white p-3 transition-all duration-250 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-sm focus-within:ring-2 focus-within:ring-brand-500/30"
+                    className="group/metric flex items-center gap-3 rounded-xl border border-stone-200 bg-white p-3 transition-all duration-250 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-sm focus-within:ring-2 focus-within:ring-brand-500/30"
                   >
-                    <div className={`mb-2 flex h-8 w-8 items-center justify-center rounded-lg ${item.tone === 'accent' ? 'bg-accent-50 text-accent-600' : 'bg-brand-50 text-brand-600'} transition-transform duration-250 group-hover/metric:scale-105`} aria-hidden="true">
+                    <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg ${item.tone === 'accent' ? 'bg-accent-50 text-accent-600' : 'bg-brand-50 text-brand-600'} transition-transform duration-250 group-hover/metric:scale-105`} aria-hidden="true">
                       {item.icon}
                     </div>
-                    <p className="font-sans text-xs font-semibold leading-snug text-stone-700">{item.label}</p>
+                    <p className="font-poppins text-base font-medium leading-snug text-stone-700">{item.label}</p>
                   </div>
                 ))}
               </div>
