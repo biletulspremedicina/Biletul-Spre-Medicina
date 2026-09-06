@@ -21,11 +21,11 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8 sm:py-4">
           <div className="flex items-center gap-1.5">
             <Logo />
-            <div className="flex flex-col text-[10px] font-extrabold uppercase tracking-wider leading-[0.85] select-none">
-              <span className="text-stone-900">Biletul</span>
-              <span className="text-stone-900">Spre</span>
-              <span className="text-brand-600">Medicină</span>
-            </div>
+            <div className="flex flex-col text-[12px] font-extrabold uppercase tracking-wide leading-[1.08] select-none">
+  <span className="text-stone-900">Biletul</span>
+  <span className="text-stone-900">Spre</span>
+  <span className="text-brand-600 font-black">Medicină</span>
+</div>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <button onClick={onSignIn} className="btn-ghost">
