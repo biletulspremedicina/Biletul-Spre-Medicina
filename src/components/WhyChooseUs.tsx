@@ -95,7 +95,7 @@ export default function WhyChooseUs() {
       <div className="pointer-events-none absolute left-1/2 top-24 h-72 w-72 -translate-x-1/2 rounded-full bg-brand-100/35 blur-3xl" />
 
       <div className="relative mx-auto max-w-7xl">
-        <Reveal className="mx-auto mb-8 max-w-3xl text-center motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none">
+        <Reveal className="mx-auto mb-6 max-w-3xl text-center motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none">
           <p className="mb-4 font-sans text-xs font-bold uppercase tracking-[0.22em] text-brand-600">
             Avantajele platformei
           </p>
