@@ -95,6 +95,7 @@ export type Attempt = {
   submitted_at: string | null;
   expired: boolean;
   is_archive_retake: boolean;
+  expires_at: string | null;
 };
 
 export type AttemptResult = {

@@ -64,7 +64,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
 
           {/* Ticket visual with embedded CTA */}
           <div className="mt-12" style={{ animation: 'fadeInUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both' }}>
-            <TicketCard />
+            <TicketCard onGetStarted={onGetStarted} />
           </div>
         </div>
       </section>
@@ -99,7 +99,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
               Progresul tău, mereu vizibil
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-stone-400">
-              Platforma nu înseamnă doar grile. Înseamnă că știi exact unde te afoli și cât mai
+              Platforma nu înseamnă doar grile. Înseamnă că știi exact unde te afli și cât mai
               ai de lucrat.
             </p>
           </Reveal>
@@ -288,7 +288,7 @@ const STEPS = [
    COMPONENTS
    ════════════════════════════════════════════════════════════════ */
 
-function TicketCard() {
+function TicketCard({ onGetStarted }: { onGetStarted: () => void }) {
   return (
     <div className="mx-auto max-w-3xl">
       <div
@@ -399,16 +399,16 @@ function TicketCard() {
             <div>
               <div className="flex items-center gap-4">
                 <div>
-                  <p class="text-xs font-semibold uppercase tracking-wider text-stone-400 text-center">UMFCD | Medicină Generală &amp; Dentară</p>
-                  <p class="font-display text-lg font-bold text-stone-900 text-center">Zeci de simulări cronometrate</p>
-                  <p class="text-sm text-stone-500 text-center">CS · CG · Explicații</p>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-stone-400 text-center">UMFCD | Medicină Generală &amp; Dentară</p>
+                  <p className="font-display text-lg font-bold text-stone-900 text-center">Zeci de simulări cronometrate</p>
+                  <p className="text-sm text-stone-500 text-center">CS · CG · Explicații</p>
                 </div>
               </div>
             </div>
 
             {/* CTA — bottom-right corner of ticket body */}
             <div className="mt-5 flex flex-col items-start gap-1.5 sm:items-end">
-              <button className="group inline-flex items-center justify-center gap-2.5 rounded-xl bg-brand-600 px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-brand-600/25 transition-all duration-300 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-xl hover:shadow-brand-600/30 active:translate-y-0 active:scale-[0.98]">
+              <button onClick={onGetStarted} className="group inline-flex items-center justify-center gap-2.5 rounded-xl bg-brand-600 px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-brand-600/25 transition-all duration-300 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-xl hover:shadow-brand-600/30 active:translate-y-0 active:scale-[0.98]">
                 Ia-ți biletul spre Medicină
                 <ArrowRight size={18} className="transition-transform duration-300 group-hover:translate-x-1" />
               </button>

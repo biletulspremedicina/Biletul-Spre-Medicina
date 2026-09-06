@@ -3,7 +3,7 @@ import { supabase, type Simulation, type Question, type Attempt, type Profile, t
 import { useAuth } from '@/context/AuthContext';
 import {
   LayoutDashboard, Users, Plus, Edit2, Trash2, Eye, EyeOff,
-  ChevronLeft, Save, X, Loader2, Trophy, CreditCard, BookOpen, Clock, Settings, CheckCircle2, AlertTriangle
+  ChevronLeft, Save, X, Loader2, Trophy, CreditCard, BookOpen, Clock, Settings, CheckCircle2, AlertTriangle,
 } from 'lucide-react';
 import Logo from '@/components/Logo';
 import Loading from '@/components/Loading';
@@ -273,7 +273,7 @@ function SimForm({ sim, onSaved, onCancel }: { sim?: Simulation; onSaved: () => 
   const [description, setDescription] = useState(sim?.description || '');
   const [duration, setDuration] = useState(sim?.duration_minutes?.toString() || '120');
   const [requiresSub, setRequiresSub] = useState(sim ? sim.requires_subscription : false);
-  const [isActive, setIsActive] = useState(sim ? sim.is_active : false);
+  const [isActive] = useState(sim ? sim.is_active : false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -362,21 +362,19 @@ function SimForm({ sim, onSaved, onCancel }: { sim?: Simulation; onSaved: () => 
           )}
         </div>
         <div className="sm:col-span-2">
-          <label className="label">Vizibilitate</label>
-          <div className="flex items-center gap-3">
-            <label className="flex items-center gap-2 cursor-pointer text-sm text-stone-600">
-              <input
-                type="checkbox"
-                checked={isActive}
-                onChange={(e) => setIsActive(e.target.checked)}
-                className="h-4 w-4 rounded border-stone-300 text-brand-600 focus:ring-brand-500"
-              />
-              {isActive ? (
-                <span className="flex items-center gap-1"><Eye size={14} /> Publicată (vizibilă elevilor)</span>
+          <div className="rounded-lg bg-stone-50 border border-stone-200 px-4 py-3 text-sm text-stone-600 flex gap-3">
+            <AlertTriangle size={18} className="flex-shrink-0 mt-0.5 text-stone-400" />
+            <div>
+              {sim ? (
+                sim.is_active ? (
+                  <>Această simulare este <strong>publicată</strong>. Poți ascunde-o cu butonul „Ascunde".</>
+                ) : (
+                  <>Această simulare este în <strong>ciornă</strong>. Public-o cu butonul „Publică" după ce adaugi grile.</>
+                )
               ) : (
-                <span className="flex items-center gap-1"><EyeOff size={14} /> Ciornă (invizibilă elevilor)</span>
+                <>Simularea se creează ca <strong>ciornă (invizibilă)</strong>. Adaugă grile, apoi public-o cu butonul „Publică".</>
               )}
-            </label>
+            </div>
           </div>
         </div>
       </div>

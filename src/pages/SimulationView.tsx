@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase, type Simulation, type ExamQuestion, type Attempt } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
-import { Clock, Send, AlertTriangle, Loader2, ChevronLeft, PlayCircle, FileText } from 'lucide-react';
+import { Clock, Send, AlertTriangle, Loader2, ChevronLeft, PlayCircle, FileText, Save, CheckCircle2, XCircle } from 'lucide-react';
 import Logo from '@/components/Logo';
 import Loading from '@/components/Loading';
 
@@ -12,6 +12,8 @@ type Props = {
 };
 
 const LETTERS = ['A', 'B', 'C', 'D', 'E'] as const;
+
+type SaveState = 'idle' | 'saving' | 'saved' | 'error';
 
 export default function SimulationView({ simulationId, onExit, onComplete }: Props) {
   const { profile } = useAuth();
@@ -24,9 +26,15 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
   const [timeLeft, setTimeLeft] = useState(0);
   const [started, setStarted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [saveState, setSaveState] = useState<SaveState>('idle');
+  const [questionCount, setQuestionCount] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const submittedRef = useRef(false);
+  const answersRef = useRef<Record<string, string>>({});
+  const attemptIdRef = useRef<string | null>(null);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Load simulation + question count
   useEffect(() => {
     (async () => {
       const { data: sim } = await supabase
@@ -39,6 +47,13 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
         return;
       }
       setSimulation(sim as Simulation);
+
+      const { data: qc } = await supabase.rpc('get_exam_question_count', { p_simulation_id: simulationId });
+      if (qc && qc.length > 0) {
+        const row = qc[0] as { question_count: number };
+        setQuestionCount(Number(row.question_count));
+      }
+
       setLoading(false);
     })();
   }, [simulationId]);
@@ -70,6 +85,7 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
 
     const newAttempt = att[0] as unknown as Attempt;
     setAttempt(newAttempt);
+    attemptIdRef.current = newAttempt.id;
 
     if (newAttempt.submitted_at) {
       onComplete(newAttempt.id);
@@ -78,10 +94,38 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
 
     if (newAttempt.answers && Object.keys(newAttempt.answers).length > 0) {
       setAnswers(newAttempt.answers as Record<string, string>);
+      answersRef.current = newAttempt.answers as Record<string, string>;
     }
     setStarted(true);
   }, [profile, simulationId, onComplete]);
 
+  // Timer: calculate from expires_at — never from Date.now() as start
+  useEffect(() => {
+    if (!started || !attempt) return;
+
+    const expiresAtStr = attempt.expires_at;
+    if (!expiresAtStr) return;
+
+    const expiresAtMs = new Date(expiresAtStr).getTime();
+
+    const tick = () => {
+      const remaining = Math.max(0, Math.floor((expiresAtMs - Date.now()) / 1000));
+      setTimeLeft(remaining);
+      if (remaining <= 0) {
+        if (timerRef.current) clearInterval(timerRef.current);
+        submitAttempt(true);
+      }
+    };
+    tick();
+    timerRef.current = setInterval(tick, 1000);
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [started, attempt]);
+
+  // Load questions once started
   useEffect(() => {
     if (!started || !simulation || !attempt) return;
 
@@ -97,26 +141,28 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
 
       setQuestions((qs || []) as unknown as ExamQuestion[]);
     })();
+  }, [started, simulation, attempt, simulationId]);
 
-    const startTime = attempt.started_at ? new Date(attempt.started_at).getTime() : Date.now();
-    const endTime = startTime + simulation.duration_minutes * 60 * 1000;
-
-    const tick = () => {
-      const remaining = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
-      setTimeLeft(remaining);
-      if (remaining <= 0) {
-        if (timerRef.current) clearInterval(timerRef.current);
-        submitAttempt(true);
+  // Auto-save with debounce
+  const saveProgress = useCallback(async (answersToSave: Record<string, string>) => {
+    if (!attemptIdRef.current || submittedRef.current) return;
+    setSaveState('saving');
+    try {
+      const { error: saveError } = await supabase.rpc('save_attempt_progress', {
+        p_attempt_id: attemptIdRef.current,
+        p_answers: answersToSave,
+      });
+      if (saveError) {
+        console.error('save_attempt_progress error:', saveError);
+        setSaveState('error');
+      } else {
+        setSaveState('saved');
       }
-    };
-    tick();
-    timerRef.current = setInterval(tick, 1000);
-
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [started, simulation, attempt]);
+    } catch (err) {
+      console.error('Save error:', err);
+      setSaveState('error');
+    }
+  }, []);
 
   const submitAttempt = useCallback(
     async (expired: boolean) => {
@@ -124,10 +170,23 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
       submittedRef.current = true;
       setSubmitting(true);
 
+      // Save before submitting
+      const finalAnswers = answersRef.current;
+      if (attemptIdRef.current && Object.keys(finalAnswers).length > 0) {
+        try {
+          await supabase.rpc('save_attempt_progress', {
+            p_attempt_id: attemptIdRef.current,
+            p_answers: finalAnswers,
+          });
+        } catch (err) {
+          console.error('Pre-submit save error:', err);
+        }
+      }
+
       const { data, error: submitError } = await supabase
         .rpc('submit_exam_attempt', {
           p_simulation_id: simulationId,
-          p_answers: answers,
+          p_answers: finalAnswers,
           p_expired: expired,
         });
 
@@ -152,20 +211,52 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
         onComplete(submitted.id);
       }
     },
-    [profile, simulation, answers, simulationId, onComplete]
+    [profile, simulation, simulationId, onComplete]
   );
 
-  const formatTime = (seconds: number) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-    return `${m}:${s.toString().padStart(2, '0')}`;
+  const handleAnswer = (questionId: string, letter: string) => {
+    const newAnswers = { ...answersRef.current, [questionId]: letter };
+    answersRef.current = newAnswers;
+    setAnswers(newAnswers);
+
+    // Debounced auto-save
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      saveProgress(newAnswers);
+    }, 800);
   };
 
-  const handleAnswer = (questionId: string, letter: string) => {
-    setAnswers((prev) => ({ ...prev, [questionId]: letter }));
-  };
+  // Save before unload
+  useEffect(() => {
+    if (!started) return;
+    const handleBeforeUnload = () => {
+      if (attemptIdRef.current && !submittedRef.current && Object.keys(answersRef.current).length > 0) {
+        // Use sendBeacon-style fire-and-forget via fetch with keepalive
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+        const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+        const body = JSON.stringify({
+          p_attempt_id: attemptIdRef.current,
+          p_answers: answersRef.current,
+        });
+        try {
+          fetch(`${supabaseUrl}/rest/v1/rpc/save_attempt_progress`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': supabaseKey,
+              'Authorization': `Bearer ${supabaseKey}`,
+            },
+            body,
+            keepalive: true,
+          });
+        } catch {
+          // Best effort
+        }
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [started]);
 
   if (loading) return <Loading message="Se încarcă simularea..." />;
 
@@ -218,7 +309,7 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
           <div className="card p-6 mb-8 text-left">
             <div className="grid gap-4 sm:grid-cols-2">
               <InfoRow label="Timp alocat" value={`${simulation.duration_minutes} minute`} />
-              <InfoRow label="Mod de rezolvare" value="Stil de examen" />
+              <InfoRow label="Număr grile" value={`${questionCount} grile`} />
               <InfoRow label="Tip acces" value={isPremium ? 'Necesită abonament' : 'Fără abonament'} />
               <InfoRow label="Punctaj" value="Totul sau nimic (1 punct / grilă)" />
             </div>
@@ -261,7 +352,14 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
             <Logo size="sm" showText={false} />
             <span className="text-sm font-medium text-stone-700 hidden sm:inline">{simulation.title}</span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
+            {saveState !== 'idle' && (
+              <span className="hidden sm:flex items-center gap-1 text-xs text-stone-500">
+                {saveState === 'saving' && <><Save size={12} /> Se salvează…</>}
+                {saveState === 'saved' && <><CheckCircle2 size={12} className="text-brand-600" /> Progres salvat</>}
+                {saveState === 'error' && <><XCircle size={12} className="text-red-500" /> Salvarea a eșuat</>}
+              </span>
+            )}
             <div className={`flex items-center gap-2 rounded-lg px-3 py-1.5 font-mono font-bold text-sm ${timeLeft < 300 ? 'bg-red-100 text-red-700' : 'bg-brand-100 text-brand-700'}`}>
               <Clock size={16} />
               {formatTime(timeLeft)}
@@ -273,7 +371,7 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
             >
               {submitting && <Loader2 size={16} className="animate-spin" />}
               <Send size={16} />
-              Trimite
+              <span className="hidden sm:inline">Trimite</span>
             </button>
           </div>
         </div>
@@ -325,6 +423,14 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
       </div>
     </div>
   );
+}
+
+function formatTime(seconds: number) {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
 function InfoRow({ label, value }: { label: string; value: string }) {
