@@ -1,11 +1,11 @@
 import {
   ArrowRight,
-  Target, CalendarCheck, Layers, Trophy, BarChart3, LifeBuoy,
   Clock, CheckCircle2, Lock, BookOpen,
   Stethoscope, Activity, TrendingUp, GraduationCap,
 } from 'lucide-react';
 import Logo from '@/components/Logo';
 import Reveal from '@/components/Reveal';
+import WhyChooseUs from '@/components/WhyChooseUs';
 
 type Props = {
   onGetStarted: () => void;
@@ -69,23 +69,8 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
         </div>
       </section>
 
-      {/* ────────────────────────── "Ce îți oferim?" ────────────────────────── */}
-      <section className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 sm:py-24">
-        <Reveal className="mb-12 text-center">
-          <h2 className="font-display text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
-  De ce să aleg<span className="font-serif italic text-brand-600 font-extrabold">   Biletul Spre Medicină</span> ?
-</h2>
-          <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-brand-500" />
-        </Reveal>
-
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {BENEFITS.map((b, i) => (
-            <Reveal key={b.title} delay={i * 80}>
-              <BenefitCard icon={b.icon} title={b.title} description={b.description} accent={b.accent} />
-            </Reveal>
-          ))}
-        </div>
-      </section>
+      {/* ────────────────────────── Why choose us ────────────────────────── */}
+      <WhyChooseUs />
 
       {/* ────────────────────────── Stats / Progress preview ────────────────────────── */}
       <section className="relative overflow-hidden bg-stone-900 py-20 sm:py-24">
@@ -199,77 +184,6 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
 /* ════════════════════════════════════════════════════════════════
    DATA
    ════════════════════════════════════════════════════════════════ */
-
-const BENEFITS = [
-  {
-    icon: <Target size={22} />,
-    title: 'Simulări adaptate nevoilor tale',
-    description: (
-      <>Alege dintre multiple variante de simulări și pregătește-te exact în modul în care ai nevoie.</>
-    ),
-    accent: false,
-  },
-  {
-    icon: <CalendarCheck size={22} />,
-    title: 'Simulări săptămânale, identice cu examenul UMFCD',
-    description: (
-      <>
-        Simulări concepute după modelul examenului real. La noi,{' '}
-        <strong className="font-semibold text-stone-900">
-          60 de grile pot valora cât 200 de grile de pe alte platforme
-        </strong>{' '}
-        — pentru că punem accentul pe <strong className="font-semibold text-stone-900">calitate, nu pe cantitate</strong>.
-      </>
-    ),
-    accent: true,
-  },
-  {
-    icon: <Layers size={22} />,
-    title: 'Simulări structurate pe capitole',
-    description: (
-      <>
-        Exersează exact materia pe care o înveți, fără grile de umplutură.{' '}
-        <strong className="font-semibold text-stone-900">Doar întrebări relevante și de calitate.</strong>
-      </>
-    ),
-    accent: false,
-  },
-  {
-    icon: <Trophy size={22} />,
-    title: 'Acces la examenele și simulările anterioare',
-    description: (
-      <>
-        Ai acces la simulările și examenele susținute în anii anteriori de{' '}
-        <strong className="font-semibold text-stone-900">UMFCD și Facultatea de Medicină Dentară</strong>,
-        pentru o pregătire cât mai apropiată de experiența reală a examenului.
-      </>
-    ),
-    accent: true,
-  },
-  {
-    icon: <BarChart3 size={22} />,
-    title: 'Dashboard personal',
-    description: (
-      <>
-        Urmărește-ți progresul, analizează-ți rezultatele și revede simulările susținute anterior.{' '}
-        <strong className="font-semibold text-stone-900">Știi mereu unde te afli.</strong>
-      </>
-    ),
-    accent: false,
-  },
-  {
-    icon: <LifeBuoy size={22} />,
-    title: 'Asistență dedicată',
-    description: (
-      <>
-        Nu ești singur în procesul de pregătire. Ai parte de{' '}
-        <strong className="font-semibold text-stone-900">asistență dedicată</strong> pe parcursul drumului
-        tău spre Medicină.
-      </>
-    ),
-    accent: false,
-  },
-] as const;
 
 const FEATURES = [
   { icon: <Clock size={20} />, title: 'Cronometru strict', desc: 'Fiecare simulare are un timer individual care pornește la apăsarea butonului Start.' },
@@ -425,49 +339,6 @@ function TicketCard({ onGetStarted }: { onGetStarted: () => void }) {
 </span>
         </div>
       </div>
-    </div>
-  );
-}
-
-function BenefitCard({
-  icon,
-  title,
-  description,
-  accent,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  description: React.ReactNode;
-  accent?: boolean;
-}) {
-  return (
-    <div
-      className={`group relative h-full overflow-hidden rounded-2xl border bg-white p-7 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
-        accent
-          ? 'border-brand-200 hover:border-brand-300'
-          : 'border-stone-200 hover:border-stone-300'
-      }`}
-    >
-      {/* Subtle top accent line */}
-      <div
-        className={`absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 transition-transform duration-300 group-hover:scale-x-100 ${
-          accent ? 'bg-gradient-to-r from-accent-400 to-accent-500' : 'bg-gradient-to-r from-brand-400 to-brand-600'
-        }`}
-      />
-
-      <div
-        className={`mb-5 flex h-12 w-12 items-center justify-center rounded-xl transition-all duration-300 ${
-          accent
-            ? 'bg-accent-50 text-accent-600 group-hover:bg-accent-500 group-hover:text-white'
-            : 'bg-brand-100 text-brand-600 group-hover:bg-brand-600 group-hover:text-white'
-        }`}
-      >
-        {icon}
-      </div>
-      <h3 className="mb-2.5 font-display text-base font-bold leading-snug text-stone-900">
-        {title}
-      </h3>
-      <p className="text-sm leading-relaxed text-stone-600">{description}</p>
     </div>
   );
 }
