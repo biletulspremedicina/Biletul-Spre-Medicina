@@ -95,8 +95,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
           {/* Rândul 3: Subtitlul mutat sub cronometru */}
           <Reveal delay={150}>
             <p className="mx-auto mt-8 max-w-xl text-center text-stone-400">
-              Platforma nu înseamnă doar grile. Înseamnă că știi exact unde te afli și cât mai
-              ai de lucrat.
+              Alătură-te comunității de viitori medici și fii primul care accesează noile simulări și grile explicate.
             </p>
           </Reveal>
         </div>
