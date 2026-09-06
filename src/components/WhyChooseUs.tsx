@@ -155,9 +155,17 @@ export default function WhyChooseUs() {
                     key={item.label}
                     className="group/metric flex items-center gap-3 rounded-xl border border-stone-200 bg-white p-3 transition-all duration-250 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-sm focus-within:ring-2 focus-within:ring-brand-500/30"
                   >
-                   <div className="mt-3 flex items-center justify-center gap-2 rounded-xl bg-brand-100 px-4 pt-3 pb-5 text-sm font-bold text-brand-800">
+                    <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg ${item.tone === 'accent' ? 'bg-accent-50 text-accent-600' : 'bg-brand-50 text-brand-600'} transition-transform duration-250 group-hover/metric:scale-105`} aria-hidden="true">
+                      {item.icon}
+                    </div>
+                    <p className="text-base font-medium leading-snug text-stone-700">{item.label}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-3 flex items-center justify-center gap-2 rounded-xl bg-brand-100 px-4 pt-3 pb-5 text-sm font-bold text-brand-800">
   <span aria-hidden="true">+</span> multe altele statistici
 </div>
+                <span aria-hidden="true">+</span> multe altele statistici
               </div>
             </AdvantageCard>
           </Reveal>
