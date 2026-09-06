@@ -13,7 +13,7 @@ export default function Logo({ size = 'md' }: Props) {
       className={`inline-flex ${sizeClass} items-center transition-transform duration-200 hover:scale-[1.02]`}
     >
       <img
-        src="/image copy 4.png"
+        src="/Logo_final.png"
         alt="Biletul spre Medicină"
         className="h-full w-full object-contain object-center"
       />
