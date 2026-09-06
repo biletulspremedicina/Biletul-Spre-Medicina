@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   ArrowRight,
-  Clock, Lock, BookOpen,
+  Clock, CheckCircle2, Lock, BookOpen,
   Stethoscope,
 } from 'lucide-react';
 import Logo from '@/components/Logo';
