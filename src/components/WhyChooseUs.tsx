@@ -63,7 +63,7 @@ const BENEFIT_CHECKS: Benefit[] = [
 const EXAM_BENEFITS: Benefit[] = [
 {
   text: 'Ne lăudăm cu grile complexe și atent concepute, fără AI, totul din materie.',
-  emphasis: '        60 grile la noi = 200 pe alte platforme',
+  emphasis: '        a60 grile la noi = 200 pe alte platforme',
   emphasisClassName: 'block w-full text-center',
 },
   {
