@@ -15,6 +15,35 @@ const LETTERS = ['A', 'B', 'C', 'D', 'E'] as const;
 
 type SaveState = 'idle' | 'saving' | 'saved' | 'error';
 
+type RpcAttemptRow = {
+  out_id: string;
+  out_user_id: string;
+  out_sim_id: string;
+  out_answers: Record<string, string>;
+  out_score: number;
+  out_max_score: number;
+  out_started_at: string;
+  out_submitted_at: string | null;
+  out_expired: boolean;
+  out_expires_at: string | null;
+};
+
+function mapRpcAttempt(row: RpcAttemptRow): Attempt {
+  return {
+    id: row.out_id,
+    user_id: row.out_user_id,
+    simulation_id: row.out_sim_id,
+    answers: row.out_answers || {},
+    score: row.out_score,
+    max_score: row.out_max_score,
+    started_at: row.out_started_at,
+    submitted_at: row.out_submitted_at,
+    expired: row.out_expired,
+    is_archive_retake: false,
+    expires_at: row.out_expires_at,
+  };
+}
+
 export default function SimulationView({ simulationId, onExit, onComplete }: Props) {
   const { profile } = useAuth();
   const [simulation, setSimulation] = useState<Simulation | null>(null);
@@ -83,7 +112,7 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
       return;
     }
 
-    const newAttempt = att[0] as unknown as Attempt;
+    const newAttempt = mapRpcAttempt(att[0] as unknown as RpcAttemptRow);
     setAttempt(newAttempt);
     attemptIdRef.current = newAttempt.id;
 
@@ -206,7 +235,7 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
       }
 
       if (data && data.length > 0) {
-        const submitted = data[0] as unknown as Attempt;
+        const submitted = mapRpcAttempt(data[0] as unknown as RpcAttemptRow);
         setSubmitting(false);
         onComplete(submitted.id);
       }
