@@ -107,7 +107,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
           <h2 className="font-display text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
             
           </h2>
-          <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-brand-500" />
+          
         </Reveal>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
