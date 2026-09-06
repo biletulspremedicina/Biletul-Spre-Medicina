@@ -173,7 +173,7 @@ export default function WhyChooseUs() {
               id="support"
               icon={<Headphones size={24} />}
               title="Ai o întrebare? Suntem aici să te ajutăm"
-              intro="Beneficiezi de suport dedicat pe parcursul pregătirii, pentru orice nelămurire legată de platformă, simulări sau materie:"
+              intro="Beneficiezi de suport dedicat pe parcursul pregătirii, pentru orice nelămurire legată de platformă, simulări sau chiar materie:"
               benefits={[
                 { text: 'Asistență de luni până vineri, în intervalul 08:00–17:00.' },
                 { text: 'Răspunsuri rapide la întrebările și problemele întâmpinate.' },
