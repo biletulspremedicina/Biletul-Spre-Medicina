@@ -182,9 +182,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
   );
 }
 
-/* ════════════════════════════════════════════════════════════════
-   DATA
-   ════════════════════════════════════════════════════════════════ */
+
 
 const FEATURES = [
   
