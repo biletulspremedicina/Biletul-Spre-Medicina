@@ -73,7 +73,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
       <section className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 sm:py-24">
         <Reveal className="mb-12 text-center">
           <h2 className="font-display text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
-            Ce îți oferim?
+            De ce să alegi BILETUL SPRE MEDICINĂ?
           </h2>
           <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-brand-500" />
         </Reveal>
