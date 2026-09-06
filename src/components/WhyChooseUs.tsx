@@ -52,8 +52,12 @@ const BENEFIT_CHECKS: Benefit[] = [
   ),
 },
   {
-    text: 'Simulările și examenele de admitere oferite în anii anteriori de UMFCD, pentru o pregătire cât mai apropiată de experiența examenului real.',
-  },
+  text: (
+    <>
+      <strong>Simulările și examenele de admitere oferite în anii anteriori de UMFCD</strong>, pentru o pregătire cât mai apropiată de experiența examenului real.
+    </>
+  ),
+},
 ];
 
 const EXAM_BENEFITS: Benefit[] = [
