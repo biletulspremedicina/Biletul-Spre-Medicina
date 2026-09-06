@@ -163,7 +163,7 @@ export default function WhyChooseUs() {
                 ))}
               </div>
               <div className="mt-3 flex items-center justify-center gap-2 rounded-xl bg-brand-100 px-4 py-3 text-sm font-bold text-brand-800">
-                <span aria-hidden="true">+</span> multe altele
+                <span aria-hidden="true">+</span> multe altele statistici
               </div>
             </AdvantageCard>
           </Reveal>
