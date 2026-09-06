@@ -1,13 +1,14 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase, type Simulation, type Subscription, type Attempt } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
-import { Clock, CreditCard, Trophy, CheckCircle2, XCircle, Crown, Sparkles, Archive, RotateCcw, Lock, PlayCircle, BookOpen, Loader2 } from 'lucide-react';
+import { Clock, CreditCard, Trophy, CheckCircle2, XCircle, Crown, Sparkles, Archive, RotateCcw, Lock, PlayCircle, BookOpen, Loader2, GraduationCap } from 'lucide-react';
 import Logo from '@/components/Logo';
 import Loading from '@/components/Loading';
 
 type Props = {
   onStartSimulation: (simulationId: string) => void;
   onViewResults: (simulationId: string, attemptId?: string) => void;
+  onOpenPractice: () => void;
 };
 
 type SimWithStatus = Simulation & {
@@ -17,7 +18,7 @@ type SimWithStatus = Simulation & {
   questionCount: number;
 };
 
-export default function StudentDashboard({ onStartSimulation, onViewResults }: Props) {
+export default function StudentDashboard({ onStartSimulation, onViewResults, onOpenPractice }: Props) {
   const { profile, signOut } = useAuth();
   const [simulations, setSimulations] = useState<SimWithStatus[]>([]);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
@@ -223,6 +224,26 @@ export default function StudentDashboard({ onStartSimulation, onViewResults }: P
               <p className="text-sm text-stone-600">
                 Rezolvă simulările și vezi instant rezultatele și explicațiile.
               </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Practice by lessons link */}
+        <div className="mb-8 rounded-2xl bg-gradient-to-r from-accent-50 to-stone-50 border border-accent-200 p-5 cursor-pointer hover:from-accent-100 hover:to-stone-100 transition-all" onClick={onOpenPractice}>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-600 text-white">
+                <GraduationCap size={20} />
+              </div>
+              <div>
+                <h3 className="font-display text-lg font-bold text-stone-900">Grile pe lecții</h3>
+                <p className="text-sm text-stone-600">
+                  Antrenează-te pe seturi de grile organizate pe lecții. Fără cronometru, rezolvări nelimitate.
+                </p>
+              </div>
+            </div>
+            <div className="flex-shrink-0 text-accent-600">
+              <BookOpen size={24} />
             </div>
           </div>
         </div>

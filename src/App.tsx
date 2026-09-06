@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import LandingPage from '@/pages/LandingPage';
 import AuthPage from '@/pages/AuthPage';
@@ -6,6 +7,10 @@ import StudentDashboard from '@/pages/StudentDashboard';
 import SimulationView from '@/pages/SimulationView';
 import ResultsView from '@/pages/ResultsView';
 import AdminDashboard from '@/pages/AdminDashboard';
+import PracticeLessonsView from '@/pages/PracticeLessonsView';
+import PracticeSetsView from '@/pages/PracticeSetsView';
+import PracticeSetView from '@/pages/PracticeSetView';
+import PracticeResultsView from '@/pages/PracticeResultsView';
 import Loading from '@/components/Loading';
 
 type Route =
@@ -15,13 +20,23 @@ type Route =
   | 'student-dashboard'
   | 'simulation'
   | 'results'
-  | 'admin-dashboard';
+  | 'admin-dashboard'
+  | 'practice-lessons'
+  | 'practice-sets'
+  | 'practice-solve'
+  | 'practice-results';
 
 function AppContent() {
   const { session, profile, loading } = useAuth();
   const [route, setRoute] = useState<Route>('landing');
   const [activeSimulationId, setActiveSimulationId] = useState<string | null>(null);
   const [activeAttemptId, setActiveAttemptId] = useState<string | null>(null);
+  const [activePracticeLessonId, setActivePracticeLessonId] = useState<string | null>(null);
+  const [activePracticeLessonTitle, setActivePracticeLessonTitle] = useState<string>('');
+  const [activePracticeSetId, setActivePracticeSetId] = useState<string | null>(null);
+  const [activePracticeAttemptId, setActivePracticeAttemptId] = useState<string | null>(null);
+  const [practiceBuyingSub, setPracticeBuyingSub] = useState(false);
+  const [practiceSubNonce, setPracticeSubNonce] = useState(0);
 
   useEffect(() => {
     if (loading) return;
@@ -61,6 +76,52 @@ function AppContent() {
     setRoute('results');
   };
 
+  // Practice routes
+  const handleOpenPracticeLessons = () => {
+    setActivePracticeLessonId(null);
+    setActivePracticeSetId(null);
+    setRoute('practice-lessons');
+  };
+
+  const handleOpenPracticeLesson = (lessonId: string, lessonTitle: string) => {
+    setActivePracticeLessonId(lessonId);
+    setActivePracticeLessonTitle(lessonTitle);
+    setRoute('practice-sets');
+  };
+
+  const handleStartPracticeSet = (setId: string) => {
+    setActivePracticeSetId(setId);
+    setActivePracticeAttemptId(null);
+    setRoute('practice-solve');
+  };
+
+  const handlePracticeComplete = (attemptId: string) => {
+    setActivePracticeAttemptId(attemptId);
+    setRoute('practice-results');
+  };
+
+  const handleViewPracticeResults = (setId: string, attemptId?: string) => {
+    setActivePracticeSetId(setId);
+    setActivePracticeAttemptId(attemptId || null);
+    setRoute('practice-results');
+  };
+
+  const handleBuySubscription = async () => {
+    setPracticeBuyingSub(true);
+    try {
+      const { error: rpcError } = await supabase.rpc('activate_test_subscription');
+      if (rpcError) {
+        console.error('Subscription activation error:', rpcError);
+      } else {
+        setPracticeSubNonce((n) => n + 1);
+      }
+    } catch (err) {
+      console.error('Subscription error:', err);
+    } finally {
+      setPracticeBuyingSub(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-stone-50">
@@ -81,6 +142,52 @@ function AppContent() {
 
   if (profile?.role === 'admin') {
     return <AdminDashboard onExit={() => setRoute('landing')} />;
+  }
+
+  // Practice routes
+  if (route === 'practice-lessons') {
+    return (
+      <PracticeLessonsView
+        onOpenLesson={handleOpenPracticeLesson}
+        onBack={() => setRoute('student-dashboard')}
+      />
+    );
+  }
+
+  if (route === 'practice-sets' && activePracticeLessonId) {
+    return (
+      <PracticeSetsView
+        key={`practice-sets-${activePracticeLessonId}-${practiceSubNonce}`}
+        lessonId={activePracticeLessonId}
+        lessonTitle={activePracticeLessonTitle}
+        onStartSet={handleStartPracticeSet}
+        onViewResults={handleViewPracticeResults}
+        onBack={() => setRoute('practice-lessons')}
+        onBuySubscription={handleBuySubscription}
+        buyingSub={practiceBuyingSub}
+      />
+    );
+  }
+
+  if (route === 'practice-solve' && activePracticeSetId) {
+    return (
+      <PracticeSetView
+        setId={activePracticeSetId}
+        onExit={() => setRoute('practice-sets')}
+        onComplete={handlePracticeComplete}
+      />
+    );
+  }
+
+  if (route === 'practice-results' && activePracticeSetId) {
+    return (
+      <PracticeResultsView
+        setId={activePracticeSetId}
+        attemptId={activePracticeAttemptId || undefined}
+        onExit={() => setRoute('practice-sets')}
+        onRetake={() => handleStartPracticeSet(activePracticeSetId)}
+      />
+    );
   }
 
   if (route === 'simulation' && activeSimulationId) {
@@ -108,6 +215,7 @@ function AppContent() {
     <StudentDashboard
       onStartSimulation={handleStartSimulation}
       onViewResults={handleViewResults}
+      onOpenPractice={handleOpenPracticeLessons}
     />
   );
 }

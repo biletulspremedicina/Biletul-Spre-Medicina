@@ -124,6 +124,147 @@ export type AttemptResult = {
   explanation: string;
 };
 
+// ── Grile pe lecții (Practice Module) ──────────────────────────────
+
+export type PracticeLesson = {
+  id: string;
+  title: string;
+  description: string;
+  subject: string;
+  position: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PracticeSet = {
+  id: string;
+  lesson_id: string;
+  title: string;
+  description: string;
+  target_question_count: number;
+  requires_subscription: boolean;
+  position: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PracticeQuestion = {
+  id: string;
+  set_id: string;
+  type: 'CS' | 'CG';
+  position: number;
+  question_text: string;
+  option_a: string;
+  option_b: string;
+  option_c: string;
+  option_d: string;
+  option_e: string;
+  statement_1: string;
+  statement_2: string;
+  statement_3: string;
+  statement_4: string;
+  correct_answer: 'A' | 'B' | 'C' | 'D' | 'E';
+  explanation: string;
+  created_at: string;
+};
+
+export type PracticeAttempt = {
+  id: string;
+  user_id: string;
+  set_id: string;
+  answers: Record<string, string>;
+  score: number;
+  max_score: number;
+  started_at: string;
+  submitted_at: string | null;
+  created_at: string;
+};
+
+export type PracticeLessonRPC = {
+  out_id: string;
+  out_title: string;
+  out_description: string;
+  out_subject: string;
+  out_position: number;
+  out_set_count: number;
+  out_question_count: number;
+};
+
+export type PracticeSetRPC = {
+  out_id: string;
+  out_title: string;
+  out_description: string;
+  out_target_question_count: number;
+  out_requires_subscription: boolean;
+  out_position: number;
+  out_question_count: number;
+  out_attempt_count: number;
+  out_best_score: number;
+};
+
+export type PracticeQuestionRPC = {
+  out_id: string;
+  out_type: 'CS' | 'CG';
+  out_position: number;
+  out_question_text: string;
+  out_option_a: string;
+  out_option_b: string;
+  out_option_c: string;
+  out_option_d: string;
+  out_option_e: string;
+  out_statement_1: string;
+  out_statement_2: string;
+  out_statement_3: string;
+  out_statement_4: string;
+};
+
+export type PracticeAttemptStartRPC = {
+  out_id: string;
+  out_set_id: string;
+  out_answers: Record<string, string>;
+  out_score: number;
+  out_max_score: number;
+  out_started_at: string;
+  out_submitted_at: string | null;
+  out_is_new: boolean;
+};
+
+export type PracticeResultRPC = {
+  out_attempt_id: string;
+  out_set_id: string;
+  out_answers: Record<string, string>;
+  out_score: number;
+  out_max_score: number;
+  out_started_at: string;
+  out_submitted_at: string;
+  out_question_id: string;
+  out_q_type: 'CS' | 'CG';
+  out_q_position: number;
+  out_question_text: string;
+  out_option_a: string;
+  out_option_b: string;
+  out_option_c: string;
+  out_option_d: string;
+  out_option_e: string;
+  out_statement_1: string;
+  out_statement_2: string;
+  out_statement_3: string;
+  out_statement_4: string;
+  out_correct_answer: 'A' | 'B' | 'C' | 'D' | 'E';
+  out_explanation: string;
+};
+
+export type PracticeHistoryRPC = {
+  out_id: string;
+  out_answers: Record<string, string>;
+  out_score: number;
+  out_max_score: number;
+  out_started_at: string;
+  out_submitted_at: string;
+};
+
 export type Payment = {
   id: string;
   user_id: string;

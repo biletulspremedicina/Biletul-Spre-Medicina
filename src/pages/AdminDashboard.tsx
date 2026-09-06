@@ -3,7 +3,7 @@ import { supabase, type Simulation, type Question, type Attempt, type Profile, t
 import { useAuth } from '@/context/AuthContext';
 import {
   LayoutDashboard, Users, Plus, Edit2, Trash2, Eye, EyeOff,
-  ChevronLeft, Save, X, Loader2, Trophy, CreditCard, BookOpen, Clock, Settings, CheckCircle2, AlertTriangle,
+  ChevronLeft, Save, X, Loader2, Trophy, CreditCard, BookOpen, Clock, Settings, CheckCircle2, AlertTriangle, GraduationCap,
 } from 'lucide-react';
 import Logo from '@/components/Logo';
 import Loading from '@/components/Loading';
@@ -12,7 +12,9 @@ type Props = {
   onExit: () => void;
 };
 
-type Tab = 'simulations' | 'monitoring' | 'settings';
+import PracticeAdmin from '@/pages/PracticeAdmin';
+
+type Tab = 'simulations' | 'practice' | 'monitoring' | 'settings';
 
 export default function AdminDashboard({ onExit }: Props) {
   const { profile, signOut } = useAuth();
@@ -57,6 +59,9 @@ export default function AdminDashboard({ onExit }: Props) {
           <TabButton active={tab === 'simulations'} onClick={() => setTab('simulations')} icon={<LayoutDashboard size={16} />}>
             Simulări & Întrebări
           </TabButton>
+          <TabButton active={tab === 'practice'} onClick={() => setTab('practice')} icon={<GraduationCap size={16} />}>
+            Lecții & Seturi
+          </TabButton>
           <TabButton active={tab === 'monitoring'} onClick={() => setTab('monitoring')} icon={<Users size={16} />}>
             Monitorizare
           </TabButton>
@@ -75,6 +80,8 @@ export default function AdminDashboard({ onExit }: Props) {
             setCreatingSim={setCreatingSim}
           />
         )}
+
+        {tab === 'practice' && <PracticeAdmin />}
 
         {tab === 'monitoring' && <MonitoringTab />}
         {tab === 'settings' && <SettingsTab />}
