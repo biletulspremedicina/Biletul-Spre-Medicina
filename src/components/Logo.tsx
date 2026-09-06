@@ -15,7 +15,7 @@ export default function Logo({ size = 'md' }: Props) {
       <img
         src="/image copy 4.png"
         alt="Biletul spre Medicină"
-        className="h-full w-full object-contain object-left"
+        className="h-full w-full object-contain object-center"
       />
     </a>
   );

@@ -219,9 +219,9 @@ export default function StudentDashboard({ onStartSimulation, onViewResults }: P
               <Archive size={20} />
             </div>
             <div>
-              <h3 className="font-display text-lg font-bold text-stone-900">Arhivă simulări</h3>
+              <h3 className="font-display text-lg font-bold text-stone-900">Simulări</h3>
               <p className="text-sm text-stone-600">
-                Toate simulările disponibile pe platformă. Rezolvă și vezi instant rezultatele și explicațiile.
+                Rezolvă simulările și vezi instant rezultatele și explicațiile.
               </p>
             </div>
           </div>
