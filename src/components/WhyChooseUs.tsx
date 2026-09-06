@@ -38,8 +38,12 @@ type AdvantageCardProps = {
 
 const BENEFIT_CHECKS: Benefit[] = [
   {
-    text: 'Simulări din întreaga materie de Biologie, pentru evaluarea completă a nivelului de pregătire.',
-  },
+  text: (
+    <>
+      <strong>Simulări din întreaga materie de Biologie</strong>, pentru evaluarea completă a nivelului de pregătire.
+    </>
+  ),
+},
   {
     text: 'Simulări structurate pe capitole, ideale pentru aprofundarea și verificarea fiecărui subiect.',
   },
