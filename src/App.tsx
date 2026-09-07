@@ -7,7 +7,6 @@ import StudentDashboard from '@/pages/StudentDashboard';
 import SimulationView from '@/pages/SimulationView';
 import ResultsView from '@/pages/ResultsView';
 import AdminDashboard from '@/pages/AdminDashboard';
-import PracticeLessonsView from '@/pages/PracticeLessonsView';
 import PracticeSetsView from '@/pages/PracticeSetsView';
 import PracticeSetView from '@/pages/PracticeSetView';
 import PracticeResultsView from '@/pages/PracticeResultsView';
@@ -21,7 +20,6 @@ type Route =
   | 'simulation'
   | 'results'
   | 'admin-dashboard'
-  | 'practice-lessons'
   | 'practice-sets'
   | 'practice-solve'
   | 'practice-results';
@@ -37,6 +35,7 @@ function AppContent() {
   const [activePracticeAttemptId, setActivePracticeAttemptId] = useState<string | null>(null);
   const [practiceBuyingSub, setPracticeBuyingSub] = useState(false);
   const [practiceSubNonce, setPracticeSubNonce] = useState(0);
+  const [studentInitialTab, setStudentInitialTab] = useState<'all' | 'practice' | 'umfcd' | 'dashboard'>('all');
 
   useEffect(() => {
     if (loading) return;
@@ -74,13 +73,6 @@ function AppContent() {
   const handleSimulationComplete = (attemptId: string) => {
     setActiveAttemptId(attemptId);
     setRoute('results');
-  };
-
-  // Practice routes
-  const handleOpenPracticeLessons = () => {
-    setActivePracticeLessonId(null);
-    setActivePracticeSetId(null);
-    setRoute('practice-lessons');
   };
 
   const handleOpenPracticeLesson = (lessonId: string, lessonTitle: string) => {
@@ -145,16 +137,7 @@ function AppContent() {
   }
 
   // Practice routes
-  if (route === 'practice-lessons') {
-    return (
-      <PracticeLessonsView
-        onOpenLesson={handleOpenPracticeLesson}
-        onBack={() => setRoute('student-dashboard')}
-      />
-    );
-  }
-
-  if (route === 'practice-sets' && activePracticeLessonId) {
+if (route === 'practice-sets' && activePracticeLessonId) {
     return (
       <PracticeSetsView
         key={`practice-sets-${activePracticeLessonId}-${practiceSubNonce}`}
@@ -162,7 +145,7 @@ function AppContent() {
         lessonTitle={activePracticeLessonTitle}
         onStartSet={handleStartPracticeSet}
         onViewResults={handleViewPracticeResults}
-        onBack={() => setRoute('practice-lessons')}
+        onBack={() => { setStudentInitialTab('practice'); setRoute('student-dashboard'); }}
         onBuySubscription={handleBuySubscription}
         buyingSub={practiceBuyingSub}
       />
@@ -215,7 +198,8 @@ function AppContent() {
     <StudentDashboard
       onStartSimulation={handleStartSimulation}
       onViewResults={handleViewResults}
-      onOpenPractice={handleOpenPracticeLessons}
+      onOpenPracticeLesson={handleOpenPracticeLesson}
+      initialTab={studentInitialTab}
     />
   );
 }

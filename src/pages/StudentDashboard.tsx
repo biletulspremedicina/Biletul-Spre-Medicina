@@ -14,7 +14,8 @@ import type { PracticeLessonRPC } from '@/lib/supabase';
 type Props = {
   onStartSimulation: (simulationId: string) => void;
   onViewResults: (simulationId: string, attemptId?: string) => void;
-  onOpenPractice: () => void;
+  onOpenPracticeLesson: (lessonId: string, lessonTitle: string) => void;
+  initialTab?: TabId;
 };
 
 type SimWithStatus = Simulation & {
@@ -26,7 +27,7 @@ type SimWithStatus = Simulation & {
 
 type TabId = 'all' | 'practice' | 'umfcd' | 'dashboard';
 
-export default function StudentDashboard({ onStartSimulation, onViewResults, onOpenPractice }: Props) {
+export default function StudentDashboard({ onStartSimulation, onViewResults, onOpenPracticeLesson, initialTab = 'all' }: Props) {
   const { profile, signOut } = useAuth();
   const [simulations, setSimulations] = useState<SimWithStatus[]>([]);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
@@ -35,7 +36,7 @@ export default function StudentDashboard({ onStartSimulation, onViewResults, onO
   const [buyingSub, setBuyingSub] = useState(false);
   const [subError, setSubError] = useState<string | null>(null);
   const [subSuccess, setSubSuccess] = useState(false);
-  const [activeTab, setActiveTab] = useState<TabId>('all');
+  const [activeTab, setActiveTab] = useState<TabId>(initialTab);
   const [practiceLessons, setPracticeLessons] = useState<PracticeLessonRPC[]>([]);
   const [practiceLoading, setPracticeLoading] = useState(false);
 
@@ -382,7 +383,7 @@ export default function StudentDashboard({ onStartSimulation, onViewResults, onO
                       <PracticeLessonCard
                         key={lesson.out_id}
                         lesson={lesson}
-                        onOpen={() => onOpenPractice()}
+                        onOpen={() => onOpenPracticeLesson(lesson.out_id, lesson.out_title)}
                       />
                     ))}
                   </div>
