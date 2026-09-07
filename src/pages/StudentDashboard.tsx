@@ -246,16 +246,44 @@ export default function StudentDashboard({ onStartSimulation, onViewResults, onO
           <div className="p-5 sm:p-6 lg:p-8">
 
             {/* ── Countdown timer ── */}
-            <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-brand-600 to-brand-700 p-5 shadow-lg ring-1 ring-brand-800/20 sm:p-6">
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-              <p className="mb-4 text-center font-display text-sm font-bold tracking-wide text-white sm:text-base">
-                Materiale noi pe platformă în:
-              </p>
-              <CountdownTimer />
-              <p className="mx-auto mt-4 max-w-xl text-center text-xs text-brand-100">
-                Alătură-te comunității de viitori medici și fii primul care accesează noile simulări și grile explicate.
-              </p>
-            </div>
+            <div className="relative mb-6 overflow-hidden rounded-3xl border border-emerald-800/40 bg-gradient-to-b from-emerald-950/90 via-stone-900/95 to-emerald-950/90 p-6 sm:p-8 shadow-2xl shadow-emerald-950/60 backdrop-blur-xl">
+  {/* Pattern geometric de fundal (Rețea fină cu estompare radială) */}
+  <div 
+    className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#059669_1px,transparent_1px),linear-gradient(to_bottom,#059669_1px,transparent_1px)] bg-[size:2rem_2rem] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_50%,#000_70%,transparent_100%)] opacity-[0.08]" 
+    aria-hidden="true"
+  />
+
+  {/* Glow-uri ambientale verzi în colțuri */}
+  <div className="pointer-events-none absolute -left-12 -top-12 h-44 w-44 rounded-full bg-emerald-500/20 blur-3xl" />
+  <div className="pointer-events-none absolute -right-12 -bottom-12 h-44 w-44 rounded-full bg-emerald-400/10 blur-3xl" />
+
+  {/* Linie laser superioară de delimitare */}
+  <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-400/50 to-transparent" />
+
+  {/* Badge & Titlu */}
+  <div className="relative mb-5 flex flex-col items-center gap-2 text-center">
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-400 shadow-inner">
+      <span className="relative flex h-2 w-2">
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+        <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+      </span>
+      UPDATE LIVE
+    </span>
+    <p className="font-display text-base font-bold tracking-tight text-emerald-50 sm:text-lg">
+      Materiale noi pe platformă în:
+    </p>
+  </div>
+
+  {/* Cronometru */}
+  <div className="relative">
+    <CountdownTimer />
+  </div>
+
+  {/* Subtitlu */}
+  <p className="relative mx-auto mt-5 max-w-xl text-center text-xs text-emerald-200/70 leading-relaxed sm:text-sm">
+    Alătură-te comunității de viitori medici și fii primul care accesează noile simulări și grile explicate.
+  </p>
+</div>
 
             {/* ── Subscription bar ── */}
             {hasActiveSub ? (
