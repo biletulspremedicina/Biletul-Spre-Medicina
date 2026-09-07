@@ -300,7 +300,7 @@ function SimAdminCard({ sim, onReload, onEdit }: { sim: Simulation; onReload: ()
 
       {showQuestions && (
         <div className="mt-4 border-t border-stone-200 pt-4">
-          <QuestionsManager simulationId={sim.id} simulationTitle={sim.title} />
+          <QuestionsManager simulationId={sim.id} simulationTitle={sim.title} isPublished={sim.is_active} />
         </div>
       )}
     </div>
@@ -447,7 +447,7 @@ function SimForm({ sim, studentSection, onSaved, onCancel }: { sim?: Simulation;
   );
 }
 
-function QuestionsManager({ simulationId, simulationTitle }: { simulationId: string; simulationTitle: string }) {
+function QuestionsManager({ simulationId, simulationTitle, isPublished }: { simulationId: string; simulationTitle: string; isPublished: boolean }) {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Question | null>(null);
@@ -509,6 +509,8 @@ function QuestionsManager({ simulationId, simulationTitle }: { simulationId: str
           contentTitle={simulationTitle}
           questionTable="questions"
           parentColumn="simulation_id"
+          isPublished={isPublished}
+          onQuestionsChanged={load}
         />
       </div>
 

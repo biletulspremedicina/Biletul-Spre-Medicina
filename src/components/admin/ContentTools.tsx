@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { FileText, FileSpreadsheet, FileUp, History, Loader2, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { FileText, FileSpreadsheet, FileUp, History, Loader2, CheckCircle2, AlertTriangle, Download, PlusCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import type { Question, PracticeQuestion } from '@/lib/supabase';
 import {
@@ -9,9 +9,16 @@ import {
   type ValidationResult,
 } from '@/lib/contentVersioning';
 import { generateCorrectionXlsx, parseCorrectionXlsx } from '@/lib/excelExport';
+import {
+  generateNewQuestionsTemplate,
+  parseNewQuestionsXlsx,
+  validateNewQuestions,
+  type NewQuestionValidation,
+} from '@/lib/newQuestionsImport';
 import PrintPreviewPage from '@/components/admin/PrintPreviewPage';
 import ImportPreviewDialog from '@/components/admin/ImportPreviewDialog';
 import VersionHistoryDialog from '@/components/admin/VersionHistoryDialog';
+import NewQuestionsImportPreviewDialog from '@/components/admin/NewQuestionsImportPreviewDialog';
 
 type Props = {
   contentType: ContentType;
@@ -21,6 +28,8 @@ type Props = {
   lectie?: string;
   questionTable: 'questions' | 'practice_questions';
   parentColumn: 'simulation_id' | 'set_id';
+  isPublished?: boolean;
+  onQuestionsChanged?: () => void;
 };
 
 type AnyQuestion = Question | PracticeQuestion;
@@ -33,8 +42,11 @@ export default function ContentTools({
   lectie,
   questionTable,
   parentColumn,
+  isPublished = false,
+  onQuestionsChanged,
 }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const newQuestionsInputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
   const [showPdf, setShowPdf] = useState(false);
@@ -42,6 +54,10 @@ export default function ContentTools({
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [importFileName, setImportFileName] = useState('');
   const [showHistory, setShowHistory] = useState(false);
+
+  // New questions import state
+  const [newQuestionsValidation, setNewQuestionsValidation] = useState<NewQuestionValidation | null>(null);
+  const [newQuestionsFileName, setNewQuestionsFileName] = useState('');
 
   const fetchQuestions = async (): Promise<AnyQuestion[]> => {
     const { data, error } = await supabase
@@ -147,9 +163,75 @@ export default function ContentTools({
     e.target.value = '';
   };
 
+  // ── New questions template download ──
+  const handleDownloadTemplate = async () => {
+    setBusy('template');
+    setMessage(null);
+    try {
+      const safeTitle = contentTitle.replace(/[^a-zA-Z0-9ăâîșțĂÂÎȘȚ -]/g, '').replace(/\s+/g, '-');
+      const fileName = `model-grile-noi-${safeTitle}.xlsx`;
+      await generateNewQuestionsTemplate(contentTitle, fileName);
+      setMessage({ type: 'success', text: 'Modelul pentru grile noi a fost descărcat.' });
+    } catch {
+      setMessage({ type: 'error', text: 'Eroare la generarea modelului Excel.' });
+    }
+    setBusy(null);
+  };
+
+  // ── New questions file select ──
+  const handleNewQuestionsFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.xlsx')) {
+      setMessage({ type: 'error', text: 'Doar fișierele .xlsx sunt acceptate.' });
+      e.target.value = '';
+      return;
+    }
+
+    setBusy('newImport');
+    setMessage(null);
+    setNewQuestionsFileName(file.name);
+
+    try {
+      const rows = await parseNewQuestionsXlsx(file);
+      const dbQuestions = await fetchQuestions();
+
+      // For practice sets, fetch target_question_count
+      let targetQuestionCount: number | undefined;
+      if (contentType === 'practice_set') {
+        const { data: setData } = await supabase
+          .from('practice_sets')
+          .select('target_question_count')
+          .eq('id', contentId)
+          .maybeSingle();
+        if (setData) targetQuestionCount = (setData as { target_question_count: number }).target_question_count;
+      }
+
+      const result = validateNewQuestions(rows, dbQuestions, {
+        contentType,
+        targetQuestionCount,
+      });
+      setNewQuestionsValidation(result);
+
+      if (result.errors.length === 0) {
+        setMessage({ type: 'success', text: `Fișier verificat: ${result.validQuestions.length} grile gata pentru import.` });
+      } else {
+        setMessage({ type: 'error', text: `${result.errors.length} erori găsite. Vezi previzualizarea.` });
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Eroare la citirea fișierului.';
+      setMessage({ type: 'error', text: msg });
+    }
+
+    setBusy(null);
+    e.target.value = '';
+  };
+
   const handleImportConfirmed = () => {
     setValidationResult(null);
     setMessage({ type: 'success', text: 'Import realizat cu succes.' });
+    onQuestionsChanged?.();
   };
 
   const handleImportCancelled = () => {
@@ -157,51 +239,96 @@ export default function ContentTools({
     setMessage({ type: 'info', text: 'Importul nu a fost aplicat. Datele existente au rămas neschimbate.' });
   };
 
+  const handleNewQuestionsImportConfirmed = (importedCount: number) => {
+    setNewQuestionsValidation(null);
+    setMessage({ type: 'success', text: `Au fost importate cu succes ${importedCount} grile noi.` });
+    onQuestionsChanged?.();
+  };
+
+  const handleNewQuestionsImportCancelled = () => {
+    setNewQuestionsValidation(null);
+    setMessage({ type: 'info', text: 'Importul de grile noi nu a fost aplicat.' });
+  };
+
   const isBusy = busy !== null;
 
   return (
     <>
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={handleExportPdf}
-            disabled={isBusy}
-            className="btn-secondary text-xs px-3 py-2"
-          >
-            {busy === 'pdf' ? <Loader2 size={14} className="animate-spin" /> : <FileText size={14} />}
-            Exportă PDF complet
-          </button>
-          <button
-            onClick={handleExportCorrection}
-            disabled={isBusy}
-            className="btn-secondary text-xs px-3 py-2"
-          >
-            {busy === 'excel' ? <Loader2 size={14} className="animate-spin" /> : <FileSpreadsheet size={14} />}
-            Exportă pentru corectură
-          </button>
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isBusy}
-            className="btn-secondary text-xs px-3 py-2"
-          >
-            {busy === 'import' ? <Loader2 size={14} className="animate-spin" /> : <FileUp size={14} />}
-            Importă versiunea corectată
-          </button>
-          <button
-            onClick={() => setShowHistory(true)}
-            disabled={isBusy}
-            className="btn-secondary text-xs px-3 py-2"
-          >
-            <History size={14} />
-            Istoric versiuni
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".xlsx"
-            onChange={handleFileSelect}
-            className="hidden"
-          />
+      <div className="flex flex-col gap-4">
+        {/* Group 1: Verificare și corectură */}
+        <div>
+          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-stone-400">Verificare și corectură</p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={handleExportPdf}
+              disabled={isBusy}
+              className="btn-secondary text-xs px-3 py-2"
+            >
+              {busy === 'pdf' ? <Loader2 size={14} className="animate-spin" /> : <FileText size={14} />}
+              Exportă PDF complet
+            </button>
+            <button
+              onClick={handleExportCorrection}
+              disabled={isBusy}
+              className="btn-secondary text-xs px-3 py-2"
+            >
+              {busy === 'excel' ? <Loader2 size={14} className="animate-spin" /> : <FileSpreadsheet size={14} />}
+              Exportă pentru corectură
+            </button>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isBusy}
+              className="btn-secondary text-xs px-3 py-2"
+            >
+              {busy === 'import' ? <Loader2 size={14} className="animate-spin" /> : <FileUp size={14} />}
+              Importă versiunea corectată
+            </button>
+            <button
+              onClick={() => setShowHistory(true)}
+              disabled={isBusy}
+              className="btn-secondary text-xs px-3 py-2"
+            >
+              <History size={14} />
+              Istoric versiuni
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".xlsx"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+          </div>
+        </div>
+
+        {/* Group 2: Adăugare grile noi */}
+        <div>
+          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-stone-400">Adăugare grile noi</p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={handleDownloadTemplate}
+              disabled={isBusy}
+              className="btn-secondary text-xs px-3 py-2"
+            >
+              {busy === 'template' ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+              Descarcă model grile noi
+            </button>
+            <button
+              onClick={() => newQuestionsInputRef.current?.click()}
+              disabled={isBusy}
+              className="btn-secondary text-xs px-3 py-2"
+            >
+              {busy === 'newImport' ? <Loader2 size={14} className="animate-spin" /> : <PlusCircle size={14} />}
+              Importă modelul completat
+            </button>
+            <input
+              ref={newQuestionsInputRef}
+              type="file"
+              accept=".xlsx"
+              onChange={handleNewQuestionsFileSelect}
+              className="hidden"
+            />
+          </div>
         </div>
 
         {message && (
@@ -233,7 +360,7 @@ export default function ContentTools({
         />
       )}
 
-      {/* Import Preview Dialog */}
+      {/* Import Preview Dialog (correction) */}
       {validationResult && (
         <ImportPreviewDialog
           result={validationResult}
@@ -245,6 +372,20 @@ export default function ContentTools({
         />
       )}
 
+      {/* New Questions Import Preview Dialog */}
+      {newQuestionsValidation && (
+        <NewQuestionsImportPreviewDialog
+          validation={newQuestionsValidation}
+          contentType={contentType}
+          contentId={contentId}
+          contentTitle={contentTitle}
+          fileName={newQuestionsFileName}
+          isPublished={isPublished}
+          onConfirm={handleNewQuestionsImportConfirmed}
+          onCancel={handleNewQuestionsImportCancelled}
+        />
+      )}
+
       {/* Version History Dialog */}
       {showHistory && (
         <VersionHistoryDialog
@@ -253,6 +394,7 @@ export default function ContentTools({
           onClose={() => setShowHistory(false)}
           onRestored={() => {
             setMessage({ type: 'success', text: 'Versiune restaurată cu succes.' });
+            onQuestionsChanged?.();
           }}
         />
       )}

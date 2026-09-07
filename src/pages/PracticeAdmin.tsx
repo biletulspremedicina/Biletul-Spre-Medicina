@@ -742,6 +742,8 @@ function QuestionsManagerAdmin({ set, lesson, onBack }: { set: PracticeSet; less
           lectie={lesson.title}
           questionTable="practice_questions"
           parentColumn="set_id"
+          isPublished={set.is_active}
+          onQuestionsChanged={load}
         />
       </div>
 
