@@ -55,7 +55,7 @@ export function CountdownTimer() {
         <div key={unit.label} className="flex items-center gap-3 sm:gap-4">
           <FlipUnit value={unit.value} label={unit.label} />
           {i < units.length - 1 && (
-            <span className="font-display text-2xl font-extrabold text-white/70 sm:text-3xl md:text-4xl" aria-hidden="true">:</span>
+            <span className="font-display text-2xl font-extrabold text-white/40 sm:text-3xl md:text-4xl" aria-hidden="true">:</span>
           )}
         </div>
       ))}
@@ -67,14 +67,14 @@ function FlipUnit({ value, label }: { value: number; label: string }) {
   const display = pad(value);
   return (
     <div className="flex flex-col items-center">
-      <div className="rounded-xl bg-white px-2.5 py-2 shadow-md sm:px-4 sm:py-3 md:px-6 md:py-4">
+      <div className="rounded-xl bg-white px-2.5 py-2 shadow-lg ring-1 ring-black/5 sm:px-4 sm:py-3 md:px-6 md:py-4">
         <div className="flex gap-1 sm:gap-1.5">
           {display.split('').map((digit, idx) => (
             <FlipDigit key={idx} digit={digit} />
           ))}
         </div>
       </div>
-      <span className="mt-2 text-[10px] font-bold uppercase tracking-wider text-white/80 sm:text-xs">{label}</span>
+      <span className="mt-2 text-[10px] font-bold uppercase tracking-wider text-white/70 sm:text-xs">{label}</span>
     </div>
   );
 }

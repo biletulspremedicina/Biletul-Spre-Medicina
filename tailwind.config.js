@@ -40,6 +40,7 @@ export default {
         'fade-in': 'fadeIn 0.6s ease-out forwards',
         'shimmer': 'shimmer 3s ease-in-out infinite',
         'pulse-ring': 'pulseRing 2.5s ease-out infinite',
+        'crown-glow': 'crownGlow 2s ease-in-out infinite',
       },
       keyframes: {
         fadeInUp: {
@@ -58,6 +59,10 @@ export default {
           '0%': { transform: 'scale(0.95)', opacity: '0.7' },
           '70%': { transform: 'scale(1.3)', opacity: '0' },
           '100%': { transform: 'scale(0)', opacity: '0' },
+        },
+        crownGlow: {
+          '0%, 100%': { filter: 'drop-shadow(0 0 2px rgba(251,191,36,0.6))', transform: 'rotate(-5deg) scale(1)' },
+          '50%': { filter: 'drop-shadow(0 0 8px rgba(251,191,36,0.9))', transform: 'rotate(5deg) scale(1.1)' },
         },
       },
     },

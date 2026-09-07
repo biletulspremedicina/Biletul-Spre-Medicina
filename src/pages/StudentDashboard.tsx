@@ -208,8 +208,8 @@ export default function StudentDashboard({ onStartSimulation, onViewResults, onO
     <div className="min-h-screen bg-stone-50">
       {/* ── Header ── */}
       <header className="sticky top-0 z-20 border-b border-stone-200 bg-white/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-[1400px] items-center justify-between px-4 sm:px-6 lg:px-8 py-3.5">
-          <div className="flex items-center gap-2">
+        <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 py-3.5">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <Logo className="h-9 w-auto flex-shrink-0" />
             <div className="flex flex-col text-[12px] font-extrabold uppercase tracking-wide leading-[1.08] select-none whitespace-nowrap">
               <span className="text-stone-900">Biletul</span>
@@ -217,11 +217,16 @@ export default function StudentDashboard({ onStartSimulation, onViewResults, onO
               <span className="text-brand-600 font-black">Medicină</span>
             </div>
           </div>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <span className="hidden text-base sm:text-lg font-bold text-stone-800 sm:inline max-w-[220px] truncate items-center">
-              {profile?.full_name || profile?.email}
+
+          <p className="hidden md:block font-display text-lg font-bold text-stone-800 tracking-tight text-center flex-1 truncate px-4">
+            Antrenează-te zilnic, devino cel mai bun
+          </p>
+
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+            <span className="hidden sm:flex items-center gap-1.5 text-sm font-bold text-stone-800 max-w-[220px] truncate">
+              <span className="truncate">{profile?.full_name || profile?.email}</span>
               {hasActiveSub && (
-                <Crown className="w-5 h-5 text-amber-500 fill-amber-400 shrink-0 inline-block ml-1.5 animate-pulse" />
+                <Crown className="w-4 h-4 text-amber-500 fill-amber-400 shrink-0 animate-crown-glow" />
               )}
             </span>
             <button onClick={signOut} className="btn-ghost text-sm">
@@ -237,7 +242,8 @@ export default function StudentDashboard({ onStartSimulation, onViewResults, onO
           <div className="p-5 sm:p-6 lg:p-8">
 
             {/* ── Countdown timer ── */}
-            <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-brand-600 to-brand-700 p-5 shadow-lg sm:p-6">
+            <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-brand-600 to-brand-700 p-5 shadow-lg ring-1 ring-brand-800/20 sm:p-6">
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
               <p className="mb-4 text-center font-display text-sm font-bold tracking-wide text-white sm:text-base">
                 Materiale noi pe platformă în:
               </p>
