@@ -237,41 +237,62 @@ export function parseNewQuestionsXlsx(file: File): Promise<NewQuestionRow[]> {
         const data = new Uint8Array(e.target?.result as ArrayBuffer);
         const wb = XLSX.read(data, { type: 'array' });
 
-        const sheetName = wb.SheetNames.find(
+        const required = ['Tip grilă', 'Enunț', 'Răspuns corect', 'Explicație'];
+
+        // Helper: parse a sheet and return { headerMap, json } if it has all required columns
+        const parseSheet = (sheetName: string): { headerMap: Map<string, number>; json: unknown[][] } | null => {
+          const ws = wb.Sheets[sheetName];
+          const json = XLSX.utils.sheet_to_json<unknown[]>(ws, {
+            header: 1,
+            raw: false,
+          }) as unknown[][];
+          if (json.length < 2) return null;
+
+          const rawHeaders = json[0] as unknown[];
+          const headerMap = new Map<string, number>();
+          for (let j = 0; j < rawHeaders.length; j++) {
+            const h = String(rawHeaders[j] || '').trim();
+            if (h && !headerMap.has(h)) {
+              headerMap.set(h, j);
+            }
+          }
+          const missing = required.filter((c) => !headerMap.has(c));
+          if (missing.length > 0) return null;
+          return { headerMap, json };
+        };
+
+        // 1. Try exact sheet name match first
+        let parsed: { headerMap: Map<string, number>; json: unknown[][] } | null = null;
+        const exactName = wb.SheetNames.find(
           (name) => name.trim().toLowerCase() === 'grile noi'
         );
-
-        if (!sheetName) {
-          reject(new Error('Fișierul nu conține o foaie numită „GRILE NOI".'));
-          return;
+        if (exactName) {
+          parsed = parseSheet(exactName);
         }
 
-        const ws = wb.Sheets[sheetName];
-        const json = XLSX.utils.sheet_to_json<unknown[]>(ws, {
-          header: 1,
-          raw: false,
-        }) as unknown[][];
-
-        if (json.length < 2) {
-          reject(new Error('Fișierul nu conține date (doar antet).'));
-          return;
-        }
-
-        // Build header map by name
-        const rawHeaders = json[0] as unknown[];
-        const headerMap = new Map<string, number>();
-        for (let j = 0; j < rawHeaders.length; j++) {
-          const h = String(rawHeaders[j] || '').trim();
-          if (h && !headerMap.has(h)) {
-            headerMap.set(h, j);
+        // 2. Fallback: scan all sheets for one with the required columns
+        if (!parsed) {
+          for (const name of wb.SheetNames) {
+            const result = parseSheet(name);
+            if (result) {
+              parsed = result;
+              break;
+            }
           }
         }
 
-        // Check required columns
-        const required = ['Tip grilă', 'Enunț', 'Răspuns corect', 'Explicație'];
-        const missing = required.filter((c) => !headerMap.has(c));
-        if (missing.length > 0) {
-          reject(new Error(`Coloane lipsă: ${missing.join(', ')}.`));
+        if (!parsed) {
+          reject(new Error(
+            'Nu s-a găsit nicio foaie cu coloanele necesare (Tip grilă, Enunț, Răspuns corect, Explicație). ' +
+            'Asigură-te că AI-ul a completat foaia „GRILE NOI" fără să modifice antetul.'
+          ));
+          return;
+        }
+
+        const { headerMap, json } = parsed;
+
+        if (json.length < 2) {
+          reject(new Error('Fișierul nu conține date (doar antet).'));
           return;
         }
 
