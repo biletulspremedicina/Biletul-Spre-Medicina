@@ -50,12 +50,12 @@ export function CountdownTimer() {
   ];
 
   return (
-    <div className="mx-auto flex items-center justify-center gap-2 sm:gap-3 md:gap-4 overflow-x-auto">
+    <div className="relative mx-auto flex items-center justify-center gap-2 sm:gap-3 md:gap-4 overflow-x-auto">
       {units.map((unit, i) => (
         <div key={unit.label} className="flex items-center gap-3 sm:gap-4">
           <FlipUnit value={unit.value} label={unit.label} />
           {i < units.length - 1 && (
-            <span className="font-display text-2xl font-extrabold text-brand-500/40 sm:text-3xl md:text-4xl" aria-hidden="true">:</span>
+            <span className="font-display text-2xl font-extrabold text-brand-400/50 sm:text-3xl md:text-4xl" aria-hidden="true">:</span>
           )}
         </div>
       ))}
@@ -67,14 +67,14 @@ function FlipUnit({ value, label }: { value: number; label: string }) {
   const display = pad(value);
   return (
     <div className="flex flex-col items-center">
-      <div className="rounded-xl border border-brand-500/20 bg-stone-800/80 px-2.5 py-2 shadow-lg sm:px-4 sm:py-3 md:px-6 md:py-4">
+      <div className="rounded-xl border border-brand-500/20 bg-stone-800/60 px-2.5 py-2 shadow-lg shadow-inner backdrop-blur-sm sm:px-4 sm:py-3 md:px-6 md:py-4">
         <div className="flex gap-1 sm:gap-1.5">
           {display.split('').map((digit, idx) => (
             <FlipDigit key={idx} digit={digit} />
           ))}
         </div>
       </div>
-      <span className="mt-2 text-[10px] font-bold uppercase tracking-wider text-stone-400 sm:text-xs">{label}</span>
+      <span className="mt-2 text-[10px] font-bold uppercase tracking-wider text-brand-200/70 sm:text-xs">{label}</span>
     </div>
   );
 }
@@ -92,7 +92,7 @@ function FlipDigit({ digit }: { digit: string }) {
     <div className="relative h-10 w-6 overflow-hidden sm:h-12 sm:w-8 md:h-14 md:w-10" aria-hidden="true">
       <span
         key={displayDigit}
-        className="absolute inset-0 flex items-center justify-center font-display text-2xl font-extrabold tabular-nums text-white sm:text-3xl md:text-4xl animate-[slideDownIn_0.3s_ease-out]"
+        className="absolute inset-0 flex items-center justify-center font-display text-2xl font-extrabold tabular-nums bg-gradient-to-b from-white to-brand-100 bg-clip-text text-transparent sm:text-3xl md:text-4xl animate-[slideDownIn_0.3s_ease-out]"
       >
         {displayDigit}
       </span>

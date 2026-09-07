@@ -4,11 +4,12 @@ import { useAuth } from '@/context/AuthContext';
 import {
   Clock, CreditCard, Trophy, CheckCircle2, Crown, Sparkles,
   Archive, RotateCcw, Lock, PlayCircle, BookOpen, Loader2, GraduationCap,
-  BarChart3,
+  BarChart3, Target, Flame, Award, ChevronRight, Layers, FileText,
 } from 'lucide-react';
 import Logo from '@/components/Logo';
 import Loading from '@/components/Loading';
 import { CountdownTimer } from '@/components/CountdownTimer';
+import type { PracticeLessonRPC } from '@/lib/supabase';
 
 type Props = {
   onStartSimulation: (simulationId: string) => void;
@@ -35,6 +36,8 @@ export default function StudentDashboard({ onStartSimulation, onViewResults, onO
   const [subError, setSubError] = useState<string | null>(null);
   const [subSuccess, setSubSuccess] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>('all');
+  const [practiceLessons, setPracticeLessons] = useState<PracticeLessonRPC[]>([]);
+  const [practiceLoading, setPracticeLoading] = useState(false);
 
   const loadDashboard = useCallback(async () => {
     if (!profile) return;
@@ -104,6 +107,22 @@ export default function StudentDashboard({ onStartSimulation, onViewResults, onO
     loadDashboard();
   }, [loadDashboard]);
 
+  const loadPracticeLessons = useCallback(async () => {
+    setPracticeLoading(true);
+    const { data, error } = await supabase.rpc('get_practice_lessons');
+    if (error) {
+      console.error('get_practice_lessons error:', error);
+    }
+    setPracticeLessons((data || []) as unknown as PracticeLessonRPC[]);
+    setPracticeLoading(false);
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'practice') {
+      loadPracticeLessons();
+    }
+  }, [activeTab, loadPracticeLessons]);
+
   const handleBuySubscription = async () => {
     setBuyingSub(true);
     setSubError(null);
@@ -130,6 +149,47 @@ export default function StudentDashboard({ onStartSimulation, onViewResults, onO
 
   const hasActiveSub = !!subscription;
   const completedDistinctCount = simulations.filter((s) => s.hasSubmitted).length;
+
+  // Advanced stats calculations
+  const submittedAttempts = simulations.flatMap((s) => s.attempts.filter((a) => a.submitted_at));
+  const totalCorrect = submittedAttempts.reduce((sum, a) => sum + (a.score || 0), 0);
+  const totalMaxScore = submittedAttempts.reduce((sum, a) => sum + (a.max_score || 0), 0);
+  const totalQuestionsAnswered = totalMaxScore;
+  const accuracyPercent = totalMaxScore > 0 ? Math.round((totalCorrect / totalMaxScore) * 100) : 0;
+  const avgScore = submittedAttempts.length > 0 ? totalCorrect / submittedAttempts.length : 0;
+  const maxScoreRef = submittedAttempts.length > 0 ? submittedAttempts[0].max_score : 0;
+
+  // Study streak: count distinct days with submitted attempts
+  const studyDays = new Set<string>();
+  submittedAttempts.forEach((a) => {
+    if (a.submitted_at) {
+      studyDays.add(new Date(a.submitted_at).toDateString());
+    }
+  });
+  let studyStreak = 0;
+  if (studyDays.size > 0) {
+    const today = new Date();
+    for (let i = 0; i < 365; i++) {
+      const checkDate = new Date(today);
+      checkDate.setDate(checkDate.getDate() - i);
+      if (studyDays.has(checkDate.toDateString())) {
+        studyStreak++;
+      } else if (i > 0) {
+        break;
+      }
+    }
+  }
+
+  // Avg time per question (from simulation attempts)
+  const timedAttempts = submittedAttempts.filter((a) => a.started_at && a.submitted_at);
+  let avgTimePerQuestion = 0;
+  if (timedAttempts.length > 0) {
+    const totalTime = timedAttempts.reduce((sum, a) => {
+      const dur = (new Date(a.submitted_at!).getTime() - new Date(a.started_at).getTime()) / 1000;
+      return sum + (dur > 0 ? dur / (a.max_score || 1) : 0);
+    }, 0);
+    avgTimePerQuestion = Math.round(totalTime / timedAttempts.length);
+  }
 
   // Filter simulations by active tab
   const filteredSims = simulations.filter((sim) => {
@@ -158,8 +218,11 @@ export default function StudentDashboard({ onStartSimulation, onViewResults, onO
             </div>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
-            <span className="hidden text-sm font-medium text-stone-600 sm:inline max-w-[200px] truncate">
+            <span className="hidden text-base sm:text-lg font-bold text-stone-800 sm:inline max-w-[220px] truncate items-center">
               {profile?.full_name || profile?.email}
+              {hasActiveSub && (
+                <Crown className="w-5 h-5 text-amber-500 fill-amber-400 shrink-0 inline-block ml-1.5 animate-pulse" />
+              )}
             </span>
             <button onClick={signOut} className="btn-ghost text-sm">
               Deconectare
@@ -174,14 +237,17 @@ export default function StudentDashboard({ onStartSimulation, onViewResults, onO
           <div className="p-5 sm:p-6 lg:p-8">
 
             {/* ── Countdown timer ── */}
-            <div className="mb-6 rounded-2xl border border-stone-700 bg-stone-900 p-5 sm:p-6 overflow-hidden">
-              <p className="mb-4 text-center font-display text-sm font-bold tracking-wide text-white sm:text-base">
-                Materiale noi pe platformă în:
-              </p>
-              <CountdownTimer />
-              <p className="mx-auto mt-4 max-w-xl text-center text-xs text-stone-400">
-                Alătură-te comunității de viitori medici și fii primul care accesează noile simulări și grile explicate.
-              </p>
+            <div className="relative mb-6 overflow-hidden rounded-2xl border border-brand-500/30 bg-gradient-to-br from-brand-950/80 via-stone-900/95 to-brand-900/60 p-5 shadow-xl shadow-brand-500/10 backdrop-blur-md sm:p-6">
+              <div className="pointer-events-none absolute -top-12 left-1/2 h-32 w-64 -translate-x-1/2 rounded-full bg-brand-500/10 blur-2xl" />
+              <div className="relative">
+                <p className="mb-4 text-center font-display text-sm font-bold tracking-wide text-white sm:text-base">
+                  Materiale noi pe platformă în:
+                </p>
+                <CountdownTimer />
+                <p className="mx-auto mt-4 max-w-xl text-center text-xs text-brand-200/60">
+                  Alătură-te comunității de viitori medici și fii primul care accesează noile simulări și grile explicate.
+                </p>
+              </div>
             </div>
 
             {/* ── Subscription bar ── */}
@@ -293,57 +359,75 @@ export default function StudentDashboard({ onStartSimulation, onViewResults, onO
             {/* ── Practice tab ── */}
             {activeTab === 'practice' && (
               <div>
-                <div className="mb-6 flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-accent-200 bg-accent-50 p-5 transition-all hover:border-accent-300 hover:bg-accent-100"
-                  onClick={onOpenPractice}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpenPractice(); } }}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-500 text-white">
-                      <GraduationCap size={22} />
-                    </div>
-                    <div>
-                      <h3 className="font-display text-base font-bold text-stone-900">Grile pe lecții</h3>
-                      <p className="text-sm text-stone-600">
-                        Antrenează-te pe seturi de grile organizate pe lecții. Fără cronometru, rezolvări nelimitate.
-                      </p>
-                    </div>
+                {practiceLoading ? (
+                  <Loading message="Se încarcă lecțiile..." />
+                ) : practiceLessons.length === 0 ? (
+                  <div className="rounded-2xl border border-stone-200 bg-white p-12 text-center text-stone-500">
+                    <BookOpen size={40} className="mx-auto mb-4 text-stone-300" />
+                    <p className="text-lg font-medium">Nu există lecții publicate momentan.</p>
+                    <p className="text-sm mt-1">Revino mai târziu pentru lecții noi.</p>
                   </div>
-                  <div className="flex-shrink-0 text-accent-600">
-                    <BookOpen size={24} />
+                ) : (
+                  <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                    {practiceLessons.map((lesson) => (
+                      <PracticeLessonCard
+                        key={lesson.out_id}
+                        lesson={lesson}
+                        onOpen={() => onOpenPractice()}
+                      />
+                    ))}
                   </div>
-                </div>
+                )}
               </div>
             )}
 
             {/* ── Dashboard tab ── */}
             {activeTab === 'dashboard' && (
               <div>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                  <StatCard
-                    icon={<Archive size={20} />}
-                    label="Simulări disponibile"
-                    value={simulations.length}
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  <AdvancedStatCard
+                    icon={<Target size={22} />}
+                    label="Rata de Acuratețe"
+                    value={`${accuracyPercent}%`}
+                    subtext="Răspunsuri corecte"
                     color="brand"
+                    ringPercent={accuracyPercent}
                   />
-                  <StatCard
-                    icon={<Trophy size={20} />}
-                    label="Simulări rezolvate"
-                    value={completedDistinctCount}
+                  <AdvancedStatCard
+                    icon={<CheckCircle2 size={22} />}
+                    label="Grile Rezolvate"
+                    value={totalQuestionsAnswered}
+                    subtext="Total întrebări"
                     color="accent"
+                    pulse
                   />
-                  <StatCard
-                    icon={<Sparkles size={20} />}
-                    label="Simulări gratuite"
-                    value={simulations.filter((s) => !s.requires_subscription).length}
+                  <AdvancedStatCard
+                    icon={<Flame size={22} className="text-orange-500 animate-bounce" />}
+                    label="Zile Consecutive"
+                    value={studyStreak}
+                    subtext="Streak de studiu"
+                    color="orange"
+                  />
+                  <AdvancedStatCard
+                    icon={<Clock size={22} />}
+                    label="Timp Mediu / Grilă"
+                    value={avgTimePerQuestion > 0 ? `${avgTimePerQuestion}s` : '—'}
+                    subtext="Per întrebare"
                     color="brand"
                   />
-                  <StatCard
-                    icon={<CreditCard size={20} />}
-                    label="Status abonament"
-                    value={hasActiveSub ? 'Activ' : 'Inactiv'}
-                    color={hasActiveSub ? 'accent' : 'brand'}
+                  <AdvancedStatCard
+                    icon={<Award size={22} className="text-amber-500" />}
+                    label="Capitole Stăpânite"
+                    value={`${completedDistinctCount}/${simulations.length}`}
+                    subtext="Simulări finalizate"
+                    color="amber"
+                  />
+                  <AdvancedStatCard
+                    icon={<Trophy size={22} />}
+                    label="Simulări & Examene"
+                    value={completedDistinctCount}
+                    subtext={avgScore > 0 ? `Media: ${avgScore.toFixed(1)}/${maxScoreRef}` : 'Niciun rezultat'}
+                    color="accent"
                   />
                 </div>
               </div>
@@ -382,17 +466,101 @@ export default function StudentDashboard({ onStartSimulation, onViewResults, onO
   );
 }
 
-// ── StatCard ──────────────────────────────────────────────────────────────
+// ── PracticeLessonCard ──────────────────────────────────────────────────────
 
-function StatCard({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: number | string; color: 'brand' | 'accent' }) {
-  const bg = color === 'brand' ? 'bg-brand-100 text-brand-600' : 'bg-accent-100 text-accent-600';
+function PracticeLessonCard({ lesson, onOpen }: { lesson: PracticeLessonRPC; onOpen: () => void }) {
   return (
-    <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-      <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-xl ${bg}`}>
-        {icon}
+    <div className="group flex flex-col rounded-2xl border border-stone-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-accent-300 hover:shadow-lg motion-reduce:transition-none">
+      <div className="flex items-start gap-3 mb-3">
+        <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-accent-100 text-accent-600 transition-transform duration-200 group-hover:scale-110">
+          <BookOpen size={22} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <span className="badge bg-stone-100 text-stone-500 mb-1">{lesson.out_subject}</span>
+          <h3 className="font-display text-base font-semibold text-stone-900 line-clamp-2">{lesson.out_title}</h3>
+        </div>
       </div>
-      <p className="text-2xl font-bold text-stone-900">{value}</p>
-      <p className="text-sm text-stone-500">{label}</p>
+
+      {lesson.out_description && (
+        <p className="text-sm text-stone-600 line-clamp-2 mb-3">{lesson.out_description}</p>
+      )}
+
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-stone-500 mb-4">
+        <span className="flex items-center gap-1">
+          <Layers size={13} />
+          {lesson.out_set_count} seturi
+        </span>
+        <span className="flex items-center gap-1">
+          <FileText size={13} />
+          {lesson.out_question_count} grile
+        </span>
+      </div>
+
+      <div className="mt-auto pt-3 border-t border-stone-100">
+        <button onClick={onOpen} className="btn-primary w-full">
+          Rezolvă grile
+          <ChevronRight size={16} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── AdvancedStatCard ────────────────────────────────────────────────────────
+
+function AdvancedStatCard({
+  icon,
+  label,
+  value,
+  subtext,
+  color,
+  ringPercent,
+  pulse,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: number | string;
+  subtext: string;
+  color: 'brand' | 'accent' | 'orange' | 'amber';
+  ringPercent?: number;
+  pulse?: boolean;
+}) {
+  const colorMap: Record<string, { bg: string; ring: string; glow: string }> = {
+    brand: { bg: 'bg-brand-100 text-brand-600', ring: 'text-brand-500', glow: 'group-hover:shadow-brand-200' },
+    accent: { bg: 'bg-accent-100 text-accent-600', ring: 'text-accent-500', glow: 'group-hover:shadow-accent-200' },
+    orange: { bg: 'bg-orange-100 text-orange-600', ring: 'text-orange-500', glow: 'group-hover:shadow-orange-200' },
+    amber: { bg: 'bg-amber-100 text-amber-600', ring: 'text-amber-500', glow: 'group-hover:shadow-amber-200' },
+  };
+  const c = colorMap[color];
+
+  const ringSize = 44;
+  const ringRadius = 18;
+  const circumference = 2 * Math.PI * ringRadius;
+  const offset = circumference - (Math.min(100, ringPercent || 0) / 100) * circumference;
+
+  return (
+    <div className={`group rounded-2xl border border-stone-200 bg-gradient-to-br from-white to-stone-50/50 p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${c.glow}`}>
+      <div className="flex items-start justify-between gap-3">
+        <div className={`mb-3 flex h-11 w-11 items-center justify-center rounded-xl ${c.bg} transition-transform duration-200 group-hover:scale-110 ${pulse ? 'animate-pulse' : ''}`}>
+          {icon}
+        </div>
+        {ringPercent !== undefined && (
+          <div className="relative">
+            <svg width={ringSize} height={ringSize} className="transform -rotate-90">
+              <circle cx={ringSize / 2} cy={ringSize / 2} r={ringRadius} fill="none" stroke="currentColor" strokeWidth="3" className="text-stone-200" />
+              <circle
+                cx={ringSize / 2} cy={ringSize / 2} r={ringRadius} fill="none" stroke="currentColor" strokeWidth="3"
+                strokeDasharray={circumference} strokeDashoffset={offset}
+                strokeLinecap="round"
+                className={`${c.ring} transition-all duration-700 ease-out`}
+              />
+            </svg>
+          </div>
+        )}
+      </div>
+      <p className="text-2xl font-extrabold text-stone-900">{value}</p>
+      <p className="text-sm font-semibold text-stone-700">{label}</p>
+      <p className="text-xs text-stone-400 mt-0.5">{subtext}</p>
     </div>
   );
 }
