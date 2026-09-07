@@ -247,9 +247,9 @@ export default function StudentDashboard({ onStartSimulation, onViewResults, onO
 
             {/* ── Countdown timer ── */}
             <div className="relative mb-6 rounded-2xl border border-emerald-900/50 bg-emerald-950 p-6 sm:p-8 shadow-sm">
-  <p className="mb-5 text-center font-display text-sm font-semibold tracking-wide text-emerald-100 sm:text-base">
-    Materiale noi pe platformă în:
-  </p>
+  <p className="mb-5 text-center font-display text-sm font-bold tracking-wide text-white sm:text-base">
+  Materiale noi pe platformă în:
+</p>
 
   <CountdownTimer />
 
