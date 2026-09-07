@@ -24,7 +24,7 @@ type SimWithStatus = Simulation & {
   questionCount: number;
 };
 
-type TabId = 'all' | 'practice' | 'premium' | 'dashboard';
+type TabId = 'all' | 'practice' | 'umfcd' | 'dashboard';
 
 export default function StudentDashboard({ onStartSimulation, onViewResults, onOpenPractice }: Props) {
   const { profile, signOut } = useAuth();
@@ -193,14 +193,15 @@ export default function StudentDashboard({ onStartSimulation, onViewResults, onO
 
   // Filter simulations by active tab
   const filteredSims = simulations.filter((sim) => {
-    if (activeTab === 'premium') return sim.requires_subscription;
-    return true;
+    if (activeTab === 'umfcd') return sim.student_section === 'umfcd';
+    if (activeTab === 'all') return sim.student_section === 'all';
+    return false;
   });
 
   const tabs: { id: TabId; label: string; icon: React.ReactNode }[] = [
     { id: 'all', label: 'Toate simulările', icon: <Archive size={15} /> },
     { id: 'practice', label: 'Grile pe lecții', icon: <GraduationCap size={15} /> },
-    { id: 'premium', label: 'Examene și simulări UMFCD', icon: <Crown size={15} /> },
+    { id: 'umfcd', label: 'Examene și simulări UMFCD', icon: <Crown size={15} /> },
     { id: 'dashboard', label: 'Dashboard activitate', icon: <BarChart3 size={15} /> },
   ];
 
@@ -442,7 +443,7 @@ export default function StudentDashboard({ onStartSimulation, onViewResults, onO
             )}
 
             {/* ── Simulation grid ── */}
-            {(activeTab === 'all' || activeTab === 'premium') && (
+            {(activeTab === 'all' || activeTab === 'umfcd') && (
               <>
                 {filteredSims.length === 0 ? (
                   <div className="rounded-2xl border border-stone-200 bg-white p-12 text-center text-stone-500">

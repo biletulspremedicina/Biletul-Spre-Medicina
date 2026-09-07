@@ -29,6 +29,7 @@ export type Simulation = {
   requires_subscription: boolean;
   is_active: boolean;
   created_at: string;
+  student_section: 'all' | 'umfcd';
 };
 
 export type AppSettings = {

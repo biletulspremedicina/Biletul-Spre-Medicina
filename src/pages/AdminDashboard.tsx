@@ -15,7 +15,7 @@ type Props = {
 
 import PracticeAdmin from '@/pages/PracticeAdmin';
 
-type Tab = 'simulations' | 'practice' | 'monitoring' | 'settings';
+type Tab = 'simulations' | 'umfcd2' | 'practice' | 'monitoring' | 'settings';
 
 export default function AdminDashboard({ onExit }: Props) {
   const { profile, signOut } = useAuth();
@@ -61,9 +61,12 @@ export default function AdminDashboard({ onExit }: Props) {
       </header>
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-6 flex gap-1 rounded-xl bg-stone-100 p-1">
+        <div className="mb-6 flex flex-wrap gap-1 rounded-xl bg-stone-100 p-1 overflow-x-auto">
           <TabButton active={tab === 'simulations'} onClick={() => setTab('simulations')} icon={<LayoutDashboard size={16} />}>
             Examene și simulări UMFCD
+          </TabButton>
+          <TabButton active={tab === 'umfcd2'} onClick={() => setTab('umfcd2')} icon={<LayoutDashboard size={16} />}>
+            Examene și simulări UMFCD 2
           </TabButton>
           <TabButton active={tab === 'practice'} onClick={() => setTab('practice')} icon={<GraduationCap size={16} />}>
             Lecții & Seturi
@@ -78,12 +81,27 @@ export default function AdminDashboard({ onExit }: Props) {
 
         {tab === 'simulations' && (
           <SimulationsTab
-            simulations={simulations}
+            simulations={simulations.filter((s) => s.student_section === 'all')}
             onReload={loadSimulations}
             editingSim={editingSim}
             setEditingSim={setEditingSim}
             creatingSim={creatingSim}
             setCreatingSim={setCreatingSim}
+            studentSection="all"
+            heading="Examene și simulări UMFCD"
+          />
+        )}
+
+        {tab === 'umfcd2' && (
+          <SimulationsTab
+            simulations={simulations.filter((s) => s.student_section === 'umfcd')}
+            onReload={loadSimulations}
+            editingSim={editingSim}
+            setEditingSim={setEditingSim}
+            creatingSim={creatingSim}
+            setCreatingSim={setCreatingSim}
+            studentSection="umfcd"
+            heading="Examene și simulări UMFCD 2"
           />
         )}
 
@@ -117,6 +135,8 @@ function SimulationsTab({
   setEditingSim,
   creatingSim,
   setCreatingSim,
+  studentSection,
+  heading,
 }: {
   simulations: Simulation[];
   onReload: () => void;
@@ -124,9 +144,11 @@ function SimulationsTab({
   setEditingSim: (s: Simulation | null) => void;
   creatingSim: boolean;
   setCreatingSim: (v: boolean) => void;
+  studentSection: 'all' | 'umfcd';
+  heading: string;
 }) {
   if (creatingSim) {
-    return <SimForm onSaved={() => { setCreatingSim(false); onReload(); }} onCancel={() => setCreatingSim(false)} />;
+    return <SimForm studentSection={studentSection} onSaved={() => { setCreatingSim(false); onReload(); }} onCancel={() => setCreatingSim(false)} />;
   }
 
   if (editingSim) {
@@ -135,7 +157,7 @@ function SimulationsTab({
         <button onClick={() => setEditingSim(null)} className="btn-ghost mb-4">
           <ChevronLeft size={16} /> Înapoi la simulări
         </button>
-        <SimForm sim={editingSim} onSaved={() => { setEditingSim(null); onReload(); }} onCancel={() => setEditingSim(null)} />
+        <SimForm sim={editingSim} studentSection={studentSection} onSaved={() => { setEditingSim(null); onReload(); }} onCancel={() => setEditingSim(null)} />
       </div>
     );
   }
@@ -143,7 +165,7 @@ function SimulationsTab({
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="font-display text-xl font-bold text-stone-900">Examene și simulări UMFCD</h2>
+        <h2 className="font-display text-xl font-bold text-stone-900">{heading}</h2>
         <button onClick={() => setCreatingSim(true)} className="btn-primary">
           <Plus size={16} /> Creează simulare
         </button>
@@ -281,7 +303,7 @@ function SimAdminCard({ sim, onReload, onEdit }: { sim: Simulation; onReload: ()
   );
 }
 
-function SimForm({ sim, onSaved, onCancel }: { sim?: Simulation; onSaved: () => void; onCancel: () => void }) {
+function SimForm({ sim, studentSection, onSaved, onCancel }: { sim?: Simulation; studentSection: 'all' | 'umfcd'; onSaved: () => void; onCancel: () => void }) {
   const [title, setTitle] = useState(sim?.title || '');
   const [description, setDescription] = useState(sim?.description || '');
   const [duration, setDuration] = useState(sim?.duration_minutes?.toString() || '120');
@@ -290,6 +312,8 @@ function SimForm({ sim, onSaved, onCancel }: { sim?: Simulation; onSaved: () => 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const sectionLabel = studentSection === 'umfcd' ? 'Examene și simulări UMFCD' : 'Toate simulările';
+
   const handleSave = async () => {
     setError(null);
     if (!title.trim()) { setError('Titlul este obligatoriu.'); return; }
@@ -297,12 +321,14 @@ function SimForm({ sim, onSaved, onCancel }: { sim?: Simulation; onSaved: () => 
     if (dur <= 0) { setError('Durata trebuie să fie un număr valid de minute.'); return; }
 
     setSaving(true);
+    const existingSection = sim?.student_section || studentSection;
     const payload = {
       title: title.trim(),
       description: description.trim(),
       duration_minutes: dur,
       requires_subscription: requiresSub,
       is_active: isActive,
+      student_section: existingSection,
     };
 
     if (sim) {
@@ -337,6 +363,10 @@ function SimForm({ sim, onSaved, onCancel }: { sim?: Simulation; onSaved: () => 
           </div>
         </div>
       )}
+
+      <div className="mb-4 rounded-lg bg-brand-50 border border-brand-100 px-4 py-2.5 text-sm text-brand-700">
+        <strong>Destinație:</strong> {sectionLabel}
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="sm:col-span-2">
