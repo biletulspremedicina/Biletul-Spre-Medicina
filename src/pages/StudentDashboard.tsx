@@ -246,16 +246,17 @@ export default function StudentDashboard({ onStartSimulation, onViewResults, onO
           <div className="p-5 sm:p-6 lg:p-8">
 
             {/* ── Countdown timer ── */}
-            <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-brand-600 to-brand-700 p-5 shadow-lg ring-1 ring-brand-800/20 sm:p-6">
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-              <p className="mb-4 text-center font-display text-sm font-bold tracking-wide text-white sm:text-base">
-                Materiale noi pe platformă în:
-              </p>
-              <CountdownTimer />
-              <p className="mx-auto mt-4 max-w-xl text-center text-xs text-brand-100">
-                Alătură-te comunității de viitori medici și fii primul care accesează noile simulări și grile explicate.
-              </p>
-            </div>
+            <div className="relative mb-6 rounded-2xl border border-emerald-900/50 bg-emerald-950 p-6 sm:p-8 shadow-sm">
+  <p className="mb-5 text-center font-display text-sm font-semibold tracking-wide text-emerald-100 sm:text-base">
+    Materiale noi pe platformă în:
+  </p>
+
+  <CountdownTimer />
+
+  <p className="mx-auto mt-5 max-w-xl text-center text-xs text-emerald-300/70 leading-relaxed sm:text-sm">
+    Alătură-te comunității de viitori medici și fii primul care accesează noile simulări și grile explicate.
+  </p>
+</div>
 
             {/* ── Subscription bar ── */}
             {hasActiveSub ? (
