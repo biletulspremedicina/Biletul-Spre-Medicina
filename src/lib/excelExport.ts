@@ -1,5 +1,5 @@
 import * as XLSX from 'xlsx';
-import ExcelJS from 'exceljs';
+import * as ExcelJS from 'exceljs';
 import type { ExportRow } from '@/lib/contentVersioning';
 
 // ── Color constants (match site theme) ───────────────────────────────────
