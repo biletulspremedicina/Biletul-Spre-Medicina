@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { supabase, type Simulation, type Subscription, type Attempt } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import {
-  Clock, CreditCard, Trophy, CheckCircle2, XCircle, Crown, Sparkles,
+  Clock, CreditCard, Trophy, CheckCircle2, Crown, Sparkles,
   Archive, RotateCcw, Lock, PlayCircle, BookOpen, Loader2, GraduationCap,
   LayoutGrid, BarChart3,
 } from 'lucide-react';
