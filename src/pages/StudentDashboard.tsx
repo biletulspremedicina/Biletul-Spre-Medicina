@@ -218,18 +218,12 @@ export default function StudentDashboard({ onStartSimulation, onViewResults, onO
             </div>
           </div>
 
-          <div className="hidden md:flex items-center justify-center flex-1 px-4">
-  <div className="inline-flex items-center gap-2 text-center font-display text-sm font-bold tracking-tight text-stone-800">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 text-brand-600 shrink-0">
-      <circle cx="12" cy="12" r="10"/>
-      <circle cx="12" cy="12" r="6"/>
-      <circle cx="12" cy="12" r="2"/>
-    </svg>
-    <span>Antrenează-te zilnic,</span>
-    <span className="bg-gradient-to-r from-brand-600 to-emerald-600 bg-clip-text text-transparent font-extrabold">
-      devino cel mai bun!
-    </span>
-  </div>
+          <div className="hidden md:flex items-center justify-center flex-1 px-4 text-center">
+  <p className="font-display text-base font-bold tracking-tight text-stone-800">
+    <span>Antrenează-te zilnic</span>
+    <span className="mx-2.5 text-stone-300 font-light">/</span>
+    <span className="text-brand-600 font-extrabold">Devino cel mai bun</span>
+  </p>
 </div>
 
           <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
