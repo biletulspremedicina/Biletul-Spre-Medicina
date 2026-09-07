@@ -232,10 +232,14 @@ function SimAdminCard({ sim, onReload, onEdit }: { sim: Simulation; onReload: ()
       }
     }
 
-    await supabase
+    const { error: updateError } = await supabase
       .from('simulations')
       .update({ is_active: !sim.is_active })
       .eq('id', sim.id);
+    if (updateError) {
+      setPublishError(updateError.message);
+      return;
+    }
     onReload();
   };
 
@@ -331,21 +335,27 @@ function SimForm({ sim, studentSection, onSaved, onCancel }: { sim?: Simulation;
       student_section: existingSection,
     };
 
+    let saveError: string | null = null;
+
     if (sim) {
       const { error: updateError } = await supabase
         .from('simulations')
         .update(payload)
         .eq('id', sim.id);
-      if (updateError) setError(updateError.message);
+      if (updateError) saveError = updateError.message;
     } else {
       const { error: insertError } = await supabase
         .from('simulations')
         .insert(payload);
-      if (insertError) setError(insertError.message);
+      if (insertError) saveError = insertError.message;
     }
 
     setSaving(false);
-    if (!error) onSaved();
+    if (saveError) {
+      setError(saveError);
+    } else {
+      onSaved();
+    }
   };
 
   return (
