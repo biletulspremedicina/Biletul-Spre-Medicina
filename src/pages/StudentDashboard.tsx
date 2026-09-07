@@ -253,9 +253,9 @@ export default function StudentDashboard({ onStartSimulation, onViewResults, onO
 
   <CountdownTimer />
 
-  <p className="mx-auto mt-5 max-w-xl text-center text-xs text-emerald-300/70 leading-relaxed sm:text-sm">
-    Alătură-te comunității de viitori medici și fii primul care accesează noile simulări și grile explicate.
-  </p>
+  <p className="mx-auto mt-5 max-w-xl text-center text-xs sm:text-sm font-medium text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.6)] leading-relaxed">
+  Alătură-te comunității de viitori medici și fii primul care accesează noile simulări și grile explicate.
+</p>
 </div>
 
             {/* ── Subscription bar ── */}
