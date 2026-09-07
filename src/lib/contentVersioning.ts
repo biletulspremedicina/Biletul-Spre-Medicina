@@ -35,11 +35,19 @@ export type QuestionChange = {
   protectedFieldWarnings: string[];
 };
 
+export type ContentLevelChange = {
+  field: string;
+  label: string;
+  oldValue: string;
+  newValue: string;
+};
+
 export type ValidationResult = {
   isValid: boolean;
   errors: string[];
   warnings: string[];
   changes: QuestionChange[];
+  contentChanges: ContentLevelChange[];
   totalQuestions: number;
   modifiedQuestions: number;
   missingIds: string[];
@@ -223,7 +231,12 @@ export function compareQuestions(
 export function validateImport(
   excelRows: Record<string, string>[],
   dbQuestions: AnyQuestion[],
-  expectedContentId: string
+  expectedContentId: string,
+  currentMetadata?: {
+    title: string;
+    materie?: string;
+    lectie?: string;
+  }
 ): ValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
@@ -231,6 +244,7 @@ export function validateImport(
   const duplicateIds: string[] = [];
   const wrongContentIds: string[] = [];
   const protectedFieldChanges: string[] = [];
+  const contentChanges: ContentLevelChange[] = [];
 
   const seenIds = new Set<string>();
   const dbMap = new Map<string, AnyQuestion>();
@@ -276,6 +290,41 @@ export function validateImport(
     }
   }
 
+  // ── Detect content-level changes (Titlu, Materie, Lecție) ──
+  if (currentMetadata) {
+    const excelTitle = (excelRows[0]?.['Titlu simulare/set'] || '').trim();
+    if (excelTitle && excelTitle !== currentMetadata.title.trim()) {
+      contentChanges.push({
+        field: 'title',
+        label: 'Titlu',
+        oldValue: currentMetadata.title,
+        newValue: excelTitle,
+      });
+    }
+    if (currentMetadata.materie !== undefined) {
+      const excelMaterie = (excelRows[0]?.['Materie'] || '').trim();
+      if (excelMaterie && excelMaterie !== currentMetadata.materie.trim()) {
+        contentChanges.push({
+          field: 'subject',
+          label: 'Materie',
+          oldValue: currentMetadata.materie,
+          newValue: excelMaterie,
+        });
+      }
+    }
+    if (currentMetadata.lectie !== undefined) {
+      const excelLectie = (excelRows[0]?.['Lecție'] || '').trim();
+      if (excelLectie && excelLectie !== currentMetadata.lectie.trim()) {
+        contentChanges.push({
+          field: 'lesson_title',
+          label: 'Lecție',
+          oldValue: currentMetadata.lectie,
+          newValue: excelLectie,
+        });
+      }
+    }
+  }
+
   // Compare fields
   const changes: QuestionChange[] = [];
   for (const row of excelRows) {
@@ -300,6 +349,7 @@ export function validateImport(
     errors,
     warnings,
     changes,
+    contentChanges,
     totalQuestions: excelRows.length,
     modifiedQuestions,
     missingIds,
@@ -321,4 +371,14 @@ export function buildRpcChanges(
       }
       return obj;
     });
+}
+
+export function buildContentChangesRpc(
+  contentChanges: ContentLevelChange[]
+): Record<string, string> {
+  const obj: Record<string, string> = {};
+  for (const c of contentChanges) {
+    obj[c.field] = c.newValue;
+  }
+  return obj;
 }

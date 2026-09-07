@@ -231,7 +231,11 @@ export async function generateCorrectionXlsx(
   await wb.xlsx.writeFile(fileName);
 }
 
-// ── Import parsing (uses SheetJS — unchanged) ─────────────────────────────
+// ── Import parsing (uses SheetJS) ─────────────────────────────────────────
+// Identifies columns by header name (not position) and finds the "Grile" sheet by name.
+// Accepts: columns in any order, extra sheets, modified formatting, multiline cells,
+// empty cells, Romanian diacritics.
+// Refuses: no "Grile" sheet, no "ID grilă" column, no header row.
 
 export function parseCorrectionXlsx(
   file: File
@@ -242,8 +246,18 @@ export function parseCorrectionXlsx(
       try {
         const data = new Uint8Array(e.target?.result as ArrayBuffer);
         const wb = XLSX.read(data, { type: 'array' });
-        const sheetName = wb.SheetNames[0];
-        const ws = wb.Sheets[sheetName];
+
+        // Find the "Grile" sheet by name (case-insensitive, trimmed)
+        const grileSheetName = wb.SheetNames.find(
+          (name) => name.trim().toLowerCase() === 'grile'
+        );
+
+        if (!grileSheetName) {
+          reject(new Error('Fișierul nu conține o foaie numită „Grile".'));
+          return;
+        }
+
+        const ws = wb.Sheets[grileSheetName];
         const json = XLSX.utils.sheet_to_json<unknown[]>(ws, {
           header: 1,
           raw: false,
@@ -254,18 +268,32 @@ export function parseCorrectionXlsx(
           return;
         }
 
-        const headers = (json[0] as unknown[]).map((h) => String(h || ''));
-        const rows: Record<string, string>[] = [];
+        // Build header map: header name → column index (by name, not position)
+        const rawHeaders = json[0] as unknown[];
+        const headerMap = new Map<string, number>();
+        for (let j = 0; j < rawHeaders.length; j++) {
+          const h = String(rawHeaders[j] || '').trim();
+          if (h && !headerMap.has(h)) {
+            headerMap.set(h, j);
+          }
+        }
 
+        // Require "ID grilă" column
+        if (!headerMap.has('ID grilă')) {
+          reject(new Error('Fișierul nu conține coloana „ID grilă".'));
+          return;
+        }
+
+        // Build rows as key-value objects keyed by header name
+        const rows: Record<string, string>[] = [];
         for (let i = 1; i < json.length; i++) {
           const rawRow = json[i] as unknown[];
           if (!rawRow || rawRow.every((v) => v === null || v === undefined || v === '')) continue;
 
           const rowObj: Record<string, string> = {};
-          for (let j = 0; j < headers.length; j++) {
-            const header = String(headers[j] || '').trim();
-            const val = rawRow[j];
-            rowObj[header] = val !== null && val !== undefined ? String(val) : '';
+          for (const [header, colIdx] of headerMap) {
+            const val = rawRow[colIdx];
+            rowObj[header] = val !== null && val !== undefined ? String(val).trim() : '';
           }
           rows.push(rowObj);
         }

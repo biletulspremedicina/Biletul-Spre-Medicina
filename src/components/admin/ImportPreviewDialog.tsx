@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Loader2, AlertTriangle, CheckCircle2, FileUp, X } from 'lucide-react';
 import type { ValidationResult } from '@/lib/contentVersioning';
 import { supabase } from '@/lib/supabase';
-import { buildRpcChanges, type ContentType } from '@/lib/contentVersioning';
+import { buildRpcChanges, buildContentChangesRpc, type ContentType } from '@/lib/contentVersioning';
 
 type Props = {
   result: ValidationResult;
@@ -30,7 +30,9 @@ export default function ImportPreviewDialog({
     setError(null);
     try {
       const rpcChanges = buildRpcChanges(result.changes);
-      if (rpcChanges.length === 0) {
+      const contentRpc = buildContentChangesRpc(result.contentChanges);
+
+      if (rpcChanges.length === 0 && Object.keys(contentRpc).length === 0) {
         setError('Nu există modificări valide de aplicat.');
         setApplying(false);
         return;
@@ -41,6 +43,7 @@ export default function ImportPreviewDialog({
         p_content_id: contentId,
         p_file_name: fileName,
         p_changes: rpcChanges,
+        p_content_changes: contentRpc,
       });
 
       if (rpcError) throw rpcError;
@@ -51,7 +54,7 @@ export default function ImportPreviewDialog({
         onConfirm();
       }, 1500);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Eroare la aplicarea importului.');
+      setError(err instanceof Error ? err.message : 'Importul nu a fost aplicat. Datele existente au rămas neschimbate.');
       setApplying(false);
     }
   };
@@ -72,7 +75,7 @@ export default function ImportPreviewDialog({
     );
   }
 
-  const hasChanges = result.changes.some((c) => c.fields.length > 0);
+  const hasChanges = result.changes.some((c) => c.fields.length > 0) || result.contentChanges.length > 0;
   const hasProtectedWarnings = result.protectedFieldChanges.length > 0;
 
   return (
@@ -128,6 +131,33 @@ export default function ImportPreviewDialog({
               <p className="mt-2 text-xs text-amber-600">
                 Aceste modificări vor fi ignorate. Restul modificărilor textuale vor fi aplicate.
               </p>
+            </div>
+          )}
+
+          {/* Content-level changes (Titlu, Materie, Lecție) */}
+          {result.contentChanges.length > 0 && (
+            <div className="mb-4 rounded-xl border border-blue-200 bg-blue-50 p-4">
+              <h3 className="mb-2 text-sm font-bold text-blue-800">
+                Modificări la nivel de conținut ({result.contentChanges.length})
+              </h3>
+              <div className="space-y-2">
+                {result.contentChanges.map((c) => (
+                  <div key={c.field} className="grid grid-cols-1 gap-1 sm:grid-cols-2">
+                    <div>
+                      <span className="text-xs font-semibold text-stone-500">{c.label} — vechi:</span>
+                      <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-800 line-through">
+                        {c.oldValue || '(gol)'}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-xs font-semibold text-stone-500">{c.label} — nou:</span>
+                      <p className="rounded-lg bg-green-50 px-3 py-2 text-xs font-medium text-green-800">
+                        {c.newValue}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

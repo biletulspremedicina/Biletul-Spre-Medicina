@@ -121,10 +121,14 @@ export default function ContentTools({
       const excelRows = await parseCorrectionXlsx(file);
       const dbQuestions = await fetchQuestions();
 
-      const result = validateImport(excelRows, dbQuestions, contentId);
+      const result = validateImport(excelRows, dbQuestions, contentId, {
+        title: contentTitle,
+        materie,
+        lectie,
+      });
       setValidationResult(result);
 
-      if (result.errors.length === 0 && result.modifiedQuestions === 0 && result.warnings.length === 0) {
+      if (result.errors.length === 0 && result.modifiedQuestions === 0 && result.contentChanges.length === 0 && result.warnings.length === 0) {
         setMessage({ type: 'info', text: 'Nu au fost găsite modificări.' });
         setBusy(null);
       } else if (result.errors.length === 0) {
@@ -134,8 +138,9 @@ export default function ContentTools({
         setMessage({ type: 'error', text: `Au fost găsite ${result.errors.length} erori. Vezi previzualizarea.` });
         setBusy(null);
       }
-    } catch {
-      setMessage({ type: 'error', text: 'Eroare la citirea fișierului.' });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Eroare la citirea fișierului.';
+      setMessage({ type: 'error', text: msg });
       setBusy(null);
     }
 
