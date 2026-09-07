@@ -1,5 +1,4 @@
 import * as XLSX from 'xlsx';
-import * as ExcelJS from 'exceljs';
 import type { ExportRow } from '@/lib/contentVersioning';
 
 // ── Color constants (match site theme) ───────────────────────────────────
@@ -55,24 +54,26 @@ const COL_WIDTHS = [
   20,  // Q: URL imagine
 ];
 
-const THIN_BORDER: Partial<ExcelJS.Border> = {
-  style: 'thin' as const,
-  color: { argb: BORDER_GREY },
-};
-
-const FULL_BORDER = {
-  top: THIN_BORDER as ExcelJS.Border,
-  bottom: THIN_BORDER as ExcelJS.Border,
-  left: THIN_BORDER as ExcelJS.Border,
-  right: THIN_BORDER as ExcelJS.Border,
-} as unknown as ExcelJS.Borders;
-
 // ── Main export function using ExcelJS for full styling ───────────────────
 
 export async function generateCorrectionXlsx(
   rows: ExportRow[],
   fileName: string
 ): Promise<void> {
+  const ExcelJS = await import('exceljs');
+
+  const THIN_BORDER = {
+    style: 'thin' as const,
+    color: { argb: BORDER_GREY },
+  };
+
+  const FULL_BORDER = {
+    top: THIN_BORDER,
+    bottom: THIN_BORDER,
+    left: THIN_BORDER,
+    right: THIN_BORDER,
+  };
+
   const wb = new ExcelJS.Workbook();
   wb.creator = 'Biletul spre Medicină';
   wb.created = new Date();
@@ -243,10 +244,6 @@ export async function generateCorrectionXlsx(
 }
 
 // ── Import parsing (uses SheetJS) ─────────────────────────────────────────
-// Identifies columns by header name (not position) and finds the "Grile" sheet by name.
-// Accepts: columns in any order, extra sheets, modified formatting, multiline cells,
-// empty cells, Romanian diacritics.
-// Refuses: no "Grile" sheet, no "ID grilă" column, no header row.
 
 export function parseCorrectionXlsx(
   file: File
