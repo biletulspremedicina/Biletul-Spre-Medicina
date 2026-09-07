@@ -138,29 +138,6 @@ export async function generateNewQuestionsTemplate(
   }
   headerRow.commit();
 
-  // Data validation dropdowns
-  // Tip grilă: CS or CG (column B = index 2)
-  ws.addDataValidation({
-    type: 'list',
-    formulae: ['"CS,CG"'],
-    showErrorMessage: true,
-    errorTitle: 'Tip invalid',
-    error: 'Folosește doar CS sau CG.',
-    allowBlank: false,
-    sqref: `B2:B1000`,
-  });
-
-  // Răspuns corect: A-E (column M = index 13)
-  ws.addDataValidation({
-    type: 'list',
-    formulae: ['"A,B,C,D,E"'],
-    showErrorMessage: true,
-    errorTitle: 'Răspuns invalid',
-    error: 'Folosește doar A, B, C, D sau E.',
-    allowBlank: false,
-    sqref: `M2:M1000`,
-  });
-
   // ── Sheet 2: INSTRUCȚIUNI AI ──
   const wsInst = wb.addWorksheet('INSTRUCȚIUNI AI');
   wsInst.columns = [{ width: 90 }];
