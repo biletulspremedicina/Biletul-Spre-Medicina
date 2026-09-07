@@ -4,7 +4,7 @@ import { useAuth } from '@/context/AuthContext';
 import {
   Clock, CreditCard, Trophy, CheckCircle2, Crown, Sparkles,
   Archive, RotateCcw, Lock, PlayCircle, BookOpen, Loader2, GraduationCap,
-  LayoutGrid, BarChart3,
+  BarChart3,
 } from 'lucide-react';
 import Logo from '@/components/Logo';
 import Loading from '@/components/Loading';
@@ -138,7 +138,7 @@ export default function StudentDashboard({ onStartSimulation, onViewResults, onO
   });
 
   const tabs: { id: TabId; label: string; icon: React.ReactNode }[] = [
-    { id: 'all', label: 'Toate simulările', icon: <LayoutGrid size={15} /> },
+    { id: 'all', label: 'Toate simulările', icon: <Archive size={15} /> },
     { id: 'free', label: 'Simulări gratuite', icon: <Sparkles size={15} /> },
     { id: 'premium', label: 'Simulări abonament', icon: <Crown size={15} /> },
     { id: 'dashboard', label: 'Dashboard activitate', icon: <BarChart3 size={15} /> },
