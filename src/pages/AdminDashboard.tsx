@@ -44,8 +44,13 @@ export default function AdminDashboard({ onExit }: Props) {
     <div className="min-h-screen bg-stone-50">
       <header className="sticky top-0 z-10 border-b border-stone-200 bg-white/80 backdrop-blur-sm">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center gap-3">
-            <Logo size="sm" />
+          <div className="flex items-center gap-2">
+            <Logo className="h-9 w-auto flex-shrink-0" />
+            <div className="flex flex-col text-[12px] font-extrabold uppercase tracking-wide leading-[1.08] select-none whitespace-nowrap">
+              <span className="text-stone-900">Biletul</span>
+              <span className="text-stone-900">Spre</span>
+              <span className="text-brand-600 font-black">Medicină</span>
+            </div>
             <span className="badge bg-brand-100 text-brand-700 ml-2">Admin</span>
           </div>
           <div className="flex items-center gap-3">
@@ -58,7 +63,7 @@ export default function AdminDashboard({ onExit }: Props) {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6 flex gap-1 rounded-xl bg-stone-100 p-1">
           <TabButton active={tab === 'simulations'} onClick={() => setTab('simulations')} icon={<LayoutDashboard size={16} />}>
-            Simulări & Întrebări
+            Examene și simulări UMFCD
           </TabButton>
           <TabButton active={tab === 'practice'} onClick={() => setTab('practice')} icon={<GraduationCap size={16} />}>
             Lecții & Seturi
@@ -138,7 +143,7 @@ function SimulationsTab({
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="font-display text-xl font-bold text-stone-900">Simulări</h2>
+        <h2 className="font-display text-xl font-bold text-stone-900">Examene și simulări UMFCD</h2>
         <button onClick={() => setCreatingSim(true)} className="btn-primary">
           <Plus size={16} /> Creează simulare
         </button>

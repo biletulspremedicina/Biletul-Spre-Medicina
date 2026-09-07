@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import Logo from '@/components/Logo';
 import Loading from '@/components/Loading';
+import { CountdownTimer } from '@/components/CountdownTimer';
 
 type Props = {
   onStartSimulation: (simulationId: string) => void;
@@ -22,7 +23,7 @@ type SimWithStatus = Simulation & {
   questionCount: number;
 };
 
-type TabId = 'all' | 'free' | 'premium' | 'dashboard';
+type TabId = 'all' | 'practice' | 'premium' | 'dashboard';
 
 export default function StudentDashboard({ onStartSimulation, onViewResults, onOpenPractice }: Props) {
   const { profile, signOut } = useAuth();
@@ -132,15 +133,14 @@ export default function StudentDashboard({ onStartSimulation, onViewResults, onO
 
   // Filter simulations by active tab
   const filteredSims = simulations.filter((sim) => {
-    if (activeTab === 'free') return !sim.requires_subscription;
     if (activeTab === 'premium') return sim.requires_subscription;
     return true;
   });
 
   const tabs: { id: TabId; label: string; icon: React.ReactNode }[] = [
     { id: 'all', label: 'Toate simulările', icon: <Archive size={15} /> },
-    { id: 'free', label: 'Simulări gratuite', icon: <Sparkles size={15} /> },
-    { id: 'premium', label: 'Simulări abonament', icon: <Crown size={15} /> },
+    { id: 'practice', label: 'Grile pe lecții', icon: <GraduationCap size={15} /> },
+    { id: 'premium', label: 'Examene și simulări UMFCD', icon: <Crown size={15} /> },
     { id: 'dashboard', label: 'Dashboard activitate', icon: <BarChart3 size={15} /> },
   ];
 
@@ -149,8 +149,13 @@ export default function StudentDashboard({ onStartSimulation, onViewResults, onO
       {/* ── Header ── */}
       <header className="sticky top-0 z-20 border-b border-stone-200 bg-white/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-[1400px] items-center justify-between px-4 sm:px-6 lg:px-8 py-3.5">
-          <div className="flex items-center gap-3">
-            <Logo size="sm" />
+          <div className="flex items-center gap-2">
+            <Logo className="h-9 w-auto flex-shrink-0" />
+            <div className="flex flex-col text-[12px] font-extrabold uppercase tracking-wide leading-[1.08] select-none whitespace-nowrap">
+              <span className="text-stone-900">Biletul</span>
+              <span className="text-stone-900">Spre</span>
+              <span className="text-brand-600 font-black">Medicină</span>
+            </div>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <span className="hidden text-sm font-medium text-stone-600 sm:inline max-w-[200px] truncate">
@@ -167,6 +172,17 @@ export default function StudentDashboard({ onStartSimulation, onViewResults, onO
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
         <div className="rounded-3xl border border-stone-200/80 bg-white/60 shadow-sm overflow-hidden">
           <div className="p-5 sm:p-6 lg:p-8">
+
+            {/* ── Countdown timer ── */}
+            <div className="mb-6 rounded-2xl border border-stone-700 bg-stone-900 p-5 sm:p-6 overflow-hidden">
+              <p className="mb-4 text-center font-display text-sm font-bold tracking-wide text-white sm:text-base">
+                Materiale noi pe platformă în:
+              </p>
+              <CountdownTimer />
+              <p className="mx-auto mt-4 max-w-xl text-center text-xs text-stone-400">
+                Alătură-te comunității de viitori medici și fii primul care accesează noile simulări și grile explicate.
+              </p>
+            </div>
 
             {/* ── Subscription bar ── */}
             {hasActiveSub ? (
@@ -251,7 +267,7 @@ export default function StudentDashboard({ onStartSimulation, onViewResults, onO
             </div>
 
             {/* ── Progress indicator ── */}
-            {activeTab !== 'dashboard' && (
+            {activeTab !== 'dashboard' && activeTab !== 'practice' && (
               <div className="mb-6">
                 <div className="flex items-baseline justify-between gap-3 mb-2">
                   <p className="font-display text-lg font-bold text-stone-900">
@@ -274,12 +290,10 @@ export default function StudentDashboard({ onStartSimulation, onViewResults, onO
               </div>
             )}
 
-            {/* ── Dashboard tab ── */}
-            {activeTab === 'dashboard' && (
+            {/* ── Practice tab ── */}
+            {activeTab === 'practice' && (
               <div>
-                {/* Practice by lessons link */}
-                <div
-                  className="mb-6 flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-accent-200 bg-accent-50 p-5 transition-all hover:border-accent-300 hover:bg-accent-100"
+                <div className="mb-6 flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-accent-200 bg-accent-50 p-5 transition-all hover:border-accent-300 hover:bg-accent-100"
                   onClick={onOpenPractice}
                   role="button"
                   tabIndex={0}
@@ -300,7 +314,12 @@ export default function StudentDashboard({ onStartSimulation, onViewResults, onO
                     <BookOpen size={24} />
                   </div>
                 </div>
+              </div>
+            )}
 
+            {/* ── Dashboard tab ── */}
+            {activeTab === 'dashboard' && (
+              <div>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                   <StatCard
                     icon={<Archive size={20} />}
@@ -331,7 +350,7 @@ export default function StudentDashboard({ onStartSimulation, onViewResults, onO
             )}
 
             {/* ── Simulation grid ── */}
-            {activeTab !== 'dashboard' && (
+            {(activeTab === 'all' || activeTab === 'premium') && (
               <>
                 {filteredSims.length === 0 ? (
                   <div className="rounded-2xl border border-stone-200 bg-white p-12 text-center text-stone-500">
