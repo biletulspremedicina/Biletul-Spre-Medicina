@@ -95,7 +95,7 @@ export default function ContentTools({
       const prefix = contentType === 'simulation' ? 'corectura-simulare' : 'corectura-antrenament';
       const fileName = `${prefix}-${safeTitle}-${dateStr}.xlsx`;
 
-      generateCorrectionXlsx(rows, fileName);
+      await generateCorrectionXlsx(rows, fileName);
       setMessage({ type: 'success', text: 'Fișierul pentru corectură a fost descărcat.' });
     } catch {
       setMessage({ type: 'error', text: 'Eroare la generarea fișierului Excel.' });

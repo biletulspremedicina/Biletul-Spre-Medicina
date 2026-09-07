@@ -1,40 +1,15 @@
 import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import type { ExportRow } from '@/lib/contentVersioning';
 
-type CellFill = {
-  patternType: 'solid';
-  fgColor: { rgb: string };
-  bgColor: { rgb: string };
-};
+// ── Color constants (match site theme) ───────────────────────────────────
 
-const GREY_FILL: CellFill = {
-  patternType: 'solid',
-  fgColor: { rgb: 'E7E6E6' },
-  bgColor: { rgb: 'E7E6E6' },
-};
-
-const GREEN_FILL: CellFill = {
-  patternType: 'solid',
-  fgColor: { rgb: 'E2EFDA' },
-  bgColor: { rgb: 'E2EFDA' },
-};
-
-type CellFont = {
-  name: string;
-  sz: number;
-  bold: boolean;
-  color: { rgb: string };
-};
-
-const HEADER_FONT: CellFont = {
-  name: 'Calibri',
-  sz: 11,
-  bold: true,
-  color: { rgb: '1F2937' },
-};
-
-const PROTECTED_COL_INDICES = new Set([0, 1, 2, 3, 7, 14, 16]);
-
+const BRAND_600 = 'FF2A6B4E'; // site primary color with alpha prefix
+const WHITE = 'FFFFFFFF';
+const GREY_BG = 'FFE7E6E6';
+const GREEN_BG = 'FFE2EFDA';
+const BORDER_GREY = 'FFD0D0D0';
+const TEXT_DARK = 'FF1F2937';
 
 const COLUMNS = [
   'Tip conținut',
@@ -56,36 +31,100 @@ const COLUMNS = [
   'URL imagine',
 ] as const;
 
-type SheetCell = {
-  v: string | number;
-  t?: 's' | 'n';
-  s?: {
-    fill?: CellFill;
-    font?: CellFont;
-    alignment?: { wrapText: boolean; vertical: 'top' };
-  };
+// Column indices (0-based) that are technical/protected:
+// A(0), B(1), C(2), D(3), H(7), O(14), Q(16)
+const PROTECTED_COL_INDICES = new Set([0, 1, 2, 3, 7, 14, 16]);
+
+const COL_WIDTHS = [
+  14,  // A: Tip conținut
+  36,  // B: ID simulare/set
+  36,  // C: ID grilă
+  8,   // D: Ordine
+  28,  // E: Titlu
+  14,  // F: Materie
+  20,  // G: Lecție
+  10,  // H: Tip grilă
+  50,  // I: Enunț
+  40,  // J: Varianta A
+  40,  // K: Varianta B
+  40,  // L: Varianta C
+  40,  // M: Varianta D
+  40,  // N: Varianta E
+  14,  // O: Răspuns corect
+  50,  // P: Explicație
+  20,  // Q: URL imagine
+];
+
+const THIN_BORDER: Partial<ExcelJS.Border> = {
+  style: 'thin' as const,
+  color: { argb: BORDER_GREY },
 };
 
-export function generateCorrectionXlsx(
+const FULL_BORDER = {
+  top: THIN_BORDER as ExcelJS.Border,
+  bottom: THIN_BORDER as ExcelJS.Border,
+  left: THIN_BORDER as ExcelJS.Border,
+  right: THIN_BORDER as ExcelJS.Border,
+} as unknown as ExcelJS.Borders;
+
+// ── Main export function using ExcelJS for full styling ───────────────────
+
+export async function generateCorrectionXlsx(
   rows: ExportRow[],
   fileName: string
-): void {
-  // ── Main sheet: Grile ──
-  const headerCells: SheetCell[] = COLUMNS.map((col, idx) => {
-    const isProtected = PROTECTED_COL_INDICES.has(idx);
-    return {
-      v: col,
-      t: 's',
-      s: {
-        fill: isProtected ? GREY_FILL : GREEN_FILL,
-        font: HEADER_FONT,
-        alignment: { wrapText: true, vertical: 'top' },
-      },
-    };
+): Promise<void> {
+  const wb = new ExcelJS.Workbook();
+  wb.creator = 'Biletul spre Medicină';
+  wb.created = new Date();
+
+  // ── Sheet 1: Grile ──
+  const ws = wb.addWorksheet('Grile', {
+    views: [{ state: 'frozen', ySplit: 1, activeCell: 'A2' }],
+    properties: { defaultRowHeight: 18 },
   });
 
-  const dataRows: SheetCell[][] = rows.map((r) => {
-    const values = [
+  // Auto filter on header row A1:Q1
+  ws.autoFilter = {
+    from: { row: 1, column: 1 },
+    to: { row: 1, column: COLUMNS.length },
+  };
+
+  // Set column widths
+  ws.columns = COL_WIDTHS.map((wch, idx) => ({
+    width: wch,
+    key: `col${idx}`,
+  }));
+
+  // ── Header row (row 1) ──
+  const headerRow = ws.getRow(1);
+  headerRow.height = 32;
+  for (let col = 0; col < COLUMNS.length; col++) {
+    const cell = headerRow.getCell(col + 1);
+    cell.value = COLUMNS[col];
+    cell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: BRAND_600 },
+    };
+    cell.font = {
+      name: 'Calibri',
+      size: 11,
+      bold: true,
+      color: { argb: WHITE },
+    };
+    cell.alignment = {
+      wrapText: true,
+      vertical: 'middle',
+      horizontal: 'center',
+    };
+    cell.border = FULL_BORDER;
+  }
+  headerRow.commit();
+
+  // ── Data rows ──
+  for (let rowIdx = 0; rowIdx < rows.length; rowIdx++) {
+    const r = rows[rowIdx];
+    const values: (string | number)[] = [
       r.tipContinut,
       r.idContinut,
       r.idGrila,
@@ -104,93 +143,95 @@ export function generateCorrectionXlsx(
       r.explicatie,
       r.urlImagine,
     ];
-    return values.map((val, colIdx) => {
-      const isProtected = PROTECTED_COL_INDICES.has(colIdx);
-      return {
-        v: typeof val === 'number' ? val : String(val),
-        t: typeof val === 'number' ? 'n' : 's',
-        s: {
-          fill: isProtected ? GREY_FILL : undefined,
-          alignment: { wrapText: !isProtected, vertical: 'top' as const },
-        },
+
+    const excelRow = ws.getRow(rowIdx + 2);
+
+    // Estimate row height based on longest text
+    let maxLines = 1;
+    for (let col = 0; col < values.length; col++) {
+      const text = String(values[col] || '');
+      if (!text) continue;
+      const colWidth = COL_WIDTHS[col] || 40;
+      const charsPerLine = Math.max(10, Math.floor(colWidth * 1.1));
+      const explicitLines = text.split('\n').length;
+      const wrappedLines = Math.ceil(text.length / charsPerLine);
+      const lines = Math.max(explicitLines, wrappedLines);
+      if (lines > maxLines) maxLines = lines;
+    }
+    excelRow.height = Math.max(20, maxLines * 15);
+
+    for (let col = 0; col < values.length; col++) {
+      const cell = excelRow.getCell(col + 1);
+      cell.value = values[col];
+      cell.font = {
+        name: 'Calibri',
+        size: 11,
+        bold: false,
+        color: { argb: TEXT_DARK },
       };
-    });
-  });
+      cell.alignment = {
+        wrapText: true,
+        vertical: 'top',
+      };
+      cell.border = FULL_BORDER;
 
-  const sheetData: (SheetCell | string | number)[][] = [
-    headerCells,
-    ...dataRows,
+      const isProtected = PROTECTED_COL_INDICES.has(col);
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: isProtected ? GREY_BG : GREEN_BG },
+      };
+    }
+    excelRow.commit();
+  }
+
+  // ── Sheet 2: INSTRUCȚIUNI ──
+  const wsInst = wb.addWorksheet('INSTRUCȚIUNI');
+  wsInst.columns = [{ width: 80 }];
+
+  const instructions: string[] = [
+    'INSTRUCȚIUNI CORECTURĂ',
+    '',
+    '1. Coloanele cu fundal GRI sunt tehnice și NU trebuie modificate:',
+    '   - Tip conținut, ID simulare/set, ID grilă, Ordine, Tip grilă, Răspuns corect, URL imagine',
+    '',
+    '2. Coloanele cu fundal VERDE pot fi corectate:',
+    '   - Titlu, Materie, Lecție, Enunț, Variantele A–E, Explicație',
+    '',
+    '3. NU modificați:',
+    '   - ID-urile grilelor',
+    '   - Ordinea grilelor',
+    '   - Răspunsurile corecte',
+    '   - Tipul grilei (CS/CG)',
+    '   - URL-urile imaginilor',
+    '',
+    '4. Păstrați diacriticele românești (ă, â, î, ș, ț).',
+    '',
+    '5. Pentru grile CG (Complement Grupat), variantele A–D conțin afirmațiile 1–4.',
+    '   Varianta E este goală pentru CG.',
+    '',
+    '6. Nu adăugați și nu ștergeți rânduri. Modificați doar textul în coloanele verzi.',
+    '',
+    '7. După corectură, salvați fișierul ca .xlsx și importați-l folosind butonul',
+    '   „Importă versiunea corectată" din panoul de administrare.',
   ];
 
-  const ws = XLSX.utils.aoa_to_sheet(
-    sheetData.map((row) =>
-      row.map((cell) =>
-        typeof cell === 'object' && cell !== null && 'v' in cell
-          ? (cell as SheetCell).v
-          : cell
-      )
-    )
-  );
+  for (let i = 0; i < instructions.length; i++) {
+    const cell = wsInst.getCell(`A${i + 1}`);
+    cell.value = instructions[i];
+    if (i === 0) {
+      cell.font = { name: 'Calibri', size: 14, bold: true, color: { argb: BRAND_600 } };
+    } else {
+      cell.font = { name: 'Calibri', size: 11, color: { argb: TEXT_DARK } };
+    }
+    cell.alignment = { wrapText: true, vertical: 'top' };
+  }
 
-  // Set column widths
-  ws['!cols'] = [
-    { wch: 14 }, // Tip conținut
-    { wch: 36 }, // ID simulare/set
-    { wch: 36 }, // ID grilă
-    { wch: 8 },  // Ordine
-    { wch: 28 }, // Titlu
-    { wch: 14 }, // Materie
-    { wch: 20 }, // Lecție
-    { wch: 10 }, // Tip grilă
-    { wch: 50 }, // Enunț
-    { wch: 40 }, // Varianta A
-    { wch: 40 }, // Varianta B
-    { wch: 40 }, // Varianta C
-    { wch: 40 }, // Varianta D
-    { wch: 40 }, // Varianta E
-    { wch: 14 }, // Răspuns corect
-    { wch: 50 }, // Explicație
-    { wch: 20 }, // URL imagine
-  ];
-
-  // ── Instructions sheet ──
-  const instructions = [
-    ['INSTRUCȚIUNI CORECTURĂ'],
-    [''],
-    ['1. Coloanele cu fundal GRI sunt tehnice și NU trebuie modificate:'],
-    ['   - Tip conținut, ID simulare/set, ID grilă, Ordine, Tip grilă, Răspuns corect, URL imagine'],
-    [''],
-    ['2. Coloanele cu fundal VERDE pot fi corectate:'],
-    ['   - Titlu, Materie, Lecție, Enunț, Variantele A–E, Explicație'],
-    [''],
-    ['3. NU modificați:'],
-    ['   - ID-urile grilelor'],
-    ['   - Ordinea grilelor'],
-    ['   - Răspunsurile corecte'],
-    ['   - Tipul grilei (CS/CG)'],
-    ['   - URL-urile imaginilor'],
-    [''],
-    ['4. Păstrați diacriticele românești (ă, â, î, ș, ț).'],
-    [''],
-    ['5. Pentru grile CG (Complement Grupat), variantele A–D conțin afirmațiile 1–4.'],
-    ['   Varianta E este goală pentru CG.'],
-    [''],
-    ['6. Nu adăugați și nu ștergeți rânduri. Modificați doar textul în coloanele verzi.'],
-    [''],
-    ['7. După corectură, salvați fișierul ca .xlsx și importați-l folosind butonul'],
-    ['   „Importă versiunea corectată" din panoul de administrare.'],
-  ];
-
-  const wsInstructions = XLSX.utils.aoa_to_sheet(instructions);
-  wsInstructions['!cols'] = [{ wch: 80 }];
-
-  // ── Build workbook ──
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Grile');
-  XLSX.utils.book_append_sheet(wb, wsInstructions, 'INSTRUCȚIUNI');
-
-  XLSX.writeFile(wb, fileName, { bookType: 'xlsx' });
+  // ── Write to file ──
+  await wb.xlsx.writeFile(fileName);
 }
+
+// ── Import parsing (uses SheetJS — unchanged) ─────────────────────────────
 
 export function parseCorrectionXlsx(
   file: File
