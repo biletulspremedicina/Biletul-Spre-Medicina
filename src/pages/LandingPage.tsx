@@ -74,27 +74,24 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
       <WhyChooseUs />
 
       {/* ────────────────────────── Stats / Progress preview ────────────────────────── */}
-     <section className="relative overflow-hidden bg-stone-50/60 py-20 sm:py-24 border-y border-stone-200/60">
-  <div className="absolute inset-0 grid-bg opacity-[0.03]" />
-  <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-brand-500/10 blur-3xl" />
-  <div className="absolute -left-20 -bottom-20 h-72 w-72 rounded-full bg-brand-500/5 blur-3xl" />
+     <section className="relative overflow-hidden bg-stone-950 py-20 sm:py-24 border-y border-stone-800/80">
+  <div className="absolute inset-0 grid-bg opacity-[0.05]" />
+  <div className="absolute -right-20 -top-20 h-80 w-80 rounded-full bg-brand-500/20 blur-3xl" />
+  <div className="absolute -left-20 -bottom-20 h-80 w-80 rounded-full bg-emerald-500/15 blur-3xl" />
 
   <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-    {/* Rândul 1: Titlul */}
     <Reveal className="mb-8 text-center">
-      <h2 className="font-display text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
+      <h2 className="font-display text-3xl font-bold tracking-tight text-stone-100 sm:text-4xl">
         Materiale noi pe platformă în:
       </h2>
     </Reveal>
 
-    {/* Rândul 2: Cronometru invers */}
     <Reveal delay={80}>
       <CountdownTimer />
     </Reveal>
 
-    {/* Rândul 3: Subtitlu */}
     <Reveal delay={150}>
-      <p className="mx-auto mt-8 max-w-xl text-center text-stone-600 font-medium">
+      <p className="mx-auto mt-8 max-w-xl text-center text-stone-400">
         Alătură-te comunității de viitori medici și fii primul care accesează noile simulări și grile explicate.
       </p>
     </Reveal>
