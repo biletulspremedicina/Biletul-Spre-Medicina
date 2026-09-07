@@ -218,9 +218,17 @@ export default function StudentDashboard({ onStartSimulation, onViewResults, onO
             </div>
           </div>
 
-          <p className="hidden md:block font-display text-lg font-bold text-stone-800 tracking-tight text-center flex-1 truncate px-4">
-            Antrenează-te zilnic, devino cel mai bun
-          </p>
+          <div className="hidden md:flex items-center justify-center flex-1 px-4">
+  <div className="inline-flex items-center gap-2 rounded-full border border-stone-200/80 bg-stone-100/80 px-4 py-1.5 shadow-2xs backdrop-blur-sm">
+    <span className="relative flex h-2 w-2 shrink-0">
+      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-400 opacity-75"></span>
+      <span className="relative inline-flex h-2 w-2 rounded-full bg-brand-500"></span>
+    </span>
+    <span className="font-display text-sm font-semibold tracking-tight text-stone-700">
+      Antrenează-te zilnic, <span className="font-extrabold text-brand-600">devino cel mai bun!</span>
+    </span>
+  </div>
+</div>
 
           <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
             <span className="hidden sm:flex items-center gap-1.5 text-sm font-bold text-stone-800 max-w-[220px] truncate">
