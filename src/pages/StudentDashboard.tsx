@@ -276,7 +276,7 @@ export default function StudentDashboard({ onStartSimulation, onViewResults, onO
                   <div>
                     <p className="font-semibold text-stone-900">Nu ai un abonament activ</p>
                     <p className="text-sm text-stone-600">
-                      Abonament lunar — {subPrice} RON/lună · Acces la toate simulările premium timp de 30 de zile.
+                      Abonament lunar — {subPrice} RON/lună · Acces la toate simulările timp de 30 de zile.
                     </p>
                   </div>
                 </div>
