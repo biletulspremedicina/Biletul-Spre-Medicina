@@ -4,6 +4,7 @@ import {
   Plus, Edit2, Trash2, Eye, EyeOff, ChevronLeft, Save, X, Loader2, BookOpen,
   Layers, AlertTriangle, Copy, ArrowUp, ArrowDown,
 } from 'lucide-react';
+import ContentTools from '@/components/admin/ContentTools';
 
 // ── Main component ──────────────────────────────────────────────────────
 
@@ -327,6 +328,7 @@ function SetsManager({ lesson, onBack }: { lesson: PracticeLesson; onBack: () =>
     return (
       <QuestionsManagerAdmin
         set={selectedSet}
+        lesson={lesson}
         onBack={() => { setSelectedSet(null); loadSets(); }}
       />
     );
@@ -664,7 +666,7 @@ function SetForm({ lessonId, set, position, onSaved, onCancel }: {
 
 // ── Questions Manager (Admin) ───────────────────────────────────────────
 
-function QuestionsManagerAdmin({ set, onBack }: { set: PracticeSet; onBack: () => void }) {
+function QuestionsManagerAdmin({ set, lesson, onBack }: { set: PracticeSet; lesson: PracticeLesson; onBack: () => void }) {
   const [questions, setQuestions] = useState<PracticeQuestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<PracticeQuestion | null>(null);
@@ -729,6 +731,18 @@ function QuestionsManagerAdmin({ set, onBack }: { set: PracticeSet; onBack: () =
         <button onClick={() => setCreating(true)} className="btn-primary">
           <Plus size={16} /> Adaugă grilă
         </button>
+      </div>
+
+      <div className="mb-4">
+        <ContentTools
+          contentType="practice_set"
+          contentId={set.id}
+          contentTitle={set.title}
+          materie={lesson.subject}
+          lectie={lesson.title}
+          questionTable="practice_questions"
+          parentColumn="set_id"
+        />
       </div>
 
       {loading ? (

@@ -1,6 +1,7 @@
 type Props = {
   size?: 'sm' | 'md' | 'lg';
   className?: string;
+  showText?: boolean;
 };
 
 export default function Logo({ size = 'md', className = '' }: Props) {

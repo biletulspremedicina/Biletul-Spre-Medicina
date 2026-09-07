@@ -19,8 +19,9 @@ import Reveal from '@/components/Reveal';
 type CardId = 'simulations' | 'exam' | 'dashboard' | 'support' | 'team';
 
 type Benefit = {
-  text: string;
+  text: ReactNode;
   emphasis?: string;
+  emphasisClassName?: string;
 };
 
 type AdvantageCardProps = {
@@ -196,7 +197,7 @@ export default function WhyChooseUs() {
               onActivate={setActiveCard}
             >
               <div className="mt-5 space-y-3 font-sans text-sm leading-relaxed text-stone-600 sm:text-base">
-               <p class="font-bold indent-4">
+               <p className="font-bold indent-4">
   Suntem o echipă formată din profesori și studenți, uniți de aceeași experiență și de dorința de a face pregătirea mai eficientă.
 </p>
                 <p>Am înțeles și perfecționat metodele de pregătire pentru unul dintre cele mai solicitante examene, transformând experiența noastră într-un sistem de simulări adaptat nevoilor reale ale elevilor.</p>
@@ -258,8 +259,8 @@ function AdvantageCard({
 
       {benefits && (
         <ul className="relative mt-5 space-y-3">
-          {benefits.map((benefit) => (
-            <li key={benefit.text} className="flex items-start gap-3 font-sans text-sm leading-relaxed text-stone-700 sm:text-base">
+          {benefits.map((benefit, idx) => (
+            <li key={idx} className="flex items-start gap-3 font-sans text-sm leading-relaxed text-stone-700 sm:text-base">
               <span className={`mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full ${tone === 'accent' ? 'bg-accent-100 text-accent-600' : 'bg-brand-100 text-brand-700'}`} aria-hidden="true">
                 <Check size={14} strokeWidth={3} />
               </span>

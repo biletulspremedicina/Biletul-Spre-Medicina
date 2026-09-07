@@ -110,13 +110,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
           
         </Reveal>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {FEATURES.map((f, i) => (
-            <Reveal key={f.title} delay={i * 70}>
-              <FeatureCard icon={f.icon} title={f.title} desc={f.desc} />
-            </Reveal>
-          ))}
-        </div>
+
       </section>
 
       {/* ────────────────────────── How it works ────────────────────────── */}
@@ -183,10 +177,6 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
 }
 
 
-
-const FEATURES = [
-  
-] as const;
 
 const STEPS = [
   { number: 1, title: 'Creează cont', desc: 'Înregistrează-te cu email și parolă. Contul tău îți oferă acces la toate simulările.' },
@@ -441,18 +431,6 @@ function calcTimeLeft(target: Date): TimeLeft {
     minutes: Math.floor((diff % 3600000) / 60000),
     seconds: Math.floor((diff % 60000) / 1000),
   };
-}
-
-function FeatureCard({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
-  return (
-    <div className="group card h-full p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-brand-200">
-      <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-brand-100 text-brand-600 transition-colors duration-300 group-hover:bg-brand-600 group-hover:text-white">
-        {icon}
-      </div>
-      <h3 className="mb-1.5 font-display text-base font-semibold text-stone-900">{title}</h3>
-      <p className="text-sm leading-relaxed text-stone-600">{desc}</p>
-    </div>
-  );
 }
 
 function Step({ number, title, desc }: { number: number; title: string; desc: string }) {

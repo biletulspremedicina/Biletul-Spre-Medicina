@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import Logo from '@/components/Logo';
 import Loading from '@/components/Loading';
+import ContentTools from '@/components/admin/ContentTools';
 
 type Props = {
   onExit: () => void;
@@ -268,7 +269,7 @@ function SimAdminCard({ sim, onReload, onEdit }: { sim: Simulation; onReload: ()
 
       {showQuestions && (
         <div className="mt-4 border-t border-stone-200 pt-4">
-          <QuestionsManager simulationId={sim.id} />
+          <QuestionsManager simulationId={sim.id} simulationTitle={sim.title} />
         </div>
       )}
     </div>
@@ -401,7 +402,7 @@ function SimForm({ sim, onSaved, onCancel }: { sim?: Simulation; onSaved: () => 
   );
 }
 
-function QuestionsManager({ simulationId }: { simulationId: string }) {
+function QuestionsManager({ simulationId, simulationTitle }: { simulationId: string; simulationTitle: string }) {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Question | null>(null);
@@ -454,6 +455,16 @@ function QuestionsManager({ simulationId }: { simulationId: string }) {
         <button onClick={() => setCreating(true)} className="btn-primary text-xs px-4 py-2">
           <Plus size={14} /> Adaugă grilă
         </button>
+      </div>
+
+      <div className="mb-4">
+        <ContentTools
+          contentType="simulation"
+          contentId={simulationId}
+          contentTitle={simulationTitle}
+          questionTable="questions"
+          parentColumn="simulation_id"
+        />
       </div>
 
       {loading && <p className="text-sm text-stone-500">Se încarcă...</p>}
