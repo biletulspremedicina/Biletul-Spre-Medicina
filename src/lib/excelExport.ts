@@ -227,8 +227,19 @@ export async function generateCorrectionXlsx(
     cell.alignment = { wrapText: true, vertical: 'top' };
   }
 
-  // ── Write to file ──
-  await wb.xlsx.writeFile(fileName);
+  // ── Write to file (browser-compatible) ──
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 // ── Import parsing (uses SheetJS) ─────────────────────────────────────────
