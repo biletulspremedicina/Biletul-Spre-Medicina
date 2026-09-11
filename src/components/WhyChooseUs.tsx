@@ -97,7 +97,9 @@ export default function WhyChooseUs() {
 
       <div className="relative mx-auto max-w-7xl">
         <Reveal className="mx-auto mb-8 max-w-3xl text-center motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none">
-          
+          <p className="mb-4 font-sans text-xs font-bold uppercase tracking-[0.22em] text-brand-600">
+            Hai să ne cunoști
+          </p>
           <h2
             id="why-choose-us-title"
             className="font-display text-3xl font-extrabold tracking-tight text-brand-900 sm:text-4xl lg:text-5xl"
