@@ -1,339 +1,291 @@
-import {
-  ArrowRight,
-  Clock, CheckCircle2, Lock, BookOpen,
-  Stethoscope,
+import React from 'react';
+import { 
+  Sparkles, 
+  Target, 
+  Award, 
+  Clock, 
+  Flame, 
+  BookOpen, 
+  CheckCircle2, 
+  GraduationCap, 
+  ChevronRight, 
+  Crown,
+  Zap,
+  BarChart3
 } from 'lucide-react';
-import Logo from '@/components/Logo';
-import Reveal from '@/components/Reveal';
-import WhyChooseUs from '@/components/WhyChooseUs';
-import { CountdownTimer } from '@/components/CountdownTimer';
+import CountdownTimer from './CountdownTimer';
+import SupportWidget from './SupportWidget';
 
-type Props = {
-  onGetStarted: () => void;
-  onSignIn: () => void;
-};
-
-export default function LandingPage({ onGetStarted, onSignIn }: Props) {
+export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-stone-50">
-      {/* ────────────────────────── Navbar ────────────────────────── */}
-      <header className="sticky top-0 z-30 border-b border-stone-200/70 bg-white/85 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8 sm:py-4">
-          <div className="flex items-center gap-1.5">
-            <Logo />
-            <div className="flex flex-col text-[12px] font-extrabold uppercase tracking-wide leading-[1.08] select-none">
-  <span className="text-stone-900">Biletul</span>
-  <span className="text-stone-900">Spre</span>
-  <span className="text-brand-600 font-black">Medicină</span>
-</div>
+    <div className="min-h-screen bg-stone-950 text-stone-100 font-sans selection:bg-emerald-500 selection:text-white">
+      {/* ------------------------------------ */}
+      {/* 1. ANTET / TOP BAR                   */}
+      {/* ------------------------------------ */}
+      <header className="sticky top-0 z-40 border-b border-stone-800/80 bg-stone-900/90 backdrop-blur-md">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+          {/* Brand Logo & User Info */}
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-white font-black text-lg shadow-lg shadow-emerald-900/30">
+              M
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="font-display font-bold text-white text-base">Alexandru Popa</span>
+                <Crown className="h-4 w-4 text-amber-400 fill-amber-400" />
+              </div>
+              <span className="text-xs text-stone-400">Biletul Spre Medicină • Premium</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <button onClick={onSignIn} className="btn-ghost">
-              Loghează-te
-            </button>
-            <button onClick={onGetStarted} className="btn-primary">
-              Creează cont
-            </button>
+
+          {/* Slogan Centrat (Simplu, Curat & Lizibil) */}
+          <div className="hidden md:flex items-center justify-center flex-1 px-4 text-center">
+            <p className="font-display text-sm lg:text-base tracking-tight">
+              <span className="text-stone-400 font-medium">Antrenează-te zilnic</span>
+              <span className="mx-2 text-stone-600">•</span>
+              <span className="text-white font-bold">Devino <span className="text-emerald-400 font-black">cel mai bun</span></span>
+            </p>
+          </div>
+
+          {/* User Action Badge */}
+          <div className="flex items-center gap-3">
+            <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-950/60 px-3 py-1 text-xs font-semibold text-emerald-400">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+              Sesiune Activă
+            </span>
           </div>
         </div>
       </header>
 
-      {/* ────────────────────────── Hero ────────────────────────── */}
-      <section className="relative overflow-hidden">
-        {/* Background layers */}
-        <div className="absolute inset-0 grid-bg" />
-        <div className="absolute inset-0 bg-gradient-to-b from-brand-50/80 via-stone-50/40 to-stone-50" />
-        <div className="absolute -top-24 left-1/2 h-72 w-[36rem] -translate-x-1/2 rounded-full bg-brand-200/30 blur-3xl" />
+      {/* ------------------------------------ */}
+      {/* MAIN CONTENT AREA                    */}
+      {/* ------------------------------------ */}
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-10">
 
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-12 pb-16 sm:pt-16 sm:pb-20">
-          {/* Main heading */}
-          <h1 className="text-center font-display text-4xl font-extrabold leading-[1.1] tracking-tight text-stone-900 text-balance sm:text-5xl md:text-6xl">
-            Standardul modern în pregătirea pentru{' '}
-            <span className="bg-gradient-to-r from-brand-600 to-brand-500 bg-clip-text text-transparent">
-              Medicină
-            </span>
-            .
-          </h1>
+        {/* ------------------------------------ */}
+        {/* 2. TIMER-UL SIMPLIFICAT (VERDE ÎNCHIS)*/}
+        {/* ------------------------------------ */}
+        <section className="relative">
+          <div className="relative overflow-hidden rounded-2xl border border-emerald-900/50 bg-emerald-950 p-6 sm:p-8 shadow-xl">
+            <p className="mb-5 text-center font-display text-sm font-bold tracking-wide text-white sm:text-base">
+              Materiale noi pe platformă în:
+            </p>
 
-          {/* Intro text — reformatat pe două rânduri */}
-          <div className="mx-auto mt-8 max-w-2xl text-center" style={{ animation: 'fadeIn 0.8s ease-out 0.3s both' }}>
-            <p className="text-xl font-light italic leading-relaxed text-stone-600 sm:text-2xl">
-              Înțelegem presiunea.<br />
-              <span className="font-medium text-brand-700">Suntem aici să-ți facem drumul mai ușor.</span>
+            {/* Componenta de Cronometru Invers */}
+            <CountdownTimer />
+
+            <p className="mx-auto mt-5 max-w-xl text-center text-xs sm:text-sm font-medium text-white leading-relaxed">
+              Alătură-te comunității de viitori medici și fii primul care accesează noile simulări și grile explicate.
             </p>
           </div>
+        </section>
 
-          {/* Ticket visual with embedded CTA */}
-          <div className="mt-12" style={{ animation: 'fadeInUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both' }}>
-            <TicketCard onGetStarted={onGetStarted} />
-          </div>
-        </div>
-      </section>
-
-      {/* ────────────────────────── Why choose us ────────────────────────── */}
-      <WhyChooseUs />
-
-      {/* ────────────────────────── Stats / Progress preview ────────────────────────── */}
-      <section className="relative overflow-hidden bg-stone-950 py-20 sm:py-24 border-y border-stone-800/80">
-  <div className="absolute inset-0 grid-bg opacity-[0.05]" />
-  <div className="absolute -right-20 -top-20 h-80 w-80 rounded-full bg-brand-500/20 blur-3xl" />
-  <div className="absolute -left-20 -bottom-20 h-80 w-80 rounded-full bg-emerald-500/15 blur-3xl" />
-
-  <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-    <Reveal className="mb-8 text-center">
-      <h2 className="font-display text-3xl font-bold tracking-tight text-stone-100 sm:text-4xl">
-        Materiale noi pe platformă în:
-      </h2>
-    </Reveal>
-
-    <Reveal delay={80}>
-      <CountdownTimer />
-    </Reveal>
-
-    <Reveal delay={150}>
-      <p className="mx-auto mt-8 max-w-xl text-center text-stone-400">
-        Alătură-te comunității de viitori medici și fii primul care accesează noile simulări și grile explicate.
-      </p>
-    </Reveal>
-  </div>
-</section>
-
-      {/* ────────────────────────── Features ────────────────────────── */}
-      <section className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-  <Reveal className="mb-6 text-center">
-    <h2 className="font-display text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
-      
-    </h2>
-          
-        </Reveal>
-
-
-      </section>
-
-      {/* ────────────────────────── How it works ────────────────────────── */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-20 sm:pb-24">
-        <Reveal className="mb-12 text-center">
-          <h2 className="font-display text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
-            Cum funcționează
-          </h2>
-          <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-brand-500" />
-        </Reveal>
-
-        <div className="relative grid gap-8 md:grid-cols-3">
-          {/* Connector line */}
-          <div className="absolute left-0 right-0 top-6 hidden h-px bg-gradient-to-r from-transparent via-brand-200 to-transparent md:block" />
-          {STEPS.map((s, i) => (
-            <Reveal key={s.title} delay={i * 120}>
-              <Step number={s.number} title={s.title} desc={s.desc} />
-            </Reveal>
-          ))}
-        </div>
-      </section>
-
-      {/* ────────────────────────── Final CTA ────────────────────────── */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-24">
-        <Reveal>
-          <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand-700 via-brand-700 to-brand-800 px-8 py-16 text-center sm:px-16 sm:py-20">
-            <div className="absolute inset-0 grid-bg opacity-[0.05]" />
-            <div className="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-brand-500/20 blur-3xl" />
-            <div className="absolute -left-16 -bottom-16 h-64 w-64 rounded-full bg-accent-500/10 blur-3xl" />
-
-            <div className="relative">
-              <h2 className="font-display text-3xl font-bold text-white sm:text-4xl">
-                Pregătește-te pentru admitere
-              </h2>
-              <p className="mx-auto mt-4 max-w-xl text-brand-100">
-                Începe astăzi cu prima ta simulare. Fiecare grilă te aduce mai aproape de locul la
-                Medicină.
-              </p>
-              <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-                <button onClick={onGetStarted} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-8 py-4 text-base font-bold text-brand-700 shadow-lg transition-all duration-200 hover:bg-brand-50 hover:shadow-xl active:scale-[0.98]">
-                  Creează cont
-                  <ArrowRight size={18} />
-                </button>
-                <button onClick={onSignIn} className="inline-flex items-center justify-center gap-2 rounded-2xl border border-brand-400/40 px-8 py-4 text-base font-semibold text-brand-50 transition-all duration-200 hover:bg-brand-600/40 active:scale-[0.98]">
-                  Am deja cont
-                </button>
-              </div>
-            </div>
-          </div>
-        </Reveal>
-      </section>
-
-      {/* ────────────────────────── Footer ────────────────────────── */}
-      <footer className="border-t border-stone-200 py-10">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 sm:flex-row">
-          <Logo size="sm" />
-          <p className="text-sm text-stone-400">
-            © {new Date().getFullYear()} Biletul spre Medicină. Toate drepturile rezervate.
-          </p>
-        </div>
-      </footer>
-    </div>
-  );
-}
-
-
-
-const STEPS = [
-  { number: 1, title: 'Creează cont', desc: 'Înregistrează-te cu email și parolă. Contul tău îți oferă acces la toate simulările.' },
-  { number: 2, title: 'Abonează-te', desc: 'Un singur abonament, acces nelimitat la toate simulările de pe platformă.' },
-  { number: 3, title: 'Susține simularea', desc: 'Pornește cronometrul, rezolvă grilele, iar la final primește nota și explicațiile.' },
-] as const;
-
-/* ════════════════════════════════════════════════════════════════
-   COMPONENTS
-   ════════════════════════════════════════════════════════════════ */
-
-function TicketCard({ onGetStarted }: { onGetStarted: () => void }) {
-  return (
-    <div className="mx-auto max-w-3xl">
-      <div
-        className="relative overflow-hidden rounded-2xl border border-stone-300/60 bg-gradient-to-br from-white to-stone-50 shadow-2xl shadow-stone-400/30"
-        style={{ background: 'linear-gradient(135deg, #ffffff 0%, #faf9f7 100%)' }}
-      >
-        {/* Subtle paper texture overlay */}
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage:
-              "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
-          }}
-        />
-
-        {/* Top header strip */}
-        <div className="relative flex items-center justify-between bg-gradient-to-r from-brand-700 to-brand-600 px-6 py-3 text-white">
-          <div className="flex items-center gap-2">
-            <Stethoscope size={18} />
-            <span className="font-display text-sm font-bold tracking-wide">BILETUL SPRE MEDICINĂ</span>
-          </div>
-          <span className="text-xs font-medium text-brand-100">ADMITERE 2027</span>
-        </div>
-
-        {/* Body — single section, no extra bottom strip */}
-        <div className="relative flex flex-col gap-4 px-6 py-6 sm:flex-row sm:items-stretch sm:justify-between sm:px-10 sm:py-7">
-          {/* Left perforation holes — realistic with inner shadow */}
-          <div className="absolute left-0 top-0 bottom-0 hidden flex-col justify-around sm:flex">
-            {[0, 1, 2, 3].map((i) => (
-              <div
-                key={`l-${i}`}
-                className="h-5 w-5 -translate-x-1/2 rounded-full bg-stone-50 ring-1 ring-stone-300/80"
-                style={{ boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.18), 0 0 0 1px rgba(255,255,255,0.6)' }}
-              />
-            ))}
-          </div>
-          <div className="absolute right-0 top-0 bottom-0 hidden flex-col justify-around sm:flex">
-            {[0, 1, 2, 3].map((i) => (
-              <div
-                key={`r-${i}`}
-                className="h-5 w-5 translate-x-1/2 rounded-full bg-stone-50 ring-1 ring-stone-300/80"
-                style={{ boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.18), 0 0 0 1px rgba(255,255,255,0.6)' }}
-              />
-            ))}
+        {/* ------------------------------------ */}
+        {/* 3. CELE 6 CARDURI DE STATISTICI      */}
+        {/* ------------------------------------ */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-display text-xl font-bold text-white flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-emerald-400" />
+              Progresul Tău
+            </h2>
+            <span className="text-xs text-stone-400">Actualizat în timp real</span>
           </div>
 
-          {/* Left: journey info */}
-          <div className="flex flex-1 flex-col justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-stone-400">De la</p>
-              <p className="font-display text-xl font-bold text-stone-900">Elev candidat</p>
-              <div className="my-3 flex items-center gap-2">
-                <div className="h-px flex-1 bg-gradient-to-r from-brand-400 to-brand-200" />
-                <ArrowRight size={16} className="text-brand-500" />
-                <div className="h-px flex-1 bg-gradient-to-r from-brand-200 to-brand-400" />
-              </div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-stone-400">La</p>
-              <p className="font-display text-xl font-bold text-brand-700">Student la Medicină</p>
-            </div>
-
-            {/* ECG line — organic, printed look */}
-            <svg viewBox="0 0 300 50" className="w-full h-auto overflow-visible">
-  <defs>
-    <style>{`
-      @keyframes ecgSweep {
-        0% {
-          stroke-dashoffset: 300;
-        }
-        100% {
-          stroke-dashoffset: -300;
-        }
-      }
-      .animate-ecg-pulse {
-        stroke-dasharray: 80 220;
-        stroke-dashoffset: 300;
-        animation: ecgSweep 5s linear infinite;
-      }
-    `}</style>
-  </defs>
-
-  {/* Linia de fundal (subtilă și discretă) */}
-  <path 
-    d="M 0 25 L 20 25 Q 25 18 30 25 L 40 25 L 43 29 L 48 3 L 53 38 L 57 25 L 62 25 Q 72 12 82 25 L 140 25 Q 145 18 150 25 L 160 25 L 163 29 L 168 3 L 173 38 L 177 25 L 182 25 Q 192 12 202 25 L 260 25 Q 265 18 270 25 L 280 25 L 283 29 L 288 3 L 293 38 L 297 25 L 300 25" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeOpacity={0.15} 
-    strokeWidth="1.5" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-  />
-
-  {/* Pulsul animat (lumină mai deschisă / pastel neon) */}
-  <path 
-    className="animate-ecg-pulse" 
-    d="M 0 25 L 20 25 Q 25 18 30 25 L 40 25 L 43 29 L 48 3 L 53 38 L 57 25 L 62 25 Q 72 12 82 25 L 140 25 Q 145 18 150 25 L 160 25 L 163 29 L 168 3 L 173 38 L 177 25 L 182 25 Q 192 12 202 25 L 260 25 Q 265 18 270 25 L 280 25 L 283 29 L 288 3 L 293 38 L 297 25 L 300 25" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-    style={{ filter: 'drop-shadow(0px 0px 5px rgba(134, 239, 172, 0.85))' }} 
-  />
-</svg>
-          </div>
-
-          {/* Right: class info + CTA button in bottom-right */}
-          <div className="relative flex flex-col justify-between border-l-0 border-y-2 border-dashed border-stone-200 px-0 py-4 sm:border-l-2 sm:border-y-0 sm:border-r-0 sm:px-8 sm:py-0">
-            <div>
-              <div className="flex items-center gap-4">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-stone-400 text-center">UMFCD | Medicină Generală &amp; Dentară</p>
-                  <p className="font-display text-lg font-bold text-stone-900 text-center">Zeci de simulări cronometrate</p>
-                  <p className="text-sm text-stone-500 text-center">CS · CG · Explicații</p>
+          <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
+            {/* Card 1: Grile Rezolvate */}
+            <div className="group relative overflow-hidden rounded-2xl border border-stone-800 bg-stone-900/80 p-4 transition-all duration-300 hover:border-emerald-500/50 hover:bg-stone-900">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold text-stone-400">Grile Parcurse</span>
+                <div className="rounded-xl bg-emerald-500/10 p-2 text-emerald-400 group-hover:scale-110 transition-transform">
+                  <CheckCircle2 className="h-4 w-4" />
                 </div>
               </div>
+              <p className="font-display text-2xl font-black text-white">1,420</p>
+              <p className="text-[11px] text-emerald-400 font-medium mt-1">+45 azi</p>
             </div>
 
-            {/* CTA — bottom-right corner of ticket body */}
-            <div className="mt-5 flex flex-col items-start gap-1.5 sm:items-end">
-              <button onClick={onGetStarted} className="group inline-flex items-center justify-center gap-2.5 rounded-xl bg-brand-600 px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-brand-600/25 transition-all duration-300 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-xl hover:shadow-brand-600/30 active:translate-y-0 active:scale-[0.98]">
-                Ia-ți biletul spre Medicină
-                <ArrowRight size={18} className="transition-transform duration-300 group-hover:translate-x-1" />
-              </button>
-              <p className="text-[11px] text-stone-400">Fă-ți cont. Începe gratuit cu simulările de probă.</p>
+            {/* Card 2: Acuratețe */}
+            <div className="group relative overflow-hidden rounded-2xl border border-stone-800 bg-stone-900/80 p-4 transition-all duration-300 hover:border-emerald-500/50 hover:bg-stone-900">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold text-stone-400">Acuratețe</span>
+                <div className="rounded-xl bg-emerald-500/10 p-2 text-emerald-400 group-hover:scale-110 transition-transform">
+                  <Target className="h-4 w-4" />
+                </div>
+              </div>
+              <p className="font-display text-2xl font-black text-white">92.4%</p>
+              <p className="text-[11px] text-emerald-400 font-medium mt-1">Top 5% studenți</p>
+            </div>
+
+            {/* Card 3: Ore de Studiu */}
+            <div className="group relative overflow-hidden rounded-2xl border border-stone-800 bg-stone-900/80 p-4 transition-all duration-300 hover:border-emerald-500/50 hover:bg-stone-900">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold text-stone-400">Timp Studiu</span>
+                <div className="rounded-xl bg-emerald-500/10 p-2 text-emerald-400 group-hover:scale-110 transition-transform">
+                  <Clock className="h-4 w-4" />
+                </div>
+              </div>
+              <p className="font-display text-2xl font-black text-white">128h</p>
+              <p className="text-[11px] text-stone-400 mt-1">Săptămâna aceasta</p>
+            </div>
+
+            {/* Card 4: Simulări */}
+            <div className="group relative overflow-hidden rounded-2xl border border-stone-800 bg-stone-900/80 p-4 transition-all duration-300 hover:border-emerald-500/50 hover:bg-stone-900">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold text-stone-400">Simulări UMFCD</span>
+                <div className="rounded-xl bg-emerald-500/10 p-2 text-emerald-400 group-hover:scale-110 transition-transform">
+                  <GraduationCap className="h-4 w-4" />
+                </div>
+              </div>
+              <p className="font-display text-2xl font-black text-white">18/20</p>
+              <p className="text-[11px] text-emerald-400 font-medium mt-1">90 puncte medie</p>
+            </div>
+
+            {/* Card 5: Clasament */}
+            <div className="group relative overflow-hidden rounded-2xl border border-stone-800 bg-stone-900/80 p-4 transition-all duration-300 hover:border-emerald-500/50 hover:bg-stone-900">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold text-stone-400">Clasament</span>
+                <div className="rounded-xl bg-amber-500/10 p-2 text-amber-400 group-hover:scale-110 transition-transform">
+                  <Award className="h-4 w-4" />
+                </div>
+              </div>
+              <p className="font-display text-2xl font-black text-white">Locul 14</p>
+              <p className="text-[11px] text-amber-400 font-medium mt-1">Pe țară</p>
+            </div>
+
+            {/* Card 6: Streak (Zile consecutive) */}
+            <div className="group relative overflow-hidden rounded-2xl border border-stone-800 bg-stone-900/80 p-4 transition-all duration-300 hover:border-emerald-500/50 hover:bg-stone-900">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold text-stone-400">Zile Consecutive</span>
+                <div className="rounded-xl bg-amber-500/10 p-2 text-amber-500 group-hover:scale-110 transition-transform">
+                  <Flame className="h-4 w-4 animate-bounce" />
+                </div>
+              </div>
+              <p className="font-display text-2xl font-black text-white">24 Zile</p>
+              <p className="text-[11px] text-amber-400 font-medium mt-1">Fără întrerupere!</p>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Bottom info bar */}
-        <div className="flex items-center justify-between border-t border-stone-200/70 bg-stone-50/80 px-6 py-2.5 sm:px-10">
-          <span className="text-xs text-stone-400">Asistență dedicată · Corectare automată</span>
-  <span className="font-sans text-xs font-bold uppercase tracking-wider text-brand-600">
-  {Math.max(0, Math.ceil((new Date("2027-07-15").getTime() - new Date().setHours(0, 0, 0, 0)) / 86400000))} zile rămase
-</span>
-        </div>
-      </div>
-    </div>
-  );
-}
+        {/* ------------------------------------ */}
+        {/* 4. GRILE PE LECȚII (ACCES DIRECT)   */}
+        {/* ------------------------------------ */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="font-display text-xl font-bold text-white flex items-center gap-2">
+                <BookOpen className="h-5 w-5 text-emerald-400" />
+                Grile pe Lecții & Capitole
+              </h2>
+              <p className="text-xs text-stone-400 mt-1">Exersează țintit pe materia pentru admitere</p>
+            </div>
+          </div>
 
-function Step({ number, title, desc }: { number: number; title: string; desc: string }) {
-  return (
-    <div className="relative text-center">
-      <div className="relative mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-lg font-extrabold text-brand-600 shadow-md ring-1 ring-brand-100 transition-transform duration-300 hover:scale-110">
-        {number}
-      </div>
-      <h3 className="mb-2 font-display text-lg font-semibold text-stone-900">{title}</h3>
-      <p className="text-sm leading-relaxed text-stone-600">{desc}</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {/* Anatomie */}
+            <div className="rounded-2xl border border-stone-800 bg-stone-900/90 p-5 hover:border-stone-700 transition-all flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="rounded-lg bg-emerald-500/10 px-2.5 py-1 text-xs font-bold text-emerald-400">Anatomie & Fiziologie</span>
+                  <span className="text-xs text-stone-400 font-semibold">1,200 Grile</span>
+                </div>
+                <h3 className="font-display text-lg font-bold text-white mb-2">Sistemul Nervos & Organele de Simț</h3>
+                <p className="text-xs text-stone-400 leading-relaxed mb-4">
+                  Sinapse, reflexe și căi de conducere. Grile explicate pas cu pas.
+                </p>
+              </div>
+
+              <div>
+                <div className="w-full bg-stone-800 rounded-full h-1.5 mb-4">
+                  <div className="bg-emerald-500 h-1.5 rounded-full w-[75%]" />
+                </div>
+                <button className="flex w-full items-center justify-center gap-2 rounded-xl bg-stone-800 hover:bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white transition-all">
+                  Reia Testul
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Chimie Organică */}
+            <div className="rounded-2xl border border-stone-800 bg-stone-900/90 p-5 hover:border-stone-700 transition-all flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="rounded-lg bg-emerald-500/10 px-2.5 py-1 text-xs font-bold text-emerald-400">Chimie Organică</span>
+                  <span className="text-xs text-stone-400 font-semibold">850 Grile</span>
+                </div>
+                <h3 className="font-display text-lg font-bold text-white mb-2">Compuşi cu Funcțiuni Simple</h3>
+                <p className="text-xs text-stone-400 leading-relaxed mb-4">
+                  Alcooli, fenoli, amine și reacții de identificare.
+                </p>
+              </div>
+
+              <div>
+                <div className="w-full bg-stone-800 rounded-full h-1.5 mb-4">
+                  <div className="bg-emerald-500 h-1.5 rounded-full w-[40%]" />
+                </div>
+                <button className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 text-xs font-bold text-white transition-all">
+                  Începe Testul
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Fizică Medicală */}
+            <div className="rounded-2xl border border-stone-800 bg-stone-900/90 p-5 hover:border-stone-700 transition-all flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="rounded-lg bg-emerald-500/10 px-2.5 py-1 text-xs font-bold text-emerald-400">Fizică Medicală</span>
+                  <span className="text-xs text-stone-400 font-semibold">500 Grile</span>
+                </div>
+                <h3 className="font-display text-lg font-bold text-white mb-2">Optică Geometrică & Lente</h3>
+                <p className="text-xs text-stone-400 leading-relaxed mb-4">
+                  Formule, probleme de refracție și instrumente optice.
+                </p>
+              </div>
+
+              <div>
+                <div className="w-full bg-stone-800 rounded-full h-1.5 mb-4">
+                  <div className="bg-emerald-500 h-1.5 rounded-full w-[10%]" />
+                </div>
+                <button className="flex w-full items-center justify-center gap-2 rounded-xl bg-stone-800 hover:bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white transition-all">
+                  Începe Testul
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ------------------------------------ */}
+        {/* 5. EXAMENE ŞI SIMULĂRI UMFCD        */}
+        {/* ------------------------------------ */}
+        <section className="rounded-3xl border border-stone-800 bg-gradient-to-r from-stone-900 via-stone-900 to-emerald-950/40 p-6 sm:p-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="space-y-2 text-center md:text-left">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-400 border border-amber-500/20">
+                <Sparkles className="h-3.5 w-3.5" /> Official Mock Exam
+              </span>
+              <h2 className="font-display text-2xl font-bold text-white">
+                Simulare Națională UMFCD 2026
+              </h2>
+              <p className="text-xs sm:text-sm text-stone-400 max-w-xl">
+                Testează-te în condiții reale de examen: 100 de grile, cronometru oficial de 3 ore și clasament live instant.
+              </p>
+            </div>
+
+            <button className="shrink-0 flex items-center gap-2 rounded-2xl bg-emerald-600 hover:bg-emerald-500 px-6 py-3.5 text-sm font-bold text-white shadow-xl shadow-emerald-950/50 transition-all active:scale-95">
+              <Zap className="h-4 w-4 fill-white" />
+              Intră în Simularea Oficială
+            </button>
+          </div>
+        </section>
+
+      </main>
+
+      {/* ------------------------------------ */}
+      {/* 6. WIDGET-UL PLUTITOR DE SUPORT      */}
+      {/* ------------------------------------ */}
+      <SupportWidget />
     </div>
   );
 }
