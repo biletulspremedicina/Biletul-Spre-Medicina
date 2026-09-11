@@ -115,13 +115,7 @@ export default function WhyChooseUs() {
           <Reveal className="md:col-span-2 lg:col-span-7 motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none" delay={60}>
             <AdvantageCard
               id="simulations"
-              icon={
-  <img 
-    src="public/Logo_Calendar.png" 
-    alt="Iconita" 
-    className="h-6 w-6 object-contain" 
-  />
-}
+              icon={<CalendarDays size={24} />}
               title="Simulări zilnice"
               intro="Oferim acces la o gamă vastă și variată de simulări, concepute pentru a nu lăsa loc de surprindere la examen."
               benefits={BENEFIT_CHECKS}
