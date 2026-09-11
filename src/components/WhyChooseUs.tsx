@@ -139,7 +139,7 @@ export default function WhyChooseUs() {
   <img 
     src="public/Calendar.png" 
     alt="Iconita" 
-    className="h-8 w-8 object-contain animate-pulse" 
+    className="h-8 w-8 object-contain hover:animate-bounce cursor-pointer" 
   />
 }
               title="Simulează cu adevărat experiența examenului"
