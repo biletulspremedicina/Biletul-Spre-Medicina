@@ -119,7 +119,7 @@ export default function WhyChooseUs() {
   <img 
     src="public/Calendar.png" 
     alt="Iconita" 
-    className="h-6 w-6 object-contain" 
+    className="h-8 w-8 object-contain" 
   />
 }
               title="Simulări zilnice"
