@@ -282,7 +282,7 @@ d="M 0 25 L 20 25 L 25 18 L 30 25 L 40 25 L 43 29 L 48 3 L 53 38 L 57 25 L 62 25
   {/* Pulsul animat (lumină mai deschisă / pastel neon) */}
   <path 
     className="animate-ecg-pulse" 
-    d="M 0 25 L 20 25 Q 25 18 30 25 L 40 25 L 43 29 L 48 3 L 53 38 L 57 25 L 62 25 Q 72 12 82 25 L 140 25 Q 145 18 150 25 L 160 25 L 163 29 L 168 3 L 173 38 L 177 25 L 182 25 Q 192 12 202 25 L 260 25 Q 265 18 270 25 L 280 25 L 283 29 L 288 3 L 293 38 L 297 25 L 300 25" 
+    d="M 0 25 L 20 25 L 25 18 L 30 25 L 40 25 L 43 29 L 48 3 L 53 38 L 57 25 L 62 25 L 72 12 L 82 25 L 140 25 L 145 18 L 150 25 L 160 25 L 163 29 L 168 3 L 173 38 L 177 25 L 182 25 L 192 12 L 202 25 L 260 25 L 265 18 L 270 25 L 280 25 L 283 29 L 288 3 L 293 38 L 297 25 L 300 25"
     fill="none" 
     stroke="currentColor" 
     strokeWidth="2" 
