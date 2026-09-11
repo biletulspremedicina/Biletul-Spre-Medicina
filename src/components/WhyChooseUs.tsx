@@ -154,7 +154,13 @@ export default function WhyChooseUs() {
           <Reveal className="md:col-span-2 lg:col-span-5 lg:row-span-2 motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none" delay={180}>
             <AdvantageCard
               id="dashboard"
-              icon={<BarChart3 size={24} />}
+              icon={
+  <img 
+    src="/calea-catre-imaginea-ta.png" 
+    alt="Iconita" 
+    className="h-8 w-8 object-contain transition-transform duration-300 hover:scale-115 hover:-rotate-12 active:scale-95 cursor-pointer" 
+  />
+}
               title="Dashboard integrat"
               intro="Urmărește în detaliu evoluția"
               tone="brand"
