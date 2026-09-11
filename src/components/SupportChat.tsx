@@ -375,7 +375,7 @@ export default function SupportChat() {
                   <span className="text-sm font-bold text-stone-900">Ai nevoie de ajutor?</span>
                   <span className="flex items-center gap-1 text-[11px] text-stone-500">
                     {adminOnline ? (
-                      <><Circle size={7} className="fill-green-500 text-green-500" /> Suntem Online</>
+                      <><Circle size={7} className="fill-green-500 text-green-500" /> SUNTEM ONLINE</>
                     ) : (
                       <><Circle size={7} className="fill-stone-300 text-stone-300" /> Offline</>
                     )}
