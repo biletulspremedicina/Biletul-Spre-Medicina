@@ -353,7 +353,7 @@ export default function SupportChat() {
         <button
           onClick={() => setIsOpen(true)}
           className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-brand-600 text-white shadow-lg transition-all hover:bg-brand-700 hover:shadow-xl active:scale-95"
-          aria-label="Asistență"
+          aria-label="Echipa Biletul Spre Medicină"
         >
           <MessageCircle size={24} />
           {unreadCount > 0 && (
