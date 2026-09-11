@@ -1,6 +1,6 @@
 import type { Question, PracticeQuestion } from '@/lib/supabase';
 
-export type ContentType = 'simulation' | 'practice_set';
+export type ContentType = 'simulation' | 'practice_set' | 'bank';
 
 export type ExportRow = {
   tipContinut: string;

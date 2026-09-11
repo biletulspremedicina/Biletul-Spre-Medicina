@@ -1,5 +1,5 @@
 import * as XLSX from 'xlsx';
-import type { Question, PracticeQuestion } from '@/lib/supabase';
+import type { Question, PracticeQuestion, BankQuestion } from '@/lib/supabase';
 import type { ContentType } from '@/lib/contentVersioning';
 
 // ── Color constants (match site theme) ───────────────────────────────────
@@ -368,7 +368,7 @@ function normalizeText(text: string): string {
 
 export function validateNewQuestions(
   rows: NewQuestionRow[],
-  existingQuestions: (Question | PracticeQuestion)[],
+  existingQuestions: (Question | PracticeQuestion | BankQuestion)[],
   options: {
     contentType: ContentType;
     targetQuestionCount?: number;
@@ -444,7 +444,12 @@ export function validateNewQuestions(
     // Duplicate check against existing DB questions
     const normalized = normalizeText(row.questionText);
     if (normalized && existingNormalized.has(normalized)) {
-      rowErrors.push(`Rând ${row.rowNumber}: Enunț duplicat — există deja în ${options.contentType === 'simulation' ? 'simularea' : 'setul'} curent.`);
+      const locationLabel = options.contentType === 'simulation'
+        ? 'simularea'
+        : options.contentType === 'practice_set'
+          ? 'setul'
+          : 'banca de grile a lecției';
+      rowErrors.push(`Rând ${row.rowNumber}: Enunț duplicat — există deja în ${locationLabel} curentă.`);
     }
 
     // Duplicate check within file (exact text)

@@ -14,8 +14,9 @@ type Props = {
 };
 
 import PracticeAdmin from '@/pages/PracticeAdmin';
+import QuestionBankAdmin from '@/components/admin/QuestionBankAdmin';
 
-type Tab = 'simulations' | 'umfcd2' | 'practice' | 'monitoring' | 'settings';
+type Tab = 'simulations' | 'umfcd2' | 'practice' | 'bank' | 'monitoring' | 'settings';
 
 export default function AdminDashboard({ onExit }: Props) {
   const { profile, signOut } = useAuth();
@@ -71,6 +72,9 @@ export default function AdminDashboard({ onExit }: Props) {
           <TabButton active={tab === 'practice'} onClick={() => setTab('practice')} icon={<GraduationCap size={16} />}>
             Lecții & Seturi
           </TabButton>
+          <TabButton active={tab === 'bank'} onClick={() => setTab('bank')} icon={<BookOpen size={16} />}>
+            Banca de grile
+          </TabButton>
           <TabButton active={tab === 'monitoring'} onClick={() => setTab('monitoring')} icon={<Users size={16} />}>
             Monitorizare
           </TabButton>
@@ -106,6 +110,8 @@ export default function AdminDashboard({ onExit }: Props) {
         )}
 
         {tab === 'practice' && <PracticeAdmin />}
+
+        {tab === 'bank' && <QuestionBankAdmin />}
 
         {tab === 'monitoring' && <MonitoringTab />}
         {tab === 'settings' && <SettingsTab />}

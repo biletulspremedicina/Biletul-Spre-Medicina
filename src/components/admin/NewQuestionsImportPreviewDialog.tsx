@@ -42,11 +42,25 @@ export default function NewQuestionsImportPreviewDialog({
     try {
       const payload = buildNewQuestionsRpcPayload(validation.validQuestions);
 
-      const { data, error: rpcError } = await supabase.rpc('admin_import_new_questions', {
-        p_content_type: contentType,
-        p_content_id: contentId,
-        p_questions: payload as unknown as never,
-      });
+      let rpcName: string;
+      let rpcParams: Record<string, unknown>;
+
+      if (contentType === 'bank') {
+        rpcName = 'admin_import_to_bank';
+        rpcParams = {
+          p_lesson_id: contentId,
+          p_questions: payload as unknown as never,
+        };
+      } else {
+        rpcName = 'admin_import_new_questions';
+        rpcParams = {
+          p_content_type: contentType,
+          p_content_id: contentId,
+          p_questions: payload as unknown as never,
+        };
+      }
+
+      const { data, error: rpcError } = await supabase.rpc(rpcName, rpcParams);
 
       if (rpcError) throw rpcError;
       const count = typeof data === 'number' ? data : 0;
@@ -87,7 +101,7 @@ export default function NewQuestionsImportPreviewDialog({
                 Previzualizare import grile noi
               </h2>
               <p className="text-xs text-stone-500">
-                {contentType === 'simulation' ? 'Simulare' : 'Set de antrenament'}: {contentTitle}
+                {contentType === 'simulation' ? 'Simulare' : contentType === 'bank' ? 'Banca de grile — lecția' : 'Set de antrenament'}: {contentTitle}
               </p>
             </div>
           </div>

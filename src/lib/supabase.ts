@@ -171,6 +171,37 @@ export type PracticeQuestion = {
   created_at: string;
 };
 
+// ── Banca de grile (Question Bank) ───────────────────────────────────
+
+export type BankQuestion = {
+  id: string;
+  lesson_id: string;
+  type: 'CS' | 'CG';
+  question_text: string;
+  option_a: string;
+  option_b: string;
+  option_c: string;
+  option_d: string;
+  option_e: string;
+  statement_1: string;
+  statement_2: string;
+  statement_3: string;
+  statement_4: string;
+  correct_answer: 'A' | 'B' | 'C' | 'D' | 'E';
+  explanation: string;
+  is_archived: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type SetQuestion = {
+  id: string;
+  set_id: string;
+  question_id: string;
+  position: number;
+  created_at: string;
+};
+
 export type PracticeAttempt = {
   id: string;
   user_id: string;
