@@ -372,7 +372,7 @@ export default function SupportChat() {
             <div className="flex items-center justify-between border-b border-stone-100 bg-stone-50 px-4 py-3">
               <div className="flex items-center gap-2">
                 <div className="flex flex-col">
-                  <span className="text-sm font-bold text-stone-900">Echipa Biletul Spre Medicină</span>
+                  <span className="text-sm font-bold text-stone-900">Echipa BSM</span>
                   <span className="flex items-center gap-1 text-[11px] text-stone-500">
                     {adminOnline ? (
                       <><Circle size={7} className="fill-green-500 text-green-500" /> Online</>
