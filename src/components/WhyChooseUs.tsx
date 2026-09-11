@@ -156,7 +156,7 @@ export default function WhyChooseUs() {
               id="dashboard"
               icon={
   <img 
-    src="/calea-catre-imaginea-ta.png" 
+    src="public/Chartst.png" 
     alt="Iconita" 
     className="h-8 w-8 object-contain transition-transform duration-300 hover:scale-115 hover:-rotate-12 active:scale-95 cursor-pointer" 
   />
@@ -190,7 +190,13 @@ export default function WhyChooseUs() {
           <Reveal className="md:col-span-2 lg:col-span-7 motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none" delay={240}>
             <AdvantageCard
               id="support"
-              icon={<Headphones size={24} />}
+              icon={
+  <img 
+    src="public/Support.png" 
+    alt="Iconita" 
+    className="h-8 w-8 object-contain transition-transform duration-300 hover:scale-115 hover:-rotate-12 active:scale-95 cursor-pointer" 
+  />
+}
               title="Ai o întrebare? Suntem aici să te ajutăm"
               intro="Beneficiezi de suport dedicat pe parcursul pregătirii, pentru orice nelămurire legată de platformă, simulări sau chiar materie:"
               benefits={[
