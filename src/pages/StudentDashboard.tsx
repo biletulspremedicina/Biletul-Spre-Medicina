@@ -268,7 +268,7 @@ export default function StudentDashboard({ onStartSimulation, onViewResults, onO
                     <img 
   src="/Coroana.png" 
   alt="Iconita" 
-  className="h-8 w-8 object-contain animate-pulse" 
+  className="h-6 w-6 object-contain animate-pulse" 
 />
                   </div>
                   <div>
