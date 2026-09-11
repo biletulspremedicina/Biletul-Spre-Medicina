@@ -15,8 +15,10 @@ type Props = {
 
 import PracticeAdmin from '@/pages/PracticeAdmin';
 import QuestionBankAdmin from '@/components/admin/QuestionBankAdmin';
+import AdminChatTab from '@/components/admin/AdminChatTab';
+import { MessageSquare } from 'lucide-react';
 
-type Tab = 'simulations' | 'umfcd2' | 'practice' | 'bank' | 'monitoring' | 'settings';
+type Tab = 'simulations' | 'umfcd2' | 'practice' | 'bank' | 'chat' | 'monitoring' | 'settings';
 
 export default function AdminDashboard({ onExit }: Props) {
   const { profile, signOut } = useAuth();
@@ -75,6 +77,9 @@ export default function AdminDashboard({ onExit }: Props) {
           <TabButton active={tab === 'bank'} onClick={() => setTab('bank')} icon={<BookOpen size={16} />}>
             Banca de grile
           </TabButton>
+          <TabButton active={tab === 'chat'} onClick={() => setTab('chat')} icon={<MessageSquare size={16} />}>
+            Chat asistență
+          </TabButton>
           <TabButton active={tab === 'monitoring'} onClick={() => setTab('monitoring')} icon={<Users size={16} />}>
             Monitorizare
           </TabButton>
@@ -112,6 +117,8 @@ export default function AdminDashboard({ onExit }: Props) {
         {tab === 'practice' && <PracticeAdmin />}
 
         {tab === 'bank' && <QuestionBankAdmin />}
+
+        {tab === 'chat' && <AdminChatTab />}
 
         {tab === 'monitoring' && <MonitoringTab />}
         {tab === 'settings' && <SettingsTab />}

@@ -11,6 +11,7 @@ import PracticeSetsView from '@/pages/PracticeSetsView';
 import PracticeSetView from '@/pages/PracticeSetView';
 import PracticeResultsView from '@/pages/PracticeResultsView';
 import Loading from '@/components/Loading';
+import SupportChat from '@/components/SupportChat';
 
 type Route =
   | 'landing'
@@ -139,16 +140,19 @@ function AppContent() {
   // Practice routes
 if (route === 'practice-sets' && activePracticeLessonId) {
     return (
-      <PracticeSetsView
-        key={`practice-sets-${activePracticeLessonId}-${practiceSubNonce}`}
-        lessonId={activePracticeLessonId}
-        lessonTitle={activePracticeLessonTitle}
-        onStartSet={handleStartPracticeSet}
-        onViewResults={handleViewPracticeResults}
-        onBack={() => { setStudentInitialTab('practice'); setRoute('student-dashboard'); }}
-        onBuySubscription={handleBuySubscription}
-        buyingSub={practiceBuyingSub}
-      />
+      <>
+        <PracticeSetsView
+          key={`practice-sets-${activePracticeLessonId}-${practiceSubNonce}`}
+          lessonId={activePracticeLessonId}
+          lessonTitle={activePracticeLessonTitle}
+          onStartSet={handleStartPracticeSet}
+          onViewResults={handleViewPracticeResults}
+          onBack={() => { setStudentInitialTab('practice'); setRoute('student-dashboard'); }}
+          onBuySubscription={handleBuySubscription}
+          buyingSub={practiceBuyingSub}
+        />
+        <SupportChat />
+      </>
     );
   }
 
@@ -164,43 +168,55 @@ if (route === 'practice-sets' && activePracticeLessonId) {
 
   if (route === 'practice-results' && activePracticeSetId) {
     return (
-      <PracticeResultsView
-        setId={activePracticeSetId}
-        attemptId={activePracticeAttemptId || undefined}
-        onExit={() => setRoute('practice-sets')}
-        onRetake={() => handleStartPracticeSet(activePracticeSetId)}
-      />
+      <>
+        <PracticeResultsView
+          setId={activePracticeSetId}
+          attemptId={activePracticeAttemptId || undefined}
+          onExit={() => setRoute('practice-sets')}
+          onRetake={() => handleStartPracticeSet(activePracticeSetId)}
+        />
+        <SupportChat />
+      </>
     );
   }
 
   if (route === 'simulation' && activeSimulationId) {
     return (
-      <SimulationView
-        simulationId={activeSimulationId}
-        onExit={() => { setRoute('student-dashboard'); setActiveSimulationId(null); }}
-        onComplete={handleSimulationComplete}
-      />
+      <>
+        <SimulationView
+          simulationId={activeSimulationId}
+          onExit={() => { setRoute('student-dashboard'); setActiveSimulationId(null); }}
+          onComplete={handleSimulationComplete}
+        />
+        <SupportChat />
+      </>
     );
   }
 
   if (route === 'results' && activeSimulationId) {
     return (
-      <ResultsView
-        simulationId={activeSimulationId}
-        attemptId={activeAttemptId || undefined}
-        onExit={() => { setRoute('student-dashboard'); setActiveSimulationId(null); setActiveAttemptId(null); }}
-        onRetake={handleStartSimulation}
-      />
+      <>
+        <ResultsView
+          simulationId={activeSimulationId}
+          attemptId={activeAttemptId || undefined}
+          onExit={() => { setRoute('student-dashboard'); setActiveSimulationId(null); setActiveAttemptId(null); }}
+          onRetake={handleStartSimulation}
+        />
+        <SupportChat />
+      </>
     );
   }
 
   return (
-    <StudentDashboard
-      onStartSimulation={handleStartSimulation}
-      onViewResults={handleViewResults}
-      onOpenPracticeLesson={handleOpenPracticeLesson}
-      initialTab={studentInitialTab}
-    />
+    <>
+      <StudentDashboard
+        onStartSimulation={handleStartSimulation}
+        onViewResults={handleViewResults}
+        onOpenPracticeLesson={handleOpenPracticeLesson}
+        initialTab={studentInitialTab}
+      />
+      <SupportChat />
+    </>
   );
 }
 

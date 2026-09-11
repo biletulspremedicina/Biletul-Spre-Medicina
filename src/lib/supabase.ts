@@ -306,3 +306,71 @@ export type Payment = {
   created_at: string;
   paid_at: string | null;
 };
+
+// ── Chat support ───────────────────────────────────────────────────────
+
+export type ChatReason = 'platform_account' | 'subject_question' | 'technical_issue' | 'subscription_payment' | 'suggestion_feedback' | 'other';
+
+export type ChatConversation = {
+  id: string;
+  user_id: string;
+  reason: ChatReason;
+  description: string;
+  status: 'new' | 'ongoing' | 'closed';
+  admin_id: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ChatMessage = {
+  id: string;
+  conversation_id: string;
+  sender_id: string;
+  sender_role: 'user' | 'admin';
+  content: string;
+  is_read: boolean;
+  created_at: string;
+};
+
+export type MyChatConversationRPC = {
+  out_id: string;
+  out_reason: ChatReason;
+  out_description: string;
+  out_status: 'new' | 'ongoing' | 'closed';
+  out_created_at: string;
+  out_updated_at: string;
+  out_last_message: string;
+  out_last_message_at: string;
+  out_unread_count: number;
+};
+
+export type AdminChatConversationRPC = {
+  out_id: string;
+  out_user_id: string;
+  out_user_name: string;
+  out_user_email: string;
+  out_reason: ChatReason;
+  out_description: string;
+  out_status: 'new' | 'ongoing' | 'closed';
+  out_admin_id: string | null;
+  out_created_at: string;
+  out_updated_at: string;
+  out_last_message: string;
+  out_last_message_at: string;
+  out_unread_count: number;
+};
+
+export const CHAT_REASON_LABELS: Record<ChatReason, string> = {
+  platform_account: 'Platformă sau cont',
+  subject_question: 'Întrebare legată de materie',
+  technical_issue: 'Problemă tehnică',
+  subscription_payment: 'Abonament sau plată',
+  suggestion_feedback: 'Sugestie sau feedback',
+  other: 'Alt motiv',
+};
+
+export const CHAT_STATUS_LABELS: Record<string, string> = {
+  new: 'Nouă',
+  ongoing: 'În desfășurare',
+  closed: 'Închisă',
+};
