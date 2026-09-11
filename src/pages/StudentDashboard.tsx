@@ -201,7 +201,7 @@ export default function StudentDashboard({ onStartSimulation, onViewResults, onO
 
   const tabs: { id: TabId; label: string; icon: React.ReactNode }[] = [
     { id: 'all', label: 'Simulări biologie', icon: <Archive size={15} /> },
-    { id: 'practice', label: 'Grile pe lecții', icon: <GraduationCap size={15} /> },
+    { id: 'practice', label: 'Antrenament pe Capitole', icon: <GraduationCap size={15} /> },
     { id: 'umfcd', label: 'Examene și simulări UMFCD', icon: <Crown size={15} /> },
     { id: 'dashboard', label: 'Dashboard activitate', icon: <BarChart3 size={15} /> },
   ];
