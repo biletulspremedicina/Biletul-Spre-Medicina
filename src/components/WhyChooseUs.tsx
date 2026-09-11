@@ -137,9 +137,9 @@ export default function WhyChooseUs() {
               id="exam"
               icon={
   <img 
-    src="public/Checkboard.png" 
+    src="/calea-catre-imaginea-ta.png" 
     alt="Iconita" 
-    className="h-8 w-8 object-contain transition-transform duration-300 hover:scale-115 hover:-rotate-12 active:scale-95 cursor-pointer" 
+    className="h-8 w-8 object-contain animate-pulse" 
   />
 }
               title="Simulează cu adevărat experiența examenului"
