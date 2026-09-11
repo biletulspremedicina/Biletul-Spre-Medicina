@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { supabase, type ChatMessage, type AdminChatConversationRPC, CHAT_REASON_LABELS, CHAT_STATUS_LABELS } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import {
-  Search, Send, Loader2, MessageSquare, Circle, X, CheckCircle2,
+  Search, Send, Loader2, MessageSquare, X, CheckCircle2, Star, Trash2,
 } from 'lucide-react';
 
 type ConversationWithProfile = AdminChatConversationRPC;
@@ -15,6 +15,8 @@ export default function AdminChatTab() {
   const [search, setSearch] = useState('');
   const [reasonFilter, setReasonFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleteSuccess, setDeleteSuccess] = useState<string | null>(null);
 
   const loadConversations = useCallback(async () => {
     const { data, error: rpcError } = await supabase.rpc('admin_get_chat_conversations');
@@ -57,7 +59,9 @@ export default function AdminChatTab() {
     if (statusFilter !== 'all' && c.out_status !== statusFilter) return false;
     if (search.trim()) {
       const s = search.toLowerCase();
-      if (!c.out_user_name?.toLowerCase().includes(s) && !c.out_user_email?.toLowerCase().includes(s)) return false;
+      const name = c.out_user_name || '';
+      const email = c.out_user_email || '';
+      if (!name.toLowerCase().includes(s) && !email.toLowerCase().includes(s)) return false;
     }
     return true;
   });
@@ -72,81 +76,115 @@ export default function AdminChatTab() {
     loadConversations();
   };
 
+  const handleDelete = async (convId: string) => {
+    setDeleteError(null);
+    setDeleteSuccess(null);
+    if (!confirm('Sigur dorești să ștergi această conversație? Mesajele și evaluarea asociată vor fi șterse definitiv.')) return;
+
+    try {
+      const { error: rpcError } = await supabase.rpc('admin_delete_chat_conversation', {
+        p_conversation_id: convId,
+      });
+      if (rpcError) throw rpcError;
+      setSelectedId(null);
+      setDeleteSuccess('Conversația a fost ștearsă.');
+      loadConversations();
+      setTimeout(() => setDeleteSuccess(null), 3000);
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : 'Eroare la ștergerea conversației.');
+      setTimeout(() => setDeleteError(null), 5000);
+    }
+  };
+
   return (
-    <div className="flex h-[calc(100vh-180px)] gap-4 overflow-hidden">
-      {/* Left column: conversation list */}
-      <div className="flex w-full flex-col rounded-2xl border border-stone-200 bg-white sm:w-[340px] sm:flex-shrink-0">
-        {/* Search + filters */}
-        <div className="border-b border-stone-100 p-3">
-          <div className="relative mb-2">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
-            <input
-              className="input pl-9 text-sm"
-              placeholder="Caută după nume sau e-mail..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <div className="flex gap-2">
-            <select
-              className="input flex-1 text-xs"
-              value={reasonFilter}
-              onChange={(e) => setReasonFilter(e.target.value)}
-            >
-              <option value="all">Toate motivele</option>
-              {Object.entries(CHAT_REASON_LABELS).map(([k, v]) => (
-                <option key={k} value={k}>{v}</option>
-              ))}
-            </select>
-            <select
-              className="input flex-1 text-xs"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="all">Toate statusurile</option>
-              <option value="new">Nouă</option>
-              <option value="ongoing">În desfășurare</option>
-              <option value="closed">Închisă</option>
-            </select>
-          </div>
+    <div>
+      {/* Success/error notifications */}
+      {deleteSuccess && (
+        <div className="mb-3 rounded-lg border border-green-200 bg-green-50 px-4 py-2.5 text-sm font-medium text-green-700">
+          {deleteSuccess}
         </div>
+      )}
+      {deleteError && (
+        <div className="mb-3 rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-700">
+          {deleteError}
+        </div>
+      )}
 
-        {/* Conversation list */}
-        <div className="flex-1 overflow-y-auto">
-          {loading ? (
-            <p className="p-4 text-sm text-stone-400">Se încarcă...</p>
-          ) : filtered.length === 0 ? (
-            <p className="p-6 text-center text-sm text-stone-400">Nu există conversații.</p>
-          ) : (
-            filtered.map((c) => (
-              <ConversationListItem
-                key={c.out_id}
-                conv={c}
-                isSelected={c.out_id === selectedId}
-                onClick={() => setSelectedId(c.out_id)}
+      <div className="flex h-[calc(100vh-220px)] gap-4 overflow-hidden">
+        {/* Left column: conversation list */}
+        <div className="flex w-full flex-col rounded-2xl border border-stone-200 bg-white sm:w-[340px] sm:flex-shrink-0">
+          {/* Search + filters */}
+          <div className="border-b border-stone-100 p-3">
+            <div className="relative mb-2">
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+              <input
+                className="input pl-9 text-sm"
+                placeholder="Caută după nume sau e-mail..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
               />
-            ))
-          )}
-        </div>
-      </div>
-
-      {/* Right column: messages */}
-      <div className="hidden flex-1 rounded-2xl border border-stone-200 bg-white sm:flex sm:flex-col">
-        {selected ? (
-          <ChatDetail
-            conv={selected}
-            adminId={session?.user?.id || ''}
-            onStatusChange={handleStatusChange}
-            onConversationsChanged={loadConversations}
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center">
-            <div className="text-center">
-              <MessageSquare size={40} className="mx-auto mb-3 text-stone-300" />
-              <p className="text-sm text-stone-400">Selectează o conversație pentru a vedea mesajele.</p>
+            </div>
+            <div className="flex gap-2">
+              <select
+                className="input flex-1 text-xs"
+                value={reasonFilter}
+                onChange={(e) => setReasonFilter(e.target.value)}
+              >
+                <option value="all">Toate motivele</option>
+                {Object.entries(CHAT_REASON_LABELS).map(([k, v]) => (
+                  <option key={k} value={k}>{v}</option>
+                ))}
+              </select>
+              <select
+                className="input flex-1 text-xs"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option value="all">Toate statusurile</option>
+                <option value="new">Nouă</option>
+                <option value="ongoing">În desfășurare</option>
+                <option value="closed">Închisă</option>
+              </select>
             </div>
           </div>
-        )}
+
+          {/* Conversation list */}
+          <div className="flex-1 overflow-y-auto">
+            {loading ? (
+              <p className="p-4 text-sm text-stone-400">Se încarcă...</p>
+            ) : filtered.length === 0 ? (
+              <p className="p-6 text-center text-sm text-stone-400">Nu există conversații.</p>
+            ) : (
+              filtered.map((c) => (
+                <ConversationListItem
+                  key={c.out_id}
+                  conv={c}
+                  isSelected={c.out_id === selectedId}
+                  onClick={() => setSelectedId(c.out_id)}
+                />
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Right column: messages */}
+        <div className="hidden flex-1 rounded-2xl border border-stone-200 bg-white sm:flex sm:flex-col">
+          {selected ? (
+            <ChatDetail
+              conv={selected}
+              onStatusChange={handleStatusChange}
+              onDelete={handleDelete}
+              onConversationsChanged={loadConversations}
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center">
+              <div className="text-center">
+                <MessageSquare size={40} className="mx-auto mb-3 text-stone-300" />
+                <p className="text-sm text-stone-400">Selectează o conversație pentru a vedea mesajele.</p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -174,18 +212,29 @@ function ConversationListItem({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <span className="truncate text-sm font-semibold text-stone-900">
-              {conv.out_user_name || 'Fără nume'}
+              {conv.out_is_anonymous ? 'Vizitator neautentificat' : (conv.out_user_name || 'Fără nume')}
             </span>
+            {conv.out_is_anonymous && (
+              <span className="badge bg-stone-100 text-stone-500 text-[9px] px-1 py-0">Fără cont</span>
+            )}
             {hasUnread && (
               <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
                 {conv.out_unread_count}
               </span>
             )}
           </div>
-          <p className="truncate text-xs text-stone-500">{conv.out_user_email || ''}</p>
+          {!conv.out_is_anonymous && (
+            <p className="truncate text-xs text-stone-500">{conv.out_user_email || ''}</p>
+          )}
           <span className="mt-1 inline-block rounded bg-stone-100 px-1.5 py-0.5 text-[10px] font-medium text-stone-600">
             {CHAT_REASON_LABELS[conv.out_reason] || conv.out_reason}
           </span>
+          {conv.out_rating && (
+            <span className="mt-1 ml-1 inline-flex items-center gap-0.5 text-[10px] font-medium text-amber-600">
+              <Star size={10} className="fill-amber-400 text-amber-400" />
+              {conv.out_rating}
+            </span>
+          )}
         </div>
         <span className={`badge flex-shrink-0 text-[10px] ${
           conv.out_status === 'new' ? 'bg-blue-100 text-blue-700'
@@ -210,11 +259,11 @@ function ConversationListItem({
 // ── Chat Detail (right column) ──────────────────────────────────────────
 
 function ChatDetail({
-  conv, adminId, onStatusChange, onConversationsChanged,
+  conv, onStatusChange, onDelete, onConversationsChanged,
 }: {
   conv: ConversationWithProfile;
-  adminId: string;
   onStatusChange: (id: string, status: 'new' | 'ongoing' | 'closed') => void;
+  onDelete: (id: string) => void;
   onConversationsChanged: () => void;
 }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -222,6 +271,7 @@ function ChatDetail({
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -232,7 +282,6 @@ function ChatDetail({
       .eq('conversation_id', conv.out_id)
       .order('created_at', { ascending: true });
     if (msgError) {
-      console.error('load messages error:', msgError);
       setLoading(false);
       return;
     }
@@ -243,7 +292,6 @@ function ChatDetail({
   useEffect(() => {
     setLoading(true);
     loadMessages();
-    // Mark messages as read
     supabase.rpc('mark_chat_messages_read', { p_conversation_id: conv.out_id });
     onConversationsChanged();
   }, [conv.out_id, loadMessages, onConversationsChanged]);
@@ -266,7 +314,6 @@ function ChatDetail({
             if (prev.some((m) => m.id === newMsg.id)) return prev;
             return [...prev, newMsg];
           });
-          // Mark as read immediately
           supabase.rpc('mark_chat_messages_read', { p_conversation_id: conv.out_id });
         }
       )
@@ -310,6 +357,12 @@ function ChatDetail({
     }
   };
 
+  const handleDeleteClick = async () => {
+    setDeleting(true);
+    await onDelete(conv.out_id);
+    setDeleting(false);
+  };
+
   const isClosed = conv.out_status === 'closed';
 
   return (
@@ -318,10 +371,17 @@ function ChatDetail({
       <div className="border-b border-stone-100 p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h3 className="font-display text-base font-bold text-stone-900">
-              {conv.out_user_name || 'Fără nume'}
-            </h3>
-            <p className="text-xs text-stone-500">{conv.out_user_email || ''}</p>
+            <div className="flex items-center gap-2">
+              <h3 className="font-display text-base font-bold text-stone-900">
+                {conv.out_is_anonymous ? 'Vizitator neautentificat' : (conv.out_user_name || 'Fără nume')}
+              </h3>
+              {conv.out_is_anonymous && (
+                <span className="badge bg-stone-100 text-stone-500 text-[10px]">Fără cont</span>
+              )}
+            </div>
+            {!conv.out_is_anonymous && (
+              <p className="text-xs text-stone-500">{conv.out_user_email || ''}</p>
+            )}
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <span className="badge bg-stone-100 text-stone-600 text-[10px]">
                 {CHAT_REASON_LABELS[conv.out_reason] || conv.out_reason}
@@ -333,6 +393,12 @@ function ChatDetail({
               }`}>
                 {CHAT_STATUS_LABELS[conv.out_status]}
               </span>
+              {conv.out_rating && (
+                <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-amber-600">
+                  <Star size={12} className="fill-amber-400 text-amber-400" />
+                  {conv.out_rating} din 5
+                </span>
+              )}
             </div>
           </div>
           <div className="flex flex-shrink-0 items-center gap-2">
@@ -352,6 +418,16 @@ function ChatDetail({
                 className="btn-ghost text-xs text-red-600 hover:bg-red-50"
               >
                 <X size={14} /> Închide
+              </button>
+            )}
+            {isClosed && (
+              <button
+                onClick={handleDeleteClick}
+                disabled={deleting}
+                className="btn-ghost text-xs text-red-600 hover:bg-red-50"
+              >
+                {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                Șterge
               </button>
             )}
           </div>
@@ -396,7 +472,7 @@ function ChatDetail({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
+      {/* Input or closed message */}
       {isClosed ? (
         <div className="border-t border-stone-100 p-4">
           <p className="flex items-center justify-center gap-2 text-sm text-stone-400">

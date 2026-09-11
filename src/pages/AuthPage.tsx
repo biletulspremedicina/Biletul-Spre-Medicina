@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import Logo from '@/components/Logo';
 import { Loader2 } from 'lucide-react';
+import SupportChat from '@/components/SupportChat';
 
 type Props = {
   mode: 'signin' | 'signup';
@@ -145,6 +146,7 @@ export default function AuthPage({ mode, onSuccess, onSwitchMode, onBack }: Prop
           </p>
         </div>
       </div>
+      <SupportChat />
     </div>
   );
 }

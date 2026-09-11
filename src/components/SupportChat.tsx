@@ -1,28 +1,35 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { supabase, type ChatMessage, type ChatReason, CHAT_REASON_LABELS } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
-import { MessageCircle, X, Send, Loader2, ChevronDown, Circle } from 'lucide-react';
+import { MessageCircle, X, Send, Loader2, ChevronDown, Circle, Star } from 'lucide-react';
 
 type ReasonOption = { value: ChatReason; label: string };
 
 const REASONS: ReasonOption[] = [
   { value: 'platform_account', label: 'Platformă sau cont' },
   { value: 'subject_question', label: 'Întrebare legată de materie' },
-  { value: 'technical_issue', label: 'Problemă tehnică' },
-  { value: 'subscription_payment', label: 'Abonament sau plată' },
   { value: 'suggestion_feedback', label: 'Sugestie sau feedback' },
   { value: 'other', label: 'Alt motiv' },
 ];
+
+const ANON_TOKEN_KEY = 'bsm_chat_anon_token';
+const CLOSED_MESSAGE = 'Această conversație a fost închisă. Sperăm că informațiile oferite ți-au fost de ajutor. Îți mulțumim că ai discutat cu noi!';
 
 export default function SupportChat() {
   const { session, profile } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [anonToken, setAnonToken] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [convStatus, setConvStatus] = useState<string | null>(null);
+  const [rating, setRating] = useState<number | null>(null);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [ratingSaved, setRatingSaved] = useState(false);
+  const [ratingLoading, setRatingLoading] = useState(false);
   const [adminOnline, setAdminOnline] = useState(true);
 
   // Form state
@@ -34,24 +41,46 @@ export default function SupportChat() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  const isAuthenticated = !!session && profile?.role !== 'admin';
+  const isClosed = convStatus === 'closed';
+
   // Load existing conversation on mount
-  const loadExistingConversation = useCallback(async () => {
-    if (!session?.user?.id) return;
-    const { data, error: rpcError } = await supabase.rpc('get_my_chat_conversation');
-    if (rpcError) {
-      console.error('get_my_chat_conversation error:', rpcError);
-      return;
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadAuthenticatedConversation();
+    } else {
+      loadAnonConversation();
     }
+  }, [isAuthenticated]);
+
+  const loadAuthenticatedConversation = async () => {
+    const { data, error: rpcError } = await supabase.rpc('get_my_chat_conversation');
+    if (rpcError) return;
     if (data && (data as unknown[]).length > 0) {
-      const conv = (data as unknown as { out_id: string; out_unread_count: number })[0];
+      const conv = (data as unknown as { out_id: string; out_unread_count: number; out_status: string; out_rating: number | null })[0];
       setConversationId(conv.out_id);
       setUnreadCount(conv.out_unread_count);
+      setConvStatus(conv.out_status);
+      setRating(conv.out_rating);
     }
-  }, [session]);
+  };
 
-  useEffect(() => {
-    loadExistingConversation();
-  }, [loadExistingConversation]);
+  const loadAnonConversation = async () => {
+    const token = localStorage.getItem(ANON_TOKEN_KEY);
+    if (!token) return;
+    setAnonToken(token);
+    const { data, error: rpcError } = await supabase.rpc('get_anon_chat_conversation', {
+      p_anonymous_token: token,
+    });
+    if (rpcError) return;
+    if (data && (data as unknown[]).length > 0) {
+      const conv = (data as unknown as { out_id: string; out_unread_count: number; out_status: string; out_rating: number | null })[0];
+      setConversationId(conv.out_id);
+      setUnreadCount(conv.out_unread_count);
+      setConvStatus(conv.out_status);
+      setRating(conv.out_rating);
+    }
+  };
 
   // Load messages when conversationId changes
   const loadMessages = useCallback(async () => {
@@ -62,15 +91,44 @@ export default function SupportChat() {
       .eq('conversation_id', conversationId)
       .order('created_at', { ascending: true });
     if (msgError) {
-      console.error('load messages error:', msgError);
+      // For anonymous users, direct table access won't work — use an RPC approach
+      // We'll fetch messages via a simpler method
       return;
     }
     setMessages((data || []) as ChatMessage[]);
   }, [conversationId]);
 
+  // For anonymous users, load messages via SECURITY DEFINER RPC (RLS blocks direct SELECT)
+  const loadAnonMessages = useCallback(async () => {
+    if (!conversationId || !anonToken) return;
+    const { data, error: rpcError } = await supabase.rpc('get_anon_chat_messages', {
+      p_anonymous_token: anonToken,
+    });
+    if (rpcError) return;
+    const msgs = (data || []) as unknown as {
+      out_id: string; out_conversation_id: string; out_sender_role: 'user' | 'admin';
+      out_content: string; out_is_read: boolean; out_created_at: string;
+    }[];
+    setMessages(msgs.map((m) => ({
+      id: m.out_id,
+      conversation_id: m.out_conversation_id,
+      sender_id: '',
+      sender_role: m.out_sender_role,
+      content: m.out_content,
+      is_read: m.out_is_read,
+      created_at: m.out_created_at,
+    })));
+  }, [conversationId, anonToken]);
+
   useEffect(() => {
-    loadMessages();
-  }, [loadMessages]);
+    if (conversationId) {
+      if (isAuthenticated) {
+        loadMessages();
+      } else {
+        loadAnonMessages();
+      }
+    }
+  }, [conversationId, isAuthenticated, loadMessages, loadAnonMessages]);
 
   // Realtime subscription
   useEffect(() => {
@@ -92,9 +150,12 @@ export default function SupportChat() {
             if (prev.some((m) => m.id === newMsg.id)) return prev;
             return [...prev, newMsg];
           });
-          // If message is from admin and chat is open, mark as read
           if (newMsg.sender_role === 'admin' && isOpen) {
-            supabase.rpc('mark_chat_messages_read', { p_conversation_id: conversationId });
+            if (isAuthenticated && conversationId) {
+              supabase.rpc('mark_chat_messages_read', { p_conversation_id: conversationId });
+            } else if (anonToken) {
+              supabase.rpc('mark_anon_messages_read', { p_anonymous_token: anonToken });
+            }
           }
         }
       )
@@ -107,10 +168,9 @@ export default function SupportChat() {
           filter: `id=eq.${conversationId}`,
         },
         (payload) => {
-          const updated = payload.new as { status: string };
-          if (updated.status === 'closed') {
-            setConversationId(null);
-          }
+          const updated = payload.new as { status: string; rating: number | null };
+          setConvStatus(updated.status);
+          setRating(updated.rating);
         }
       )
       .subscribe();
@@ -118,15 +178,19 @@ export default function SupportChat() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [conversationId, isOpen]);
+  }, [conversationId, isOpen, isAuthenticated, anonToken]);
 
   // Mark messages read when chat opens
   useEffect(() => {
     if (isOpen && conversationId) {
       setUnreadCount(0);
-      supabase.rpc('mark_chat_messages_read', { p_conversation_id: conversationId });
+      if (isAuthenticated) {
+        supabase.rpc('mark_chat_messages_read', { p_conversation_id: conversationId });
+      } else if (anonToken) {
+        supabase.rpc('mark_anon_messages_read', { p_anonymous_token: anonToken });
+      }
     }
-  }, [isOpen, conversationId]);
+  }, [isOpen, conversationId, isAuthenticated, anonToken]);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -137,14 +201,32 @@ export default function SupportChat() {
   useEffect(() => {
     if (isOpen || !conversationId) return;
     const interval = setInterval(async () => {
-      const { data } = await supabase.rpc('get_my_chat_conversation');
-      if (data && (data as unknown[]).length > 0) {
-        const conv = (data as unknown as { out_unread_count: number })[0];
-        setUnreadCount(conv.out_unread_count);
+      if (isAuthenticated) {
+        const { data } = await supabase.rpc('get_my_chat_conversation');
+        if (data && (data as unknown[]).length > 0) {
+          const conv = (data as unknown as { out_unread_count: number })[0];
+          setUnreadCount(conv.out_unread_count);
+        }
+      } else if (anonToken) {
+        const { data } = await supabase.rpc('get_anon_chat_conversation', { p_anonymous_token: anonToken });
+        if (data && (data as unknown[]).length > 0) {
+          const conv = (data as unknown as { out_unread_count: number })[0];
+          setUnreadCount(conv.out_unread_count);
+        }
       }
     }, 15000);
     return () => clearInterval(interval);
-  }, [isOpen, conversationId]);
+  }, [isOpen, conversationId, isAuthenticated, anonToken]);
+
+  // Show button for: authenticated non-admins OR unauthenticated visitors
+  if (isAuthenticated) {
+    // Show for students
+  } else if (!session) {
+    // Show for anonymous visitors
+  } else {
+    // Admin — don't show
+    return null;
+  }
 
   const handleStartConversation = async () => {
     setFormError(null);
@@ -164,21 +246,44 @@ export default function SupportChat() {
 
     setStarting(true);
     try {
-      const { data, error: rpcError } = await supabase.rpc('start_chat_conversation', {
-        p_reason: reason,
-        p_description: trimmed,
-      });
-      if (rpcError) throw rpcError;
-      const convId = data as string;
-      setConversationId(convId);
-      setUnreadCount(0);
-      // Send the initial message as the description
-      const { error: msgError } = await supabase.rpc('send_chat_message', {
-        p_conversation_id: convId,
-        p_content: trimmed,
-      });
-      if (msgError) throw msgError;
-      await loadMessages();
+      if (isAuthenticated) {
+        const { data, error: rpcError } = await supabase.rpc('start_chat_conversation', {
+          p_reason: reason,
+          p_description: trimmed,
+        });
+        if (rpcError) throw rpcError;
+        const convId = data as string;
+        setConversationId(convId);
+        setConvStatus('new');
+        setUnreadCount(0);
+        const { error: msgError } = await supabase.rpc('send_chat_message', {
+          p_conversation_id: convId,
+          p_content: trimmed,
+        });
+        if (msgError) throw msgError;
+        await loadMessages();
+      } else {
+        // Anonymous
+        const { data, error: rpcError } = await supabase.rpc('start_anon_chat_conversation', {
+          p_reason: reason,
+          p_description: trimmed,
+        });
+        if (rpcError) throw rpcError;
+        const result = (data as unknown as { out_id: string; out_anonymous_token: string }[])[0];
+        const convId = result.out_id;
+        const token = result.out_anonymous_token;
+        localStorage.setItem(ANON_TOKEN_KEY, token);
+        setAnonToken(token);
+        setConversationId(convId);
+        setConvStatus('new');
+        setUnreadCount(0);
+        const { error: msgError } = await supabase.rpc('send_anon_chat_message', {
+          p_anonymous_token: token,
+          p_content: trimmed,
+        });
+        if (msgError) throw msgError;
+        await loadAnonMessages();
+      }
     } catch (err) {
       setFormError(err instanceof Error ? err.message : 'Eroare la pornirea conversației.');
     }
@@ -187,18 +292,27 @@ export default function SupportChat() {
 
   const handleSend = async () => {
     const trimmed = input.trim();
-    if (!trimmed || !conversationId || sending) return;
+    if (!trimmed || !conversationId || sending || isClosed) return;
 
     setSending(true);
     setError(null);
     try {
-      const { error: rpcError } = await supabase.rpc('send_chat_message', {
-        p_conversation_id: conversationId,
-        p_content: trimmed,
-      });
-      if (rpcError) throw rpcError;
+      if (isAuthenticated) {
+        const { error: rpcError } = await supabase.rpc('send_chat_message', {
+          p_conversation_id: conversationId,
+          p_content: trimmed,
+        });
+        if (rpcError) throw rpcError;
+        await loadMessages();
+      } else if (anonToken) {
+        const { error: rpcError } = await supabase.rpc('send_anon_chat_message', {
+          p_anonymous_token: anonToken,
+          p_content: trimmed,
+        });
+        if (rpcError) throw rpcError;
+        await loadAnonMessages();
+      }
       setInput('');
-      await loadMessages();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Eroare la trimiterea mesajului.');
     }
@@ -212,9 +326,25 @@ export default function SupportChat() {
     }
   };
 
-  const canSendForm = reason && description.trim().length >= 10 && description.trim().length <= 1000;
+  const handleRate = async (star: number) => {
+    if (!conversationId || ratingLoading) return;
+    setRatingLoading(true);
+    setError(null);
+    try {
+      const { error: rpcError } = await supabase.rpc('rate_chat_conversation', {
+        p_conversation_id: conversationId,
+        p_rating: star,
+      });
+      if (rpcError) throw rpcError;
+      setRating(star);
+      setRatingSaved(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Eroare la salvarea evaluării.');
+    }
+    setRatingLoading(false);
+  };
 
-  if (!session || profile?.role === 'admin') return null;
+  const canSendForm = reason && description.trim().length >= 10 && description.trim().length <= 1000;
 
   return (
     <>
@@ -262,17 +392,31 @@ export default function SupportChat() {
 
             {/* Body */}
             {conversationId ? (
-              <ChatView
-                messages={messages}
-                input={input}
-                setInput={setInput}
-                onSend={handleSend}
-                onKeyDown={handleKeyDown}
-                sending={sending}
-                error={error}
-                messagesEndRef={messagesEndRef}
-                textareaRef={textareaRef}
-              />
+              isClosed ? (
+                <ClosedConversationView
+                  rating={rating}
+                  hoverRating={hoverRating}
+                  setHoverRating={setHoverRating}
+                  onRate={handleRate}
+                  ratingSaved={ratingSaved}
+                  ratingLoading={ratingLoading}
+                  messages={messages}
+                  messagesEndRef={messagesEndRef}
+                />
+              ) : (
+                <ChatView
+                  messages={messages}
+                  input={input}
+                  setInput={setInput}
+                  onSend={handleSend}
+                  onKeyDown={handleKeyDown}
+                  sending={sending}
+                  error={error}
+                  messagesEndRef={messagesEndRef}
+                  textareaRef={textareaRef}
+                  isAnonymous={!isAuthenticated}
+                />
+              )
             ) : (
               <StartConversationForm
                 reasons={REASONS}
@@ -296,7 +440,7 @@ export default function SupportChat() {
 // ── Start Conversation Form ─────────────────────────────────────────────
 
 function StartConversationForm({
-  reasons, reason, setReason, description, setDescription,
+  reason, setReason, description, setDescription,
   formError, starting, canSend, onStart,
 }: {
   reasons: ReasonOption[];
@@ -313,21 +457,17 @@ function StartConversationForm({
     <div className="flex flex-col gap-3 overflow-y-auto p-4">
       <div>
         <label className="mb-1.5 block text-xs font-semibold text-stone-700">Motivul conversației</label>
-        <div className="space-y-1.5">
-          {reasons.map((r) => (
-            <button
-              key={r.value}
-              onClick={() => setReason(r.value)}
-              className={`w-full rounded-lg border px-3 py-2 text-left text-sm transition-all ${
-                reason === r.value
-                  ? 'border-brand-500 bg-brand-50 text-brand-700'
-                  : 'border-stone-200 text-stone-600 hover:bg-stone-50'
-              }`}
-            >
-              {r.label}
-            </button>
-          ))}
-        </div>
+        <select
+          className="input text-sm"
+          value={reason}
+          onChange={(e) => setReason(e.target.value as ChatReason)}
+        >
+          <option value="">Selectează un motiv</option>
+          <option value="platform_account">Platformă sau cont</option>
+          <option value="subject_question">Întrebare legată de materie</option>
+          <option value="suggestion_feedback">Sugestie sau feedback</option>
+          <option value="other">Alt motiv</option>
+        </select>
       </div>
 
       <div>
@@ -377,6 +517,7 @@ function ChatView({
   error: string | null;
   messagesEndRef: React.RefObject<HTMLDivElement>;
   textareaRef: React.RefObject<HTMLTextAreaElement>;
+  isAnonymous: boolean;
 }) {
   const { session } = useAuth();
   const myId = session?.user?.id;
@@ -391,7 +532,7 @@ function ChatView({
         ) : (
           <div className="space-y-2">
             {messages.map((msg) => {
-              const isMine = msg.sender_id === myId;
+              const isMine = msg.sender_role === 'user';
               return (
                 <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
                   <div
@@ -447,6 +588,85 @@ function ChatView({
   );
 }
 
+// ── Closed Conversation View ────────────────────────────────────────────
+
+function ClosedConversationView({
+  rating, hoverRating, setHoverRating, onRate, ratingSaved, ratingLoading, messages, messagesEndRef,
+}: {
+  rating: number | null;
+  hoverRating: number;
+  setHoverRating: (n: number) => void;
+  onRate: (star: number) => void;
+  ratingSaved: boolean;
+  ratingLoading: boolean;
+  messages: ChatMessage[];
+  messagesEndRef: React.RefObject<HTMLDivElement>;
+}) {
+  return (
+    <>
+      <div className="flex-1 overflow-y-auto px-3 py-3" style={{ minHeight: '150px', maxHeight: '300px' }}>
+        {messages.length > 0 && (
+          <div className="space-y-2 mb-3">
+            {messages.map((msg) => {
+              const isMine = msg.sender_role === 'user';
+              return (
+                <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
+                  <div
+                    className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm ${
+                      isMine
+                        ? 'rounded-br-md bg-brand-600 text-white'
+                        : 'rounded-bl-md bg-stone-100 text-stone-800'
+                    }`}
+                  >
+                    <p className="whitespace-pre-wrap break-words">{escapeHtml(msg.content)}</p>
+                    <span className={`mt-0.5 block text-[10px] ${isMine ? 'text-brand-200' : 'text-stone-400'}`}>
+                      {formatTime(msg.created_at)}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      <div className="border-t border-stone-100 p-4">
+        <p className="text-sm text-stone-600 mb-3">{CLOSED_MESSAGE}</p>
+
+        <div>
+          <p className="mb-2 text-xs font-semibold text-stone-700">Cum a fost experiența ta?</p>
+          <div className="flex items-center gap-1">
+            {[1, 2, 3, 4, 5].map((star) => {
+              const isFilled = (hoverRating || rating || 0) >= star;
+              return (
+                <button
+                  key={star}
+                  onClick={() => onRate(star)}
+                  onMouseEnter={() => setHoverRating(star)}
+                  onMouseLeave={() => setHoverRating(0)}
+                  disabled={ratingLoading}
+                  className="rounded-lg p-1 transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-brand-400"
+                  aria-label={`${star} din 5 stele`}
+                >
+                  <Star
+                    size={24}
+                    className={isFilled ? 'fill-amber-400 text-amber-400' : 'text-stone-300'}
+                  />
+                </button>
+              );
+            })}
+            {ratingLoading && <Loader2 size={16} className="animate-spin text-stone-400 ml-1" />}
+          </div>
+          {ratingSaved && (
+            <p className="mt-2 text-xs font-medium text-green-600">Mulțumim pentru feedback!</p>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
 // ── Helpers ─────────────────────────────────────────────────────────────
 
 function escapeHtml(text: string): string {
@@ -458,5 +678,3 @@ function escapeHtml(text: string): string {
 function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' });
 }
-
-export { CHAT_REASON_LABELS };

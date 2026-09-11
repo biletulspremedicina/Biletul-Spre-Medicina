@@ -7,6 +7,7 @@ import Logo from '@/components/Logo';
 import Reveal from '@/components/Reveal';
 import WhyChooseUs from '@/components/WhyChooseUs';
 import { CountdownTimer } from '@/components/CountdownTimer';
+import SupportChat from '@/components/SupportChat';
 
 type Props = {
   onGetStarted: () => void;
@@ -169,6 +170,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
           </p>
         </div>
       </footer>
+      <SupportChat />
     </div>
   );
 }

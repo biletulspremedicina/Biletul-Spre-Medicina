@@ -56,6 +56,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!mounted) return;
         setSession(newSession);
         if (newSession?.user?.id) {
+          // Associate anonymous chat conversation with this account
+          const anonToken = localStorage.getItem('bsm_chat_anon_token');
+          if (anonToken) {
+            await supabase.rpc('associate_anon_conversation', { p_anonymous_token: anonToken });
+            localStorage.removeItem('bsm_chat_anon_token');
+          }
           await loadProfile(newSession.user.id);
         } else {
           setProfile(null);
