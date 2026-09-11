@@ -117,9 +117,9 @@ export default function WhyChooseUs() {
               id="simulations"
               icon={
   <img 
-    src="public/Calendar.png" 
+    src="/calea-catre-imaginea-ta.png" 
     alt="Iconita" 
-    className="h-8 w-8 object-contain" 
+    className="h-8 w-8 object-contain transition-transform duration-300 hover:scale-115 hover:-rotate-12 active:scale-95 cursor-pointer" 
   />
 }
               title="Simulări zilnice"
