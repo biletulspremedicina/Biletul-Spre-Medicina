@@ -137,7 +137,7 @@ export default function WhyChooseUs() {
               id="exam"
               icon={
   <img 
-    src="/calea-catre-imaginea-ta.png" 
+    src="public/Calendar.png" 
     alt="Iconita" 
     className="h-8 w-8 object-contain animate-pulse" 
   />
