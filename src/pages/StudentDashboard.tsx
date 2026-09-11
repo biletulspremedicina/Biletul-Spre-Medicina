@@ -265,7 +265,11 @@ export default function StudentDashboard({ onStartSimulation, onViewResults, onO
               <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-brand-200 bg-brand-50 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-600 text-white">
-                    <CheckCircle2 size={20} />
+                    <img 
+  src="/Coroana.png" 
+  alt="Iconita" 
+  className="h-5 w-5 object-contain animate-pulse" 
+/>
                   </div>
                   <div>
                     <p className="font-semibold text-stone-900">Abonamentul tău este activ</p>
