@@ -135,7 +135,13 @@ export default function WhyChooseUs() {
           <Reveal className="md:col-span-2 lg:col-span-5 motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none" delay={120}>
             <AdvantageCard
               id="exam"
-              icon={<ClipboardCheck size={24} />}
+              icon={
+  <img 
+    src="public/Calendar.png" 
+    alt="Iconita" 
+    className="h-8 w-8 object-contain transition-transform duration-300 hover:scale-115 hover:-rotate-12 active:scale-95 cursor-pointer" 
+  />
+}
               title="Simulează cu adevărat experiența examenului"
               benefits={EXAM_BENEFITS}
               tone="accent"
