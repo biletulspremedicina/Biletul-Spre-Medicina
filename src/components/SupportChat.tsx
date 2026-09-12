@@ -57,7 +57,7 @@ export default function SupportChat() {
     const { data, error: rpcError } = await supabase.rpc('get_my_chat_conversation');
     if (rpcError) return;
     if (data && (data as unknown[]).length > 0) {
-      const conv = (data as unknown as { out_id: string; out_unread_count: number; out_status: string; out_rating: number | null }[])[0];
+      const conv = (data as unknown as { out_id: string; out_unread_count: number; out_status: string; out_rating: number | null })[0];
       setConversationId(conv.out_id);
       setUnreadCount(conv.out_unread_count);
       setConvStatus(conv.out_status);
@@ -74,7 +74,7 @@ export default function SupportChat() {
     });
     if (rpcError) return;
     if (data && (data as unknown[]).length > 0) {
-      const conv = (data as unknown as { out_id: string; out_unread_count: number; out_status: string; out_rating: number | null }[])[0];
+      const conv = (data as unknown as { out_id: string; out_unread_count: number; out_status: string; out_rating: number | null })[0];
       setConversationId(conv.out_id);
       setUnreadCount(conv.out_unread_count);
       setConvStatus(conv.out_status);
@@ -204,13 +204,13 @@ export default function SupportChat() {
       if (isAuthenticated) {
         const { data } = await supabase.rpc('get_my_chat_conversation');
         if (data && (data as unknown[]).length > 0) {
-          const conv = (data as unknown as { out_unread_count: number }[])[0];
+          const conv = (data as unknown as { out_unread_count: number })[0];
           setUnreadCount(conv.out_unread_count);
         }
       } else if (anonToken) {
         const { data } = await supabase.rpc('get_anon_chat_conversation', { p_anonymous_token: anonToken });
         if (data && (data as unknown[]).length > 0) {
-          const conv = (data as unknown as { out_unread_count: number }[])[0];
+          const conv = (data as unknown as { out_unread_count: number })[0];
           setUnreadCount(conv.out_unread_count);
         }
       }
@@ -344,7 +344,7 @@ export default function SupportChat() {
     setRatingLoading(false);
   };
 
-  const canSendForm = Boolean(reason) && description.trim().length >= 10 && description.trim().length <= 1000;
+  const canSendForm = reason && description.trim().length >= 10 && description.trim().length <= 1000;
 
   return (
     <>
