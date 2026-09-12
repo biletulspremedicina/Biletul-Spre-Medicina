@@ -432,7 +432,7 @@ function ReviewsSection() {
   return (
     <section
   aria-labelledby="reviews-title"
-  className="overflow-hidden border-t border-amber-100/70 pb-28 pt-16 sm:pb-36 sm:pt-20"
+ className="overflow-hidden border-t border-amber-100/70 pb-8 pt-16 sm:pb-10 sm:pt-20"
   style={{
     background:
       'linear-gradient(180deg, #fffefa 0%, #fff8e3 45%, #fffaf0 72%, #ffffff 100%)',
