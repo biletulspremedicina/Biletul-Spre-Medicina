@@ -74,7 +74,7 @@ const STAT_IMAGE_SOURCES = [
   '/8.png', // Aici vine sursa imaginea 8 – Capitole începute
 ];
 
-const UMFCD_IMAGE_SRC = '/umfcd-transparent.png'; // Imaginea pentru Examene UMFCD
+const UMFCD_IMAGE_SRC = '/UMFCD.png'; // Imaginea pentru Examene UMFCD
 
 const serif = { fontFamily: 'Georgia, Cambria, "Times New Roman", serif' };
 const validAnswer = (value: unknown) =>
