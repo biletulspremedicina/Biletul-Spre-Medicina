@@ -74,6 +74,8 @@ const STAT_IMAGE_SOURCES = [
   '/8.png', // Aici vine sursa imaginea 8 – Capitole începute
 ];
 
+const UMFCD_IMAGE_SRC = ''; // Aici vine sursa imaginii pentru Examene UMFCD
+
 const serif = { fontFamily: 'Georgia, Cambria, "Times New Roman", serif' };
 const validAnswer = (value: unknown) =>
   typeof value === 'string' && /^[A-E]$/.test(value.toUpperCase());
@@ -430,7 +432,7 @@ export default function StudentDashboard({
     { id: 'home', label: 'Acasă', icon: <Home size={19} /> },
     { id: 'all', label: 'Simulări biologie', icon: <FileText size={19} /> },
     { id: 'practice', label: 'Antrenament pe capitole', icon: <GraduationCap size={20} /> },
-    { id: 'umfcd', label: 'Examene UMFCD', icon: <Crown size={19} /> },
+    { id: 'umfcd', label: 'Examene UMFCD', icon: <UmfcdIcon size={19} /> },
     { id: 'review', label: 'Întrebări de revizuit', icon: <Bookmark size={19} /> },
   ];
 
@@ -706,7 +708,7 @@ export default function StudentDashboard({
             </section>
           ) : page === 'all' || page === 'umfcd' ? (
             <section>
-              <PageHeading icon={page === 'all' ? <FileText size={27} /> : <Crown size={27} />}
+              <PageHeading icon={page === 'all' ? <FileText size={27} /> : <UmfcdIcon size={27} />}
                 title={page === 'all' ? 'Simulări biologie' : 'Examene UMFCD'}
                 subtitle={page === 'all'
                   ? 'Testează-ți pregătirea prin simulările disponibile.'
@@ -828,6 +830,22 @@ function StatVisual({ stat }: { stat: Stat }) {
   return stat.imageSrc ? (
     <img src={stat.imageSrc} alt="" className="h-9 w-9 object-contain" loading="lazy" draggable={false} />
   ) : stat.icon;
+}
+
+function UmfcdIcon({ size }: { size: number }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  if (!UMFCD_IMAGE_SRC || imageFailed) return <Crown size={size} />;
+  return (
+    <img
+      src={UMFCD_IMAGE_SRC}
+      alt=""
+      width={size}
+      height={size}
+      className="shrink-0 object-contain"
+      onError={() => setImageFailed(true)}
+      draggable={false}
+    />
+  );
 }
 
 function PageHeading({ icon, title, subtitle }: { icon: ReactNode; title: string; subtitle: string }) {
