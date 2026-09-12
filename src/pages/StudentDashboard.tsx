@@ -58,8 +58,21 @@ type Stat = {
   note: string;
   detail: string;
   icon: ReactNode;
+  imageSrc: string;
   tone: 'mint' | 'amber';
 };
+
+// Completează doar adresele dintre ghilimele. Până atunci rămân pictogramele actuale.
+const STAT_IMAGE_SOURCES = [
+  '', // Aici vine sursa imaginea 1 – Rata răspunsurilor corecte
+  '', // Aici vine sursa imaginea 2 – Cel mai bun rezultat la o simulare
+  '', // Aici vine sursa imaginea 3 – Rezultatul ultimei simulări
+  '', // Aici vine sursa imaginea 4 – Media rezultatelor la simulări
+  '', // Aici vine sursa imaginea 5 – Seria actuală de zile active
+  '', // Aici vine sursa imaginea 6 – Timp mediu pe întrebare
+  '', // Aici vine sursa imaginea 7 – Simulări terminate în timpul alocat
+  '', // Aici vine sursa imaginea 8 – Capitole începute
+];
 
 const serif = { fontFamily: 'Georgia, Cambria, "Times New Roman", serif' };
 const validAnswer = (value: unknown) =>
@@ -360,56 +373,56 @@ export default function StudentDashboard({
       value: accuracy === null ? '—' : `${accuracy}%`,
       note: 'Din răspunsurile trimise',
       detail: 'Procentul răspunsurilor corecte din întrebările la care ai răspuns în activitățile finalizate.',
-      icon: <Target size={26} strokeWidth={2.2} />, tone: 'mint',
+      icon: <Target size={26} strokeWidth={2.2} />, imageSrc: STAT_IMAGE_SOURCES[0], tone: 'mint',
     },
     {
       label: 'Cel mai bun rezultat la o simulare',
       value: bestResult === null ? '—' : `${bestResult}%`,
       note: 'Din simulările finalizate',
       detail: 'Cel mai mare procent obținut la o simulare finalizată.',
-      icon: <Trophy size={26} strokeWidth={2.1} />, tone: 'amber',
+      icon: <Trophy size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[1], tone: 'amber',
     },
     {
       label: 'Rezultatul ultimei simulări',
       value: latestResult === null ? '—' : `${latestResult}%`,
       note: 'Cea mai recentă simulare',
       detail: 'Procentul obținut la ultima simulare pe care ai finalizat-o.',
-      icon: <FileText size={26} strokeWidth={2.1} />, tone: 'mint',
+      icon: <FileText size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[2], tone: 'mint',
     },
     {
       label: 'Media rezultatelor la simulări',
       value: averageResult === null ? '—' : `${averageResult}%`,
       note: 'Media tuturor simulărilor',
       detail: 'Media aritmetică a procentelor obținute la simulările finalizate.',
-      icon: <ChartNoAxesCombined size={26} strokeWidth={2.1} />, tone: 'mint',
+      icon: <ChartNoAxesCombined size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[3], tone: 'mint',
     },
     {
       label: 'Seria actuală de zile active',
       value: `${streak} ${streak === 1 ? 'zi' : 'zile'}`,
       note: 'Zile consecutive cu activitate',
       detail: 'Zile consecutive în care ai răspuns la întrebări. Ziua curentă nu rupe seria înainte să începi să lucrezi.',
-      icon: <Flame size={26} strokeWidth={2.1} />, tone: 'amber',
+      icon: <Flame size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[4], tone: 'amber',
     },
     {
       label: 'Timp mediu pe întrebare',
       value: formatSeconds(timePerQuestion),
       note: 'Din simulările finalizate',
       detail: 'Durata simulărilor finalizate, împărțită la numărul întrebărilor la care ai răspuns.',
-      icon: <Clock3 size={26} strokeWidth={2.1} />, tone: 'mint',
+      icon: <Clock3 size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[5], tone: 'mint',
     },
     {
       label: 'Simulări terminate în timpul alocat',
       value: String(finishedInTime),
       note: 'Din simulările finalizate',
       detail: 'Numărul simulărilor trimise înainte de expirarea duratei alocate.',
-      icon: <Check size={26} strokeWidth={2.5} />, tone: 'mint',
+      icon: <Check size={26} strokeWidth={2.5} />, imageSrc: STAT_IMAGE_SOURCES[6], tone: 'mint',
     },
     {
       label: 'Capitole începute',
       value: String(startedLessons.size),
       note: 'Ai răspuns la cel puțin o grilă',
       detail: 'Un capitol este început când răspunzi la prima întrebare dintr-un set al său.',
-      icon: <BookOpen size={26} strokeWidth={2.1} />, tone: 'mint',
+      icon: <BookOpen size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[7], tone: 'mint',
     },
   ];
 
@@ -743,7 +756,7 @@ export default function StudentDashboard({
             onMouseDown={(event) => event.stopPropagation()}>
             <div className="flex items-start justify-between gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#e1f6ed] text-[#0d6a50]">
-                {selectedStat.icon}
+                <StatVisual stat={selectedStat} />
               </div>
               <button type="button" onClick={() => setSelectedStat(null)} aria-label="Închide detaliile"
                 className="rounded-lg p-2 text-[#65788b] hover:bg-[#f2f7f4]">
@@ -797,7 +810,7 @@ function StatCard({ stat, onClick }: { stat: Stat; onClick: () => void }) {
       <div className="flex w-full items-start gap-4">
         <span className={`flex h-[58px] w-[58px] shrink-0 items-center justify-center rounded-full ${
           stat.tone === 'amber' ? 'bg-[#fff1d9] text-[#e8a212]' : 'bg-[#dff5eb] text-[#0e6b51]'
-        }`}>{stat.icon}</span>
+        }`}><StatVisual stat={stat} /></span>
         <span className="flex min-w-0 flex-1 items-start justify-between gap-2">
           <span className="min-w-0 pt-2 text-[17px] font-bold leading-[1.22]" style={serif}>{stat.label}</span>
         </span>
@@ -809,6 +822,12 @@ function StatCard({ stat, onClick }: { stat: Stat; onClick: () => void }) {
       <span className="mt-2 block pl-[74px] text-[11px] leading-snug text-[#657b93]">{stat.note}</span>
     </button>
   );
+}
+
+function StatVisual({ stat }: { stat: Stat }) {
+  return stat.imageSrc ? (
+    <img src={stat.imageSrc} alt="" className="h-9 w-9 object-contain" loading="lazy" draggable={false} />
+  ) : stat.icon;
 }
 
 function PageHeading({ icon, title, subtitle }: { icon: ReactNode; title: string; subtitle: string }) {
