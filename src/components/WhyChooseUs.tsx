@@ -372,7 +372,7 @@ function AdvantageCard({
 
   const topLine =
   id === 'simulations'
-    ? 'bg-gradient-to-r from-brand-700 via-brand-400 to-brand-100'
+    ? 'bg-gradient-to-r from-brand-700 via-brand-400 to-brand-200'
     : id === 'exam'
       ? 'bg-gradient-to-r from-amber-100 via-amber-400 to-accent-700'
       : id === 'dashboard'
