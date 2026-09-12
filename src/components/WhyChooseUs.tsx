@@ -376,7 +376,7 @@ function AdvantageCard({
     : id === 'exam'
       ? 'bg-gradient-to-r from-amber-100 via-amber-400 to-accent-700'
       : id === 'dashboard'
-        ? 'bg-gradient-to-r from-sky-700 via-sky-400 to-sky-100'
+        ? 'bg-gradient-to-r from-sky-700 via-sky-400 to-sky-200'
         : id === 'support'
           ? 'bg-gradient-to-r from-brand-100 via-brand-400 to-brand-700'
           : 'bg-gradient-to-r from-orange-100 via-orange-400 to-orange-700';
