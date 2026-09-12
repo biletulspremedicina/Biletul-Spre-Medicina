@@ -78,7 +78,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
       {/* De ce să ne alegi */}
       <WhyChooseUs />
 
-      {/* Recenzii — deasupra timerului */}
+      {/* Recenzii */}
       <ReviewsSection />
 
       {/* Timer materiale noi */}
@@ -391,9 +391,8 @@ function Step({
 }
 
 /*
-  Adaugă aici adresele celor 20 de capturi.
+  Completează aici adresele celor 20 de imagini.
   Primele 10 sunt pe rândul de sus, următoarele 10 pe rândul de jos.
-  Cât timp adresele sunt goale, apar carduri-placeholder, nu imagini stricate.
 */
 const REVIEW_IMAGES = [
   '', // 01
@@ -418,17 +417,10 @@ const REVIEW_IMAGES = [
   '', // 20
 ];
 
-const REVIEW_CARD_SIZES = [
-  { width: 220, height: 132 },
-  { width: 180, height: 146 },
-  { width: 248, height: 124 },
-  { width: 196, height: 140 },
-  { width: 226, height: 118 },
-  { width: 174, height: 144 },
-  { width: 240, height: 130 },
-  { width: 200, height: 148 },
-  { width: 232, height: 120 },
-  { width: 188, height: 138 },
+/* Toate cardurile au aceeași înălțime; numai lățimea diferă. */
+const REVIEW_CARD_WIDTHS = [
+  300, 370, 270, 400, 320,
+  360, 290, 390, 310, 350,
 ];
 
 function ReviewsSection() {
@@ -440,7 +432,11 @@ function ReviewsSection() {
   return (
     <section
       aria-labelledby="reviews-title"
-      className="overflow-hidden border-t border-stone-200/70 bg-gradient-to-b from-white via-stone-50 to-stone-50 py-16 sm:py-20"
+      className="overflow-hidden border-t border-amber-100/70 py-16 sm:py-20"
+      style={{
+        background:
+          'linear-gradient(180deg, #fffefa 0%, #fff8e3 48%, #ffffff 100%)',
+      }}
     >
       <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-brand-600">
@@ -456,18 +452,18 @@ function ReviewsSection() {
 
         <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-brand-500" />
 
-        <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-stone-500 sm:text-base">
+        <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-stone-600 sm:text-base">
           Câteva dintre mesajele primite de la cei care se pregătesc alături de noi.
         </p>
       </div>
 
       <div
-        className="mt-10 space-y-4 sm:mt-12 sm:space-y-5"
+        className="mt-10 space-y-5 sm:mt-12 sm:space-y-6"
         style={{
           maskImage:
-            'linear-gradient(to right, transparent, black 7%, black 93%, transparent)',
+            'linear-gradient(to right, transparent, black 6%, black 94%, transparent)',
           WebkitMaskImage:
-            'linear-gradient(to right, transparent, black 7%, black 93%, transparent)',
+            'linear-gradient(to right, transparent, black 6%, black 94%, transparent)',
         }}
       >
         {rows.map((images, rowIndex) => (
@@ -482,20 +478,18 @@ function ReviewsSection() {
               {[0, 1].map((copy) => (
                 <div
                   key={copy}
-                  className="flex shrink-0 items-center gap-4 pr-4 sm:gap-5 sm:pr-5"
+                  className="flex shrink-0 items-center gap-5 pr-5 sm:gap-6 sm:pr-6"
                   aria-hidden={copy === 1}
                 >
                   {images.map((src, imageIndex) => {
-                    const size = REVIEW_CARD_SIZES[imageIndex];
                     const reviewNumber = rowIndex * 10 + imageIndex + 1;
 
                     return (
                       <figure
                         key={`${copy}-${reviewNumber}`}
-                        className="flex shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-stone-200/80 bg-white p-2 shadow-[0_8px_30px_rgba(41,37,36,0.07)]"
+                        className="flex h-[170px] shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-amber-100 bg-white p-2.5 shadow-[0_10px_30px_rgba(110,83,33,0.10)] sm:h-[220px] sm:p-3"
                         style={{
-                          width: size.width,
-                          height: size.height,
+                          width: REVIEW_CARD_WIDTHS[imageIndex],
                         }}
                       >
                         {src ? (
@@ -511,8 +505,8 @@ function ReviewsSection() {
                             draggable={false}
                           />
                         ) : (
-                          <div className="flex h-full w-full items-center justify-center rounded-xl bg-gradient-to-br from-brand-50 to-stone-50">
-                            <span className="text-xs font-medium text-stone-400">
+                          <div className="flex h-full w-full items-center justify-center rounded-xl bg-white">
+                            <span className="text-sm font-medium text-stone-400">
                               Recenzia {String(reviewNumber).padStart(2, '0')}
                             </span>
                           </div>
@@ -543,11 +537,11 @@ function ReviewsSection() {
         }
 
         .reviews-track-left {
-          animation: reviewsMoveLeft 55s linear infinite;
+          animation: reviewsMoveLeft 65s linear infinite;
         }
 
         .reviews-track-right {
-          animation: reviewsMoveRight 58s linear infinite;
+          animation: reviewsMoveRight 68s linear infinite;
         }
 
         .reviews-row:hover .reviews-track {
