@@ -402,7 +402,7 @@ function AdvantageCard({
       } ${className}`}
     >
       <div
-        className={`absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r ${colors.line}`}
+       className={`absolute inset-x-0 top-0 h-1.5 ${topLine}`}
         aria-hidden="true"
       />
       <div
