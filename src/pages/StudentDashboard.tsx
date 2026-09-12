@@ -549,7 +549,7 @@ export default function StudentDashboard({
                         {hasActiveSub && <Crown className="text-amber-400" size={24} fill="currentColor" aria-label="Abonament activ" />}
                       </h1>
                       <p className="mt-2 max-w-[410px] text-[15px] leading-relaxed text-[#52667b]">
-                        În fiecare zi ești mai aproape de locul tău la medicină!
+                        Cu fiecare grilă ești mai aproape de locul tău la medicină! <br /> Hai sa lucrăm! 
                       </p>
                     </div>
                   </div>
