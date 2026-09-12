@@ -1,23 +1,22 @@
-import {
-  useEffect,
-  useRef,
-  useState,
-  type KeyboardEvent,
-  type ReactNode,
-} from 'react';
+import { useState, type KeyboardEvent, type ReactNode } from 'react';
 import {
   BarChart3,
-  Bookmark,
+  BookOpenCheck,
+  CalendarDays,
   Check,
   ClipboardCheck,
   Clock3,
+  Headphones,
+  MessageCircle,
   PieChart,
+  Timer,
   TrendingUp,
+  Users,
+  Bookmark,
 } from 'lucide-react';
 import Reveal from '@/components/Reveal';
 
 type CardId = 'simulations' | 'exam' | 'dashboard' | 'support' | 'team';
-type CardTone = 'brand' | 'accent' | 'sky' | 'warm';
 
 type Benefit = {
   text: ReactNode;
@@ -32,47 +31,42 @@ type AdvantageCardProps = {
   intro?: string;
   benefits?: Benefit[];
   children?: ReactNode;
-  tone?: CardTone;
-  iconSide?: 'left' | 'right';
+  tone?: 'brand' | 'accent';
+  className?: string;
   activeCard: CardId | null;
   onActivate: (id: CardId) => void;
 };
 
 const BENEFIT_CHECKS: Benefit[] = [
   {
-    text: (
-      <>
-        <strong>Simulări din întreaga materie de Biologie</strong>, pentru evaluarea
-        completă a nivelului de pregătire.
-      </>
-    ),
-  },
+  text: (
+    <>
+      <strong>Simulări din întreaga materie de Biologie</strong>, pentru evaluarea completă a nivelului de pregătire.
+    </>
+  ),
+},
+ {
+  text: (
+    <>
+      <strong>Simulări structurate pe capitole</strong>, ideale pentru aprofundarea și verificarea fiecărui subiect.
+    </>
+  ),
+},
   {
-    text: (
-      <>
-        <strong>Simulări structurate pe capitole</strong>, ideale pentru aprofundarea
-        și verificarea fiecărui subiect.
-      </>
-    ),
-  },
-  {
-    text: (
-      <>
-        <strong>
-          Simulările și examenele de admitere oferite în anii anteriori de UMFCD
-        </strong>
-        , pentru o pregătire cât mai apropiată de experiența examenului real.
-      </>
-    ),
-  },
+  text: (
+    <>
+      <strong>Simulările și examenele de admitere oferite în anii anteriori de UMFCD</strong>, pentru o pregătire cât mai apropiată de experiența examenului real.
+    </>
+  ),
+},
 ];
 
 const EXAM_BENEFITS: Benefit[] = [
-  {
-    text: 'Ne lăudăm cu grile complexe și atent concepute, fără AI, totul din materie.',
-    emphasis: '60 grile la noi = 200 pe alte platforme',
-    emphasisClassName: 'text-center',
-  },
+{
+  text: 'Ne lăudăm cu grile complexe și atent concepute, fără AI, totul din materie.',
+  emphasis: '60 grile la noi = 200 pe alte platforme',
+  emphasisClassName: 'block w-full text-center',
+},
   {
     text: 'Cronometru integrat, pentru gestionarea eficientă a timpului.',
   },
@@ -83,72 +77,13 @@ const EXAM_BENEFITS: Benefit[] = [
 ];
 
 const DASHBOARD_ITEMS = [
-  {
-    icon: <BarChart3 size={17} />,
-    label: 'Performanță pentru fiecare capitol',
-    tone: 'brand',
-  },
-  {
-    icon: <Clock3 size={17} />,
-    label: 'Timp mediu de rezolvare',
-    tone: 'accent',
-  },
-  {
-    icon: <TrendingUp size={17} />,
-    label: 'Evoluția scorului în timp',
-    tone: 'brand',
-  },
-  {
-    icon: <ClipboardCheck size={17} />,
-    label: 'Număr simulări rezolvate',
-    tone: 'brand',
-  },
-  {
-    icon: <Bookmark size={17} />,
-    label: 'Opțiunea „Grile de revăzut”',
-    tone: 'accent',
-  },
-  {
-    icon: <PieChart size={17} />,
-    label: 'Rata medie de răspunsuri corecte',
-    tone: 'brand',
-  },
+  { icon: <BarChart3 size={17} />, label: 'Performanță pentru fiecare capitol', tone: 'brand' },
+  { icon: <Clock3 size={17} />, label: 'Timp mediu de rezolvare', tone: 'accent' },
+  { icon: <TrendingUp size={17} />, label: 'Evoluția scorului în timp', tone: 'brand' },
+  { icon: <ClipboardCheck size={17} />, label: 'Număr simulări rezolvate', tone: 'brand' },
+  { icon: <Bookmark size={17} />, label: 'Opțiunea „Grile de revăzut”', tone: 'accent' },
+  { icon: <PieChart size={17} />, label: 'Rata medie de răspunsuri corecte', tone: 'brand' },
 ] as const;
-
-const CARD_STYLES: Record<
-  CardTone,
-  {
-    surface: string;
-    edge: string;
-    icon: string;
-    check: string;
-  }
-> = {
-  brand: {
-    surface: 'border-brand-200 bg-[#f5faf7]',
-    edge: 'bg-brand-600',
-    icon: 'ring-brand-200',
-    check: 'bg-brand-600',
-  },
-  accent: {
-    surface: 'border-amber-200 bg-[#fff9ed]',
-    edge: 'bg-accent-500',
-    icon: 'ring-amber-200',
-    check: 'bg-accent-600',
-  },
-  sky: {
-    surface: 'border-sky-200 bg-[#f2f8fc]',
-    edge: 'bg-sky-500',
-    icon: 'ring-sky-200',
-    check: 'bg-sky-600',
-  },
-  warm: {
-    surface: 'border-orange-200 bg-[#fffaf4]',
-    edge: 'bg-orange-400',
-    icon: 'ring-orange-200',
-    check: 'bg-orange-500',
-  },
-};
 
 export default function WhyChooseUs() {
   const [activeCard, setActiveCard] = useState<CardId | null>(null);
@@ -156,229 +91,162 @@ export default function WhyChooseUs() {
   return (
     <section
       aria-labelledby="why-choose-us-title"
-      className="overflow-hidden bg-[#fbfcfa] px-4 pb-16 pt-5 sm:px-6 sm:pb-20 sm:pt-12 lg:px-8"
+      className="relative overflow-hidden bg-stone-50 px-4 pt-4 pb-12 sm:px-6 sm:pt-6 sm:pb-16 lg:px-8"
     >
-      <div className="mx-auto max-w-7xl">
-        <Reveal className="mx-auto mb-9 max-w-3xl text-center motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none sm:mb-12">
+      <div className="pointer-events-none absolute left-1/2 top-24 h-72 w-72 -translate-x-1/2 rounded-full bg-brand-100/35 blur-3xl" />
+
+      <div className="relative mx-auto max-w-7xl">
+        <Reveal className="mx-auto mb-8 max-w-3xl text-center motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none">
+          <p className="mb-4 font-sans text-xs font-bold uppercase tracking-[0.22em] text-brand-600">
+            Află despre noi
+          </p>
           <h2
             id="why-choose-us-title"
-            className="font-display text-3xl font-extrabold leading-[1.13] tracking-tight text-brand-900 sm:text-4xl lg:text-5xl"
-          >
-            De ce să alegi{' '}
-            <span className="text-accent-600">Biletul Spre Medicină</span>?
-          </h2>
-
-          <p className="mx-auto mt-4 max-w-2xl font-sans text-base leading-relaxed text-stone-600 sm:text-lg">
-            Tot ce ai nevoie pentru o pregătire organizată, realistă și eficientă
-            pentru admiterea la medicină.
+            className="font-display text-3xl font-extrabold tracking-tight text-brand-900 sm:text-4xl lg:text-5xl"
+            >
+              De ce să alegi <span className="text-accent-500">Biletul Spre Medicină</span>?
+            </h2>
+          <p className="mx-auto mt-5 max-w-2xl font-sans text-base leading-relaxed text-stone-600 sm:text-lg">
+            Tot ce ai nevoie pentru o pregătire organizată, realistă și eficientă pentru admiterea la medicină.
           </p>
         </Reveal>
 
-        <div className="grid gap-5 lg:grid-cols-[1.08fr_0.92fr] lg:items-start">
-          {/* Coloana stângă */}
-          <div className="contents lg:flex lg:flex-col lg:gap-5">
-            <SlideInCard direction="left" className="order-1 lg:order-none">
-              <AdvantageCard
-                id="simulations"
-                icon={<CardImage src="/Calendar.png" />}
-                iconSide="right"
-                title="Simulări zilnice"
-                intro="Oferim acces la o gamă vastă și variată de simulări, concepute pentru a nu lăsa loc de surprindere la examen."
-                benefits={BENEFIT_CHECKS}
-                tone="brand"
-                activeCard={activeCard}
-                onActivate={setActiveCard}
-              />
-            </SlideInCard>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-12 lg:auto-rows-[minmax(170px,auto)]">
+          <Reveal className="md:col-span-2 lg:col-span-7 motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none" delay={60}>
+            <AdvantageCard
+              id="simulations"
+              icon={
+  <img 
+    src="/Calendar.png" 
+    alt="Iconita" 
+    className="h-8 w-8 object-contain transition-transform duration-300 hover:scale-115 hover:-rotate-12 active:scale-95 cursor-pointer" 
+  />
+}
+              title="Simulări zilnice"
+              intro="Oferim acces la o gamă vastă și variată de simulări, concepute pentru a nu lăsa loc de surprindere la examen."
+              benefits={BENEFIT_CHECKS}
+              tone="brand"
+              className="h-full"
+              activeCard={activeCard}
+              onActivate={setActiveCard}
+            />
+          </Reveal>
 
-            <SlideInCard direction="left" className="order-3 lg:order-none">
-              <AdvantageCard
-                id="dashboard"
-                icon={<CardImage src="/Chartst.png" />}
-                iconSide="left"
-                title="Dashboard integrat"
-                intro="Urmărește în detaliu evoluția"
-                tone="sky"
-                activeCard={activeCard}
-                onActivate={setActiveCard}
-              >
-                <div className="mt-5 grid grid-cols-2 gap-2.5">
-                  {DASHBOARD_ITEMS.map((item) => (
-                    <div
-                      key={item.label}
-                      className="flex min-w-0 flex-col items-start gap-2 rounded-xl border border-sky-100 bg-white p-3 sm:flex-row sm:items-center sm:gap-3"
-                    >
-                      <div
-                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
-                          item.tone === 'accent'
-                            ? 'bg-amber-100 text-accent-700'
-                            : 'bg-sky-100 text-sky-700'
-                        }`}
-                        aria-hidden="true"
-                      >
-                        {item.icon}
-                      </div>
-                      <p className="min-w-0 break-words text-sm font-medium leading-snug text-stone-700">
-                        {item.label}
-                      </p>
-                    </div>
-                  ))}
-                </div>
+          <Reveal className="md:col-span-2 lg:col-span-5 motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none" delay={120}>
+            <AdvantageCard
+              id="exam"
+              icon={
+  <img 
+    src="/Checkboard copy 2.png" 
+    alt="Iconita" 
+    className="h-8 w-8 object-contain transition-transform duration-300 hover:scale-115 hover:-rotate-12 active:scale-95 cursor-pointer" 
+  />
+}
+              title="Simulează cu adevărat experiența examenului"
+              benefits={EXAM_BENEFITS}
+              tone="accent"
+              className="h-full"
+              activeCard={activeCard}
+              onActivate={setActiveCard}
+            />
+          </Reveal>
 
-                <p className="mt-4 text-center text-sm font-semibold text-sky-800">
-                  + multe altele statistici
-                </p>
-              </AdvantageCard>
-            </SlideInCard>
-          </div>
-
-          {/* Coloana dreaptă */}
-          <div className="contents lg:flex lg:flex-col lg:gap-5">
-            <SlideInCard direction="right" className="order-2 lg:order-none">
-              <AdvantageCard
-                id="exam"
-                icon={<CardImage src="/Checkboard copy 2.png" />}
-                iconSide="left"
-                title="Simulează cu adevărat experiența examenului"
-                benefits={EXAM_BENEFITS}
-                tone="accent"
-                activeCard={activeCard}
-                onActivate={setActiveCard}
-              />
-            </SlideInCard>
-
-            <SlideInCard direction="right" className="order-4 lg:order-none">
-              <AdvantageCard
-                id="support"
-                icon={<CardImage src="/Support.png" />}
-                iconSide="right"
-                title="Ai o întrebare? Suntem aici să te ajutăm"
-                intro="Beneficiezi de suport dedicat pe parcursul pregătirii, pentru orice nelămurire legată de platformă, simulări sau chiar materie:"
-                benefits={[
-                  {
-                    text: 'Asistență de luni până vineri, în intervalul 08:00–17:00.',
-                  },
-                  {
-                    text: 'Răspunsuri rapide la întrebările și problemele întâmpinate.',
-                  },
-                ]}
-                tone="brand"
-                activeCard={activeCard}
-                onActivate={setActiveCard}
-              />
-            </SlideInCard>
-
-            <SlideInCard direction="right" className="order-5 lg:order-none">
-              <AdvantageCard
-                id="team"
-                icon={<CardImage src="/doctorii.png" />}
-                iconSide="left"
-                title="Cine suntem?"
-                tone="warm"
-                activeCard={activeCard}
-                onActivate={setActiveCard}
-              >
-                <div className="mt-5 space-y-3 font-sans text-sm leading-relaxed text-stone-600 sm:text-base">
-                  <p className="font-semibold text-stone-800">
-                    Suntem o echipă formată din profesori și studenți, uniți de
-                    aceeași experiență și de dorința de a face pregătirea mai
-                    eficientă.
-                  </p>
-                  <p>
-                    Am înțeles și perfecționat metodele de pregătire pentru unul
-                    dintre cele mai solicitante examene, transformând experiența
-                    noastră într-un sistem de simulări adaptat nevoilor reale ale
-                    elevilor.
-                  </p>
-                </div>
-              </AdvantageCard>
-            </SlideInCard>
-          </div>
-        </div>
+          <Reveal className="md:col-span-2 lg:col-span-5 lg:row-span-2 motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none" delay={180}>
+            <AdvantageCard
+              id="dashboard"
+              icon={
+  <img 
+    src="/Chartst.png" 
+    alt="Iconita" 
+    className="h-8 w-8 object-contain transition-transform duration-300 hover:scale-115 hover:-rotate-12 active:scale-95 cursor-pointer" 
+  />
+}
+              title="Dashboard integrat"
+              intro="Urmărește în detaliu evoluția"
+              tone="brand"
+              className="h-full"
+              activeCard={activeCard}
+              onActivate={setActiveCard}
+            >
+              <div className="mt-6 grid grid-cols-2 gap-2.5">
+  {DASHBOARD_ITEMS.map((item) => (
+    <div
+      key={item.label}
+      className="group/metric flex min-w-0 flex-col items-start gap-2 rounded-xl border border-stone-200 bg-white p-2.5 transition-all duration-250 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-sm focus-within:ring-2 focus-within:ring-brand-500/30 sm:flex-row sm:items-center sm:gap-3 sm:p-3"
+    >
+      <div
+        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg sm:h-9 sm:w-9 ${
+          item.tone === 'accent'
+            ? 'bg-accent-50 text-accent-600'
+            : 'bg-brand-50 text-brand-600'
+        } transition-transform duration-250 group-hover/metric:scale-105`}
+        aria-hidden="true"
+      >
+        {item.icon}
       </div>
 
-      <style>{`
-        @media (prefers-reduced-motion: no-preference) {
-          .why-slide {
-            opacity: 0;
-            transition:
-              opacity 700ms ease,
-              transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
-          }
-
-          .why-slide[data-direction='left'] {
-            transform: translateX(-32px);
-          }
-
-          .why-slide[data-direction='right'] {
-            transform: translateX(32px);
-          }
-
-          .why-slide[data-visible='true'] {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-      `}</style>
-    </section>
-  );
-}
-
-function CardImage({ src }: { src: string }) {
-  return (
-    <img
-      src={src}
-      alt=""
-      className="h-8 w-8 object-contain transition-transform duration-300 group-hover:scale-105"
-      draggable={false}
-    />
-  );
-}
-
-function SlideInCard({
-  direction,
-  className = '',
-  children,
-}: {
-  direction: 'left' | 'right';
-  className?: string;
-  children: ReactNode;
-}) {
-  const elementRef = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const element = elementRef.current;
-    if (!element) return;
-
-    if (typeof IntersectionObserver === 'undefined') {
-      setVisible(true);
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.12 }
-    );
-
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <div
-      ref={elementRef}
-      className={`why-slide ${className}`}
-      data-direction={direction}
-      data-visible={visible}
-    >
-      {children}
+      <p className="min-w-0 break-words text-sm font-medium leading-snug text-stone-700 sm:text-base">
+        {item.label}
+      </p>
     </div>
+  ))}
+</div>
+              <div className="mt-3 flex items-center justify-center gap-2 rounded-xl bg-brand-100 px-4 py-3 text-sm font-bold text-brand-800">
+                <span aria-hidden="true">+</span> multe altele statistici
+              </div>
+            </AdvantageCard>
+          </Reveal>
+
+          <Reveal className="md:col-span-2 lg:col-span-7 motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none" delay={240}>
+            <AdvantageCard
+              id="support"
+              icon={
+  <img 
+    src="/Support.png" 
+    alt="Iconita" 
+    className="h-8 w-8 object-contain transition-transform duration-300 hover:scale-115 hover:-rotate-12 active:scale-95 cursor-pointer" 
+  />
+}
+              title="Ai o întrebare? Suntem aici să te ajutăm"
+              intro="Beneficiezi de suport dedicat pe parcursul pregătirii, pentru orice nelămurire legată de platformă, simulări sau chiar materie:"
+              benefits={[
+                { text: 'Asistență de luni până vineri, în intervalul 08:00–17:00.' },
+                { text: 'Răspunsuri rapide la întrebările și problemele întâmpinate.' },
+              ]}
+              tone="brand"
+              className="h-full"
+              activeCard={activeCard}
+              onActivate={setActiveCard}
+            />
+          </Reveal>
+
+          <Reveal className="md:col-span-2 lg:col-span-7 motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none" delay={300}>
+            <AdvantageCard
+              id="team"
+              icon={
+  <img 
+    src="/doctorii.png" 
+    alt="Iconita" 
+    className="h-8 w-8 object-contain transition-transform duration-300 hover:scale-115 hover:-rotate-12 active:scale-95 cursor-pointer" 
+  />
+}
+              title="Cine suntem?"
+              tone="brand"
+              className="h-full"
+              activeCard={activeCard}
+              onActivate={setActiveCard}
+            >
+              <div className="mt-5 space-y-3 font-sans text-sm leading-relaxed text-stone-600 sm:text-base">
+               <p className="font-bold indent-4">
+  Suntem o echipă formată din profesori și studenți, uniți de aceeași experiență și de dorința de a face pregătirea mai eficientă.
+</p>
+                <p>Am înțeles și perfecționat metodele de pregătire pentru unul dintre cele mai solicitante examene, transformând experiența noastră într-un sistem de simulări adaptat nevoilor reale ale elevilor.</p>
+              </div>
+            </AdvantageCard>
+          </Reveal>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -390,12 +258,14 @@ function AdvantageCard({
   benefits,
   children,
   tone = 'brand',
-  iconSide = 'left',
+  className = '',
   activeCard,
   onActivate,
 }: AdvantageCardProps) {
   const isActive = activeCard === id;
-  const colors = CARD_STYLES[tone];
+  const accentClasses = tone === 'accent'
+    ? 'bg-accent-50 text-accent-600 group-hover:bg-accent-100'
+    : 'bg-brand-100 text-brand-700 group-hover:bg-brand-150';
 
   const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     if (event.key === 'Enter' || event.key === ' ') {
@@ -412,62 +282,32 @@ function AdvantageCard({
       aria-label={`${title}. Activează evidențierea cardului.`}
       onClick={() => onActivate(id)}
       onKeyDown={handleKeyDown}
-      className={`group relative cursor-pointer overflow-hidden rounded-[20px] border p-5 shadow-sm outline-none transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:p-6 ${colors.surface} ${
-        isActive ? 'ring-2 ring-brand-300' : ''
-      }`}
+      className={`group relative isolate flex min-h-full cursor-pointer flex-col overflow-hidden rounded-[24px] border bg-white p-6 shadow-sm outline-none transition-all duration-250 hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 active:translate-y-0 motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${isActive ? 'border-brand-400 shadow-md ring-1 ring-brand-200' : 'border-stone-200'} ${className}`}
     >
-      <span
-        className={`absolute bottom-5 left-0 top-5 w-[3px] rounded-r-full ${colors.edge}`}
-        aria-hidden="true"
-      />
+      <div className={`absolute inset-x-0 top-0 h-1 origin-left scale-x-0 transition-transform duration-250 group-hover:scale-x-100 ${tone === 'accent' ? 'bg-accent-500' : 'bg-brand-500'} ${isActive ? 'scale-x-100' : ''}`} aria-hidden="true" />
+      <div className="pointer-events-none absolute -right-10 -top-12 h-32 w-32 rounded-full bg-brand-50/60 opacity-50 transition-opacity duration-250 group-hover:opacity-90" aria-hidden="true" />
 
-      <div
-        className={`flex items-start gap-4 ${
-          iconSide === 'right' ? 'flex-row-reverse' : ''
-        }`}
-      >
-        <div
-          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ${colors.icon}`}
-          aria-hidden="true"
-        >
+      <div className="relative flex items-start gap-4">
+        <div className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl transition-transform duration-250 group-hover:scale-105 ${accentClasses}`} aria-hidden="true">
           {icon}
         </div>
-
-        <div className="min-w-0 flex-1">
-          <h3 className="font-display text-xl font-bold leading-tight text-brand-900 sm:text-[23px]">
-            {title}
-          </h3>
-
-          {intro && (
-            <p className="mt-2 font-sans text-sm leading-relaxed text-stone-600 sm:text-[15px]">
-              {intro}
-            </p>
-          )}
+        <div className="min-w-0">
+          <h3 className="font-display text-xl font-extrabold leading-tight text-brand-900 sm:text-2xl">{title}</h3>
+          {intro && <p className="mt-2 font-sans text-sm leading-relaxed text-stone-600 sm:text-base">{intro}</p>}
         </div>
       </div>
 
       {benefits && (
-        <ul className="mt-5 divide-y divide-stone-200/80 border-t border-stone-200/80">
-          {benefits.map((benefit, index) => (
-            <li
-              key={index}
-              className="flex items-start gap-3 py-3 text-sm leading-relaxed text-stone-700 first:pt-4 last:pb-0 sm:text-[15px]"
-            >
-              <span
-                className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white ${colors.check}`}
-                aria-hidden="true"
-              >
-                <Check size={12} strokeWidth={3} />
+        <ul className="relative mt-5 space-y-3">
+          {benefits.map((benefit, idx) => (
+            <li key={idx} className="flex items-start gap-3 font-sans text-sm leading-relaxed text-stone-700 sm:text-base">
+              <span className={`mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full ${tone === 'accent' ? 'bg-accent-100 text-accent-600' : 'bg-brand-100 text-brand-700'}`} aria-hidden="true">
+                <Check size={14} strokeWidth={3} />
               </span>
-
               <span className="min-w-0">
                 {benefit.text}
                 {benefit.emphasis && (
-                  <span
-                    className={`mt-1.5 block text-sm font-semibold text-accent-700 ${benefit.emphasisClassName ?? ''}`}
-                  >
-                    {benefit.emphasis}
-                  </span>
+                  <span className="mt-1 block font-sans text-sm font-semibold text-accent-600">{benefit.emphasis}</span>
                 )}
               </span>
             </li>
