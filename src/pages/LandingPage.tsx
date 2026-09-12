@@ -431,13 +431,13 @@ function ReviewsSection() {
 
   return (
     <section
-      aria-labelledby="reviews-title"
-      className="overflow-hidden border-t border-amber-100/70 py-16 sm:py-20"
-      style={{
-        background:
-          'linear-gradient(180deg, #fffefa 0%, #fff8e3 48%, #ffffff 100%)',
-      }}
-    >
+  aria-labelledby="reviews-title"
+  className="overflow-hidden border-t border-amber-100/70 pb-28 pt-16 sm:pb-36 sm:pt-20"
+  style={{
+    background:
+      'linear-gradient(180deg, #fffefa 0%, #fff8e3 45%, #fffaf0 72%, #ffffff 100%)',
+  }}
+>
       <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-brand-600">
           Experiențele comunității
