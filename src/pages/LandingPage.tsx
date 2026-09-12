@@ -31,7 +31,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            <button onClick={onSignIn} className="btn-ghost max-sm:!px-3 max-sm:!py-2 max-sm:!text-xs">
+            <button onClick={onSignIn} className="btn-ghost max-sm:!rounded-lg max-sm:!bg-stone-100/80 max-sm:!px-2.5 max-sm:!py-1.5 max-sm:!text-[11px] max-sm:!leading-tight max-sm:!ring-1 max-sm:!ring-stone-200/70 max-sm:hover:!bg-stone-200/70">
               Loghează-te
             </button>
             <button onClick={onGetStarted} className="btn-primary">
