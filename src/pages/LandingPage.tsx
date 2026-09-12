@@ -26,7 +26,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            <button onClick={onSignIn} className="btn-ghost">
+            <button onClick={onSignIn} className="btn-ghost max-sm:!px-3 max-sm:!py-2 max-sm:!text-xs">
               Loghează-te
             </button>
             <button onClick={onGetStarted} className="btn-primary">
