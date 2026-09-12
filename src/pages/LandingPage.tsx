@@ -356,7 +356,7 @@ function TicketCard({ onGetStarted }: { onGetStarted: () => void }) {
   <span className="text-xs text-stone-400">
     Asistență dedicată · Corectare automată
   </span>
-  <span className="font-sans text-xs font-bold uppercase tracking-wider text-brand-600">
+  <span className="font-sans text-right text-xs font-bold uppercase tracking-wider text-brand-600 sm:text-left">
     {Math.max(
       0,
       Math.ceil(
