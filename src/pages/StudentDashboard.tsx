@@ -64,14 +64,14 @@ type Stat = {
 
 // Completează doar adresele dintre ghilimele. Până atunci rămân pictogramele actuale.
 const STAT_IMAGE_SOURCES = [
-  'public/1.png', // Aici vine sursa imaginea 1 – Rata răspunsurilor corecte
-  'public/2.png', // Aici vine sursa imaginea 2 – Cel mai bun rezultat la o simulare
-  'public/3.png', // Aici vine sursa imaginea 3 – Rezultatul ultimei simulări
-  'public/4.png', // Aici vine sursa imaginea 4 – Media rezultatelor la simulări
-  'public/5.png', // Aici vine sursa imaginea 5 – Seria actuală de zile active
-  'public/6.png', // Aici vine sursa imaginea 6 – Timp mediu pe întrebare
-  'public/7.png', // Aici vine sursa imaginea 7 – Simulări terminate în timpul alocat
-  'public/8.png', // Aici vine sursa imaginea 8 – Capitole începute
+  '/1.png', // Aici vine sursa imaginea 1 – Rata răspunsurilor corecte
+  '/2.png', // Aici vine sursa imaginea 2 – Cel mai bun rezultat la o simulare
+  '/3.png', // Aici vine sursa imaginea 3 – Rezultatul ultimei simulări
+  '/4.png', // Aici vine sursa imaginea 4 – Media rezultatelor la simulări
+  '/5.png', // Aici vine sursa imaginea 5 – Seria actuală de zile active
+  '/6.png', // Aici vine sursa imaginea 6 – Timp mediu pe întrebare
+  '/7.png', // Aici vine sursa imaginea 7 – Simulări terminate în timpul alocat
+  '/8.png', // Aici vine sursa imaginea 8 – Capitole începute
 ];
 
 const serif = { fontFamily: 'Georgia, Cambria, "Times New Roman", serif' };
