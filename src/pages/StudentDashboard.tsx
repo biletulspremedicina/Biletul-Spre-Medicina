@@ -580,7 +580,6 @@ export default function StudentDashboard({
                         </p>
                       </div>
                     </div>
-                    <div className="min-w-0 pt-3 sm:pl-5 sm:pt-0">
                     <div className="flex min-w-0 flex-col justify-center pt-3 text-center sm:pl-5 sm:pt-0">
                       <p className="text-[13px] font-bold leading-snug">Grile lucrate în ultimele 7 zile</p>
                       <div className="mt-2 overflow-x-auto">
@@ -605,7 +604,6 @@ export default function StudentDashboard({
                           </tbody>
                         </table>
                       </div>
-                      <p className="mt-1 text-[9px] leading-tight text-[#8b9a9c]">Din sesiunile finalizate</p>
                     </div>
                   </div>
                 </section>
