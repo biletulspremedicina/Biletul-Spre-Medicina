@@ -352,7 +352,7 @@ function TicketCard({ onGetStarted }: { onGetStarted: () => void }) {
           </div>
         </div>
 
-       <div className="flex items-center justify-between border-t border-stone-200/70 bg-stone-50/80 pl-6 pr-0 py-2.5 sm:px-10">
+       <div className="flex items-center justify-between border-t border-stone-200/70 bg-stone-50/80 px-6 py-2.5 sm:px-10">
   <span className="text-xs text-stone-400">
     Asistență dedicată · Corectare automată
   </span>
