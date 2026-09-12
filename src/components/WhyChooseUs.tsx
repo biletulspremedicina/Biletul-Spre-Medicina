@@ -204,7 +204,7 @@ export default function WhyChooseUs() {
           </p>
         </Reveal>
 
-        <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
+       <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
   <div className="contents lg:flex lg:flex-col lg:gap-5">
           <Reveal
             className="lg:col-span-7 motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none"
