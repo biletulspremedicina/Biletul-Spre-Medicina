@@ -438,8 +438,11 @@ function ReviewsSection() {
           'linear-gradient(180deg, #fffefa 0%, #fff8e3 48%, #ffffff 100%)',
       }}
     >
-      
-        
+      <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-brand-600">
+          Experiențele comunității
+        </p>
+
         <h2
           id="reviews-title"
           className="mt-3 font-display text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl"
