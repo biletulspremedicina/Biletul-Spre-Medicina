@@ -522,8 +522,8 @@ function ReviewsSection() {
         ))}
             </div>
 
-      <div className="mx-auto mt-7 flex max-w-7xl flex-col items-center justify-between gap-4 px-4 sm:mt-8 sm:flex-row sm:px-6 lg:px-8">
-        <p className="text-center font-display text-xl font-semibold text-stone-800 sm:text-2xl">
+      <div className="relative mx-auto mt-7 flex max-w-7xl flex-col items-center justify-center gap-4 px-4 sm:mt-8 sm:px-6 lg:min-h-12 lg:flex-row lg:justify-end lg:px-8">
+  <p className="text-center font-display text-xl font-semibold text-stone-800 sm:text-2xl lg:absolute lg:left-1/2 lg:w-max lg:-translate-x-1/2">
   Așteptăm și părerea ta.
 </p>
 
