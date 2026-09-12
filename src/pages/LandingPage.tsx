@@ -47,7 +47,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
         <div className="absolute inset-0 bg-gradient-to-b from-brand-50/80 via-stone-50/40 to-stone-50" />
         <div className="absolute -top-24 left-1/2 h-72 w-[36rem] -translate-x-1/2 rounded-full bg-brand-200/30 blur-3xl" />
 
-        <div className="relative mx-auto max-w-7xl px-4 pb-16 pt-12 sm:px-6 sm:pb-20 sm:pt-16 lg:px-8">
+       <div className="relative mx-auto max-w-7xl px-4 pb-0 pt-12 sm:px-6 sm:pb-20 sm:pt-16 lg:px-8">
           <h1 className="text-balance text-center font-display text-4xl font-extrabold leading-[1.1] tracking-tight text-stone-900 sm:text-5xl md:text-6xl">
             Standardul modern în pregătirea pentru{' '}
             <span className="bg-gradient-to-r from-brand-600 to-brand-500 bg-clip-text text-transparent">
