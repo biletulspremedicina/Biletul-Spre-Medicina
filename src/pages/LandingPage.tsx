@@ -523,9 +523,9 @@ function ReviewsSection() {
             </div>
 
       <div className="mx-auto mt-7 flex max-w-7xl flex-col items-center justify-between gap-4 px-4 sm:mt-8 sm:flex-row sm:px-6 lg:px-8">
-        <p className="text-center font-display text-base font-semibold text-stone-800 sm:text-left sm:text-lg">
-          Așteptăm și părerea ta.
-        </p>
+        <p className="text-center font-display text-xl font-semibold text-stone-800 sm:text-2xl">
+  Așteptăm și părerea ta.
+</p>
 
         <div className="flex items-center gap-2.5" aria-label="Rețele sociale">
           {[
