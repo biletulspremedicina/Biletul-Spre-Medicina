@@ -16,9 +16,14 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
       {/* Navbar */}
       <header className="sticky top-0 z-30 border-b border-stone-200/70 bg-white/85 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 sm:py-4 lg:px-8">
-          <div className="flex items-center gap-1.5">
-            <Logo />
-            <div className="flex select-none flex-col text-[12px] font-extrabold uppercase leading-[1.08] tracking-wide">
+          <div className="flex items-center gap-1 sm:gap-1.5">
+  <div className="sm:hidden">
+    <Logo size="sm" />
+  </div>
+  <div className="hidden sm:block">
+    <Logo />
+  </div>
+  <div className="flex select-none flex-col text-[10px] font-extrabold uppercase leading-[1.08] tracking-wide sm:text-[12px]">
               <span className="text-stone-900">Biletul</span>
               <span className="text-stone-900">Spre</span>
               <span className="font-black text-brand-600">Medicină</span>
