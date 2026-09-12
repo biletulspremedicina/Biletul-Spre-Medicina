@@ -394,7 +394,7 @@ function AdvantageCard({
       aria-label={`${title}. Activează evidențierea cardului.`}
       onClick={() => onActivate(id)}
       onKeyDown={handleKeyDown}
-      style={centerGradient ? { backgroundImage: centerGradient } : undefined}
+      
       className={`group relative isolate flex cursor-pointer flex-col overflow-hidden rounded-[28px] border bg-gradient-to-br p-5 shadow-[0_8px_32px_rgba(27,61,49,0.05)] outline-none transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_42px_rgba(27,61,49,0.11)] focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 active:translate-y-0 motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:p-7 ${
         colors.card
       } ${
