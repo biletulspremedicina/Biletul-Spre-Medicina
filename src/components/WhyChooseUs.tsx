@@ -114,47 +114,37 @@ const CARD_STYLES: Record<
   CardTone,
   {
     card: string;
-    line: string;
     glow: string;
     icon: string;
-    eyebrow: string;
     check: string;
     benefitBorder: string;
   }
 > = {
   brand: {
     card: 'border-brand-200/80 from-white via-white to-brand-50/70',
-    line: 'from-brand-500 via-emerald-400 to-transparent',
     glow: 'bg-brand-100/70',
     icon: 'bg-brand-100 text-brand-700 ring-brand-200/70',
-    eyebrow: 'bg-brand-100/80 text-brand-800',
     check: 'bg-brand-100 text-brand-700',
     benefitBorder: 'border-brand-100/80',
   },
   accent: {
     card: 'border-amber-200/80 from-white via-white to-amber-50/75',
-    line: 'from-accent-500 via-amber-400 to-transparent',
     glow: 'bg-amber-100/70',
     icon: 'bg-amber-100 text-accent-700 ring-amber-200/70',
-    eyebrow: 'bg-amber-100/80 text-amber-800',
     check: 'bg-amber-100 text-accent-700',
     benefitBorder: 'border-amber-100',
   },
   sky: {
     card: 'border-sky-200/80 from-white via-white to-sky-50/75',
-    line: 'from-sky-500 via-cyan-300 to-transparent',
     glow: 'bg-sky-100/70',
     icon: 'bg-sky-100 text-sky-700 ring-sky-200/70',
-    eyebrow: 'bg-sky-100/80 text-sky-800',
     check: 'bg-sky-100 text-sky-700',
     benefitBorder: 'border-sky-100',
   },
   warm: {
     card: 'border-orange-200/70 from-white via-white to-orange-50/60',
-    line: 'from-orange-400 via-amber-300 to-transparent',
     glow: 'bg-orange-100/65',
     icon: 'bg-orange-100 text-orange-700 ring-orange-200/70',
-    eyebrow: 'bg-orange-100/80 text-orange-800',
     check: 'bg-orange-100 text-orange-700',
     benefitBorder: 'border-orange-100',
   },
@@ -185,7 +175,7 @@ export default function WhyChooseUs() {
         <Reveal className="mx-auto mb-10 max-w-3xl text-center motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none sm:mb-12">
           <h2
             id="why-choose-us-title"
-            className="font-display text-3xl font-extrabold leading-tight tracking-tight text-brand-900 sm:text-4xl lg:text-5xl"
+            className="mt-5 font-display text-3xl font-extrabold leading-tight tracking-tight text-brand-900 sm:text-4xl lg:text-5xl"
           >
             De ce să alegi{' '}
             <span className="text-accent-500">Biletul Spre Medicină</span>?
@@ -202,142 +192,141 @@ export default function WhyChooseUs() {
           </p>
         </Reveal>
 
-        <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
-          {/* Coloana stângă */}
-          <div className="contents lg:flex lg:flex-col lg:gap-5">
-            <Reveal
-              className="order-1 motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none lg:order-none"
-              delay={60}
-            >
-              <AdvantageCard
-                id="simulations"
-                icon={<CardImage src="/Calendar.png" />}
-                eyebrow="Pregătire constantă"
-                title="Simulări zilnice"
-                intro="Oferim acces la o gamă vastă și variată de simulări, concepute pentru a nu lăsa loc de surprindere la examen."
-                benefits={BENEFIT_CHECKS}
-                tone="brand"
-                activeCard={activeCard}
-                onActivate={setActiveCard}
-              />
-            </Reveal>
+        <div className="grid gap-5 lg:grid-cols-2 lg:items-stretch">
+          <Reveal
+            className="lg:h-full motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none"
+            delay={60}
+          >
+            <AdvantageCard
+              id="simulations"
+              icon={<CardImage src="/Calendar.png" />}
+              eyebrow="Pregătire constantă"
+              title="Simulări zilnice"
+              intro="Oferim acces la o gamă vastă și variată de simulări, concepute pentru a nu lăsa loc de surprindere la examen."
+              benefits={BENEFIT_CHECKS}
+              tone="brand"
+              className="h-full"
+              activeCard={activeCard}
+              onActivate={setActiveCard}
+            />
+          </Reveal>
 
-            <Reveal
-              className="order-3 motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none lg:order-none"
-              delay={180}
+          <Reveal
+            className="lg:h-full motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none"
+            delay={120}
+          >
+            <AdvantageCard
+              id="exam"
+              icon={<CardImage src="/Checkboard copy 2.png" />}
+              eyebrow="Ca la examen"
+              title="Simulează cu adevărat experiența examenului"
+              benefits={EXAM_BENEFITS}
+              tone="accent"
+              className="h-full"
+              activeCard={activeCard}
+              onActivate={setActiveCard}
+            />
+          </Reveal>
+
+          <Reveal
+            className="lg:row-span-2 lg:h-full motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none"
+            delay={180}
+          >
+            <AdvantageCard
+              id="dashboard"
+              icon={<CardImage src="/Chartst.png" />}
+              eyebrow="Progresul tău"
+              title="Dashboard integrat"
+              intro="Urmărește în detaliu evoluția"
+              tone="sky"
+              className="h-full"
+              activeCard={activeCard}
+              onActivate={setActiveCard}
             >
-              <AdvantageCard
-                id="dashboard"
-                icon={<CardImage src="/Chartst.png" />}
-                eyebrow="Progresul tău"
-                title="Dashboard integrat"
-                intro="Urmărește în detaliu evoluția"
-                tone="sky"
-                activeCard={activeCard}
-                onActivate={setActiveCard}
-              >
-                <div className="mt-6 grid grid-cols-2 gap-2.5">
-                  {DASHBOARD_ITEMS.map((item) => (
+              <div className="mt-6 grid grid-cols-2 gap-2.5 lg:flex-1 lg:auto-rows-fr lg:gap-3">
+                {DASHBOARD_ITEMS.map((item) => (
+                  <div
+                    key={item.label}
+                    className="group/metric flex min-w-0 flex-col items-start gap-2 rounded-xl border border-sky-100 bg-white/85 p-2.5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-md sm:flex-row sm:items-center sm:gap-3 sm:p-3"
+                  >
                     <div
-                      key={item.label}
-                      className="group/metric flex min-w-0 flex-col items-start gap-2 rounded-xl border border-sky-100 bg-white/85 p-2.5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-md sm:flex-row sm:items-center sm:gap-3 sm:p-3"
+                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg sm:h-9 sm:w-9 ${
+                        item.tone === 'accent'
+                          ? 'bg-amber-100 text-accent-700'
+                          : 'bg-sky-100 text-sky-700'
+                      }`}
+                      aria-hidden="true"
                     >
-                      <div
-                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg sm:h-9 sm:w-9 ${
-                          item.tone === 'accent'
-                            ? 'bg-amber-100 text-accent-700'
-                            : 'bg-sky-100 text-sky-700'
-                        }`}
-                        aria-hidden="true"
-                      >
-                        {item.icon}
-                      </div>
-                      <p className="min-w-0 break-words text-sm font-medium leading-snug text-stone-700 sm:text-base">
-                        {item.label}
-                      </p>
+                      {item.icon}
                     </div>
-                  ))}
-                </div>
+                    <p className="min-w-0 break-words text-sm font-medium leading-snug text-stone-700 sm:text-base">
+                      {item.label}
+                    </p>
+                  </div>
+                ))}
+              </div>
 
-                <div className="mt-3 flex items-center justify-center gap-2 rounded-xl border border-sky-100 bg-sky-50/80 px-4 py-3 text-sm font-bold text-sky-800">
-                  <span aria-hidden="true">+</span>
-                  multe altele statistici
-                </div>
-              </AdvantageCard>
-            </Reveal>
-          </div>
+              <div className="mt-3 flex items-center justify-center gap-2 rounded-xl border border-sky-100 bg-sky-50/80 px-4 py-3 text-sm font-bold text-sky-800">
+                <span aria-hidden="true">+</span>
+                multe altele statistici
+              </div>
+            </AdvantageCard>
+          </Reveal>
 
-          {/* Coloana dreaptă */}
-          <div className="contents lg:flex lg:flex-col lg:gap-5">
-            <Reveal
-              className="order-2 motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none lg:order-none"
-              delay={120}
+          <Reveal
+            className="lg:h-full motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none"
+            delay={240}
+          >
+            <AdvantageCard
+              id="support"
+              icon={<CardImage src="/Support.png" />}
+              eyebrow="Sprijin pe parcurs"
+              title="Ai o întrebare? Suntem aici să te ajutăm"
+              intro="Beneficiezi de suport dedicat pe parcursul pregătirii, pentru orice nelămurire legată de platformă, simulări sau chiar materie:"
+              benefits={[
+                {
+                  text: 'Asistență de luni până vineri, în intervalul 08:00–17:00.',
+                },
+                {
+                  text: 'Răspunsuri rapide la întrebările și problemele întâmpinate.',
+                },
+              ]}
+              tone="brand"
+              className="h-full"
+              activeCard={activeCard}
+              onActivate={setActiveCard}
+            />
+          </Reveal>
+
+          <Reveal
+            className="lg:h-full motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none"
+            delay={300}
+          >
+            <AdvantageCard
+              id="team"
+              icon={<CardImage src="/doctorii.png" />}
+              eyebrow="Oameni care înțeleg"
+              title="Cine suntem?"
+              tone="warm"
+              className="h-full"
+              activeCard={activeCard}
+              onActivate={setActiveCard}
             >
-              <AdvantageCard
-                id="exam"
-                icon={<CardImage src="/Checkboard copy 2.png" />}
-                eyebrow="Ca la examen"
-                title="Simulează cu adevărat experiența examenului"
-                benefits={EXAM_BENEFITS}
-                tone="accent"
-                activeCard={activeCard}
-                onActivate={setActiveCard}
-              />
-            </Reveal>
-
-            <Reveal
-              className="order-4 motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none lg:order-none"
-              delay={240}
-            >
-              <AdvantageCard
-                id="support"
-                icon={<CardImage src="/Support.png" />}
-                eyebrow="Sprijin pe parcurs"
-                title="Ai o întrebare? Suntem aici să te ajutăm"
-                intro="Beneficiezi de suport dedicat pe parcursul pregătirii, pentru orice nelămurire legată de platformă, simulări sau chiar materie:"
-                benefits={[
-                  {
-                    text: 'Asistență de luni până vineri, în intervalul 08:00–17:00.',
-                  },
-                  {
-                    text: 'Răspunsuri rapide la întrebările și problemele întâmpinate.',
-                  },
-                ]}
-                tone="brand"
-                activeCard={activeCard}
-                onActivate={setActiveCard}
-              />
-            </Reveal>
-
-            <Reveal
-              className="order-5 motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none lg:order-none"
-              delay={300}
-            >
-              <AdvantageCard
-                id="team"
-                icon={<CardImage src="/doctorii.png" />}
-                eyebrow="Oameni care înțeleg"
-                title="Cine suntem?"
-                tone="warm"
-                activeCard={activeCard}
-                onActivate={setActiveCard}
-              >
-                <div className="mt-5 space-y-3 font-sans text-sm leading-relaxed text-stone-600 sm:text-base">
-                  <p className="indent-5 font-semibold text-stone-800">
-                    Suntem o echipă formată din profesori și studenți, uniți de
-                    aceeași experiență și de dorința de a face pregătirea mai
-                    eficientă.
-                  </p>
-                  <p>
-                    Am înțeles și perfecționat metodele de pregătire pentru unul
-                    dintre cele mai solicitante examene, transformând experiența
-                    noastră într-un sistem de simulări adaptat nevoilor reale ale
-                    elevilor.
-                  </p>
-                </div>
-              </AdvantageCard>
-            </Reveal>
-          </div>
+              <div className="mt-5 space-y-3 font-sans text-sm leading-relaxed text-stone-600 sm:text-base">
+                <p className="indent-5 font-semibold text-stone-800">
+                  Suntem o echipă formată din profesori și studenți, uniți de
+                  aceeași experiență și de dorința de a face pregătirea mai
+                  eficientă.
+                </p>
+                <p>
+                  Am înțeles și perfecționat metodele de pregătire pentru unul
+                  dintre cele mai solicitante examene, transformând experiența
+                  noastră într-un sistem de simulări adaptat nevoilor reale ale
+                  elevilor.
+                </p>
+              </div>
+            </AdvantageCard>
+          </Reveal>
         </div>
       </div>
     </section>
@@ -369,18 +358,17 @@ function AdvantageCard({
 }: AdvantageCardProps) {
   const isActive = activeCard === id;
   const colors = CARD_STYLES[tone];
-const isRightCard = id === 'exam' || id === 'support' || id === 'team';
 
   const topLine =
-  id === 'simulations'
-    ? 'bg-gradient-to-r from-brand-700 via-brand-400 to-brand-200'
-    : id === 'exam'
-      ? 'bg-gradient-to-r from-amber-100 via-amber-400 to-accent-700'
-      : id === 'dashboard'
-        ? 'bg-gradient-to-r from-sky-700 via-sky-400 to-sky-200'
-        : id === 'support'
-          ? 'bg-gradient-to-r from-brand-100 via-brand-400 to-brand-700'
-          : 'bg-gradient-to-r from-orange-100 via-orange-400 to-orange-700';
+    id === 'simulations'
+      ? 'bg-gradient-to-r from-brand-700 via-brand-400 to-brand-200'
+      : id === 'exam'
+        ? 'bg-gradient-to-r from-amber-100 via-amber-400 to-accent-700'
+        : id === 'dashboard'
+          ? 'bg-gradient-to-r from-sky-700 via-sky-400 to-sky-200'
+          : id === 'support'
+            ? 'bg-gradient-to-r from-brand-100 via-brand-400 to-brand-700'
+            : 'bg-gradient-to-r from-orange-100 via-orange-400 to-orange-700';
 
   const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     if (event.key === 'Enter' || event.key === ' ') {
@@ -397,15 +385,14 @@ const isRightCard = id === 'exam' || id === 'support' || id === 'team';
       aria-label={`${title}. Activează evidențierea cardului.`}
       onClick={() => onActivate(id)}
       onKeyDown={handleKeyDown}
-      
-      className={`group relative isolate flex cursor-pointer flex-col overflow-hidden rounded-[28px] border ${isRightCard ? 'bg-gradient-to-bl' : 'bg-gradient-to-br'} p-5 shadow-[0_8px_32px_rgba(27,61,49,0.05)] outline-none transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_42px_rgba(27,61,49,0.11)] focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 active:translate-y-0 motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:p-7 ${
+      className={`group relative isolate flex min-h-full cursor-pointer flex-col overflow-hidden rounded-[28px] border bg-gradient-to-br p-5 shadow-[0_8px_32px_rgba(27,61,49,0.05)] outline-none transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_42px_rgba(27,61,49,0.11)] focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 active:translate-y-0 motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:p-7 ${
         colors.card
       } ${
         isActive ? 'ring-2 ring-brand-200 shadow-lg' : ''
       } ${className}`}
     >
       <div
-       className={`absolute inset-x-0 top-0 z-10 h-1.5 ${topLine}`}
+        className={`absolute inset-x-0 top-0 z-10 h-1.5 ${topLine}`}
         aria-hidden="true"
       />
       <div
