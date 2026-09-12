@@ -398,7 +398,7 @@ const isRightCard = id === 'exam' || id === 'support' || id === 'team';
       onClick={() => onActivate(id)}
       onKeyDown={handleKeyDown}
       
-      className={`group relative isolate flex cursor-pointer flex-col overflow-hidden rounded-[28px] border bg-gradient-to-br p-5 shadow-[0_8px_32px_rgba(27,61,49,0.05)] outline-none transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_42px_rgba(27,61,49,0.11)] focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 active:translate-y-0 motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:p-7 ${
+      border ${isRightCard ? 'bg-gradient-to-bl' : 'bg-gradient-to-br'} p-5
         colors.card
       } ${
         isActive ? 'ring-2 ring-brand-200 shadow-lg' : ''
