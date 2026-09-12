@@ -348,7 +348,7 @@ function TicketCard({ onGetStarted }: { onGetStarted: () => void }) {
         </div>
 
         <div className="flex flex-col items-start gap-1 border-t border-stone-200/70 bg-stone-50/80 px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:px-10">
-          <span className="text-xs text-stone-400">
+          <span className="order-2 text-xs text-stone-400 sm:order-1">
             Asistență dedicată · Corectare automată
           </span>
           <span className="font-sans text-xs font-bold uppercase tracking-wider text-brand-600">
