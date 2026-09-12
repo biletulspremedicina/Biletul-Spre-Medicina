@@ -581,6 +581,7 @@ export default function StudentDashboard({
                       </div>
                     </div>
                     <div className="min-w-0 pt-3 sm:pl-5 sm:pt-0">
+                    <div className="min-w-0 self-center pt-3 text-center sm:pl-5 sm:pt-0">
                       <p className="text-[13px] font-bold leading-snug">Grile lucrate în ultimele 7 zile</p>
                       <div className="mt-2 overflow-x-auto">
                         <table className="w-full table-fixed text-center" aria-label="Grile lucrate în fiecare dintre ultimele șapte zile">
