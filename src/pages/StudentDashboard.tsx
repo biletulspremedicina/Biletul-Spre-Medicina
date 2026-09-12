@@ -432,7 +432,7 @@ export default function StudentDashboard({
     { id: 'home', label: 'Acasă', icon: <Home size={19} /> },
     { id: 'all', label: 'Simulări biologie', icon: <FileText size={19} /> },
     { id: 'practice', label: 'Antrenament pe capitole', icon: <GraduationCap size={20} /> },
-    { id: 'umfcd', label: 'Examene UMFCD', icon: <UmfcdIcon size={19} imageSize={32} /> },
+    { id: 'umfcd', label: 'Examene UMFCD', icon: <UmfcdIcon size={19} imageSize={28} /> },
     { id: 'review', label: 'Întrebări de revizuit', icon: <Bookmark size={19} /> },
   ];
 
@@ -462,7 +462,7 @@ export default function StudentDashboard({
                 ? 'bg-white/15 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'
                 : 'text-[#cde5dc] hover:bg-white/10 hover:text-white'
             }`}>
-            <span className="shrink-0">{item.icon}</span>
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center">{item.icon}</span>
             <span className="leading-snug">{item.label}</span>
           </button>
         ))}
@@ -841,7 +841,7 @@ function UmfcdIcon({ size, imageSize }: { size: number; imageSize: number }) {
       alt=""
       width={imageSize}
       height={imageSize}
-      className="shrink-0 object-contain"
+      className="max-w-none shrink-0 object-contain"
       onError={() => setImageFailed(true)}
       draggable={false}
     />
