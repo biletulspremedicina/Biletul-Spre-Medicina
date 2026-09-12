@@ -70,8 +70,8 @@ const STAT_IMAGE_SOURCES = [
   'public/4.png', // Aici vine sursa imaginea 4 – Media rezultatelor la simulări
   'public/5.png', // Aici vine sursa imaginea 5 – Seria actuală de zile active
   'public/6.png', // Aici vine sursa imaginea 6 – Timp mediu pe întrebare
-  '', // Aici vine sursa imaginea 7 – Simulări terminate în timpul alocat
-  '', // Aici vine sursa imaginea 8 – Capitole începute
+  'public/7.png', // Aici vine sursa imaginea 7 – Simulări terminate în timpul alocat
+  'public/8.png', // Aici vine sursa imaginea 8 – Capitole începute
 ];
 
 const serif = { fontFamily: 'Georgia, Cambria, "Times New Roman", serif' };
