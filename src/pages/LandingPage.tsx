@@ -515,6 +515,56 @@ function ReviewsSection() {
             </div>
           </div>
         ))}
+            </div>
+
+      <div className="mx-auto mt-7 flex max-w-7xl flex-col items-center justify-between gap-4 px-4 sm:mt-8 sm:flex-row sm:px-6 lg:px-8">
+        <p className="text-center font-display text-base font-semibold text-stone-800 sm:text-left sm:text-lg">
+          Așteptăm și părerea ta.
+        </p>
+
+        <div className="flex items-center gap-2.5" aria-label="Rețele sociale">
+          {[
+            {
+              name: 'Instagram',
+              href: '',
+              icon: 'https://cdn.simpleicons.org/instagram/44403C',
+            },
+            {
+              name: 'Facebook',
+              href: '',
+              icon: 'https://cdn.simpleicons.org/facebook/44403C',
+            },
+            {
+              name: 'WhatsApp',
+              href: '',
+              icon: 'https://cdn.simpleicons.org/whatsapp/44403C',
+            },
+            {
+              name: 'TikTok',
+              href: '',
+              icon: 'https://cdn.simpleicons.org/tiktok/44403C',
+            },
+          ].map(({ name, href, icon }) => (
+            <a
+              key={name}
+              href={href || undefined}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={name}
+              aria-disabled={!href}
+              tabIndex={href ? 0 : -1}
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-amber-200/80 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-brand-300 hover:bg-brand-50 hover:shadow-md"
+            >
+              <img
+                src={icon}
+                alt=""
+                aria-hidden="true"
+                width={18}
+                height={18}
+              />
+            </a>
+          ))}
+        </div>
       </div>
 
       <style>{`
