@@ -291,13 +291,11 @@ export default function StudentDashboard({
     : null;
 
   const activeDays = new Set<string>();
-  const activityTimes: Date[] = [];
   [...allAttempts, ...practiceAttempts].forEach((attempt) => {
     if (answerCount(attempt.answers) === 0) return;
     const stamp = new Date(attempt.submitted_at || attempt.started_at);
     if (Number.isNaN(stamp.getTime())) return;
     activeDays.add(dateKey(stamp));
-    activityTimes.push(stamp);
   });
   const today = new Date();
   const todayKey = dateKey(today);
@@ -336,10 +334,23 @@ export default function StudentDashboard({
     .filter((attempt) => answerCount(attempt.answers) > 0)
     .map((attempt) => setToLesson.get(attempt.set_id))
     .filter((id): id is string => !!id));
-  const lastActivity = activityTimes.length
-    ? new Intl.DateTimeFormat('ro-RO', { day: 'numeric', month: 'long', timeZone: 'Europe/Bucharest' })
-      .format(new Date(Math.max(...activityTimes.map((date) => date.getTime()))))
-    : null;
+  const finishedGridsByDay = new Map<string, number>();
+  gradedAttempts.forEach((attempt) => {
+    if (!attempt.submitted_at) return;
+    const key = dateKey(new Date(attempt.submitted_at));
+    finishedGridsByDay.set(key, (finishedGridsByDay.get(key) || 0) + answerCount(attempt.answers));
+  });
+  const weekDayLabels = ['Dum', 'Lu', 'Ma', 'Mi', 'Joi', 'Vi', 'Sâm'];
+  const lastSevenDays = Array.from({ length: 7 }, (_, index) => {
+    const [year, month, day] = todayKey.split('-').map(Number);
+    const calendarDay = new Date(Date.UTC(year, month - 1, day - (6 - index), 12));
+    const key = calendarDay.toISOString().slice(0, 10);
+    return {
+      key,
+      label: weekDayLabels[calendarDay.getUTCDay()],
+      count: finishedGridsByDay.get(key) || 0,
+    };
+  });
 
   const stats: Stat[] = [
     {
@@ -549,7 +560,7 @@ export default function StudentDashboard({
                         {hasActiveSub && <Crown className="text-amber-400" size={24} fill="currentColor" aria-label="Abonament activ" />}
                       </h1>
                       <p className="mt-2 max-w-[410px] text-[15px] leading-relaxed text-[#52667b]">
-                        Cu fiecare grilă ești mai aproape de locul tău la medicină!  
+                        Ești mai aproape de visul tău. Hai să facem azi încă un pas!
                       </p>
                     </div>
                   </div>
@@ -569,16 +580,31 @@ export default function StudentDashboard({
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 pt-3 sm:pl-5 sm:pt-0">
-                      <div className="flex h-[58px] w-[58px] shrink-0 items-center justify-center rounded-full bg-[#e0f7ee] text-[#115c48]">
-                        <Clock3 size={29} strokeWidth={2} />
+                    <div className="min-w-0 pt-3 sm:pl-5 sm:pt-0">
+                      <p className="text-[13px] font-bold leading-snug">Grile lucrate în ultimele 7 zile</p>
+                      <div className="mt-2 overflow-x-auto">
+                        <table className="w-full table-fixed text-center" aria-label="Grile lucrate în fiecare dintre ultimele șapte zile">
+                          <thead>
+                            <tr className="text-[10px] font-semibold text-[#607587]">
+                              {lastSevenDays.map((day) => (
+                                <th key={day.key} scope="col" className="px-0.5 pb-1 font-semibold" title={day.key}>
+                                  {day.label}
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr className="text-[12px] font-bold tabular-nums text-[#115c48]">
+                              {lastSevenDays.map((day) => (
+                                <td key={day.key} className="border-t border-[#e4eeea] px-0.5 pt-1.5">
+                                  {day.count}
+                                </td>
+                              ))}
+                            </tr>
+                          </tbody>
+                        </table>
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-[13px] font-bold">Ultima activitate</p>
-                        <p className="mt-1 text-[12px] leading-relaxed text-[#607587]">
-                          {lastActivity ? `Ultima sesiune: ${lastActivity}` : 'Încă nu există activitate. Hai să începem!'}
-                        </p>
-                      </div>
+                      <p className="mt-1 text-[9px] leading-tight text-[#8b9a9c]">Din sesiunile finalizate</p>
                     </div>
                   </div>
                 </section>
