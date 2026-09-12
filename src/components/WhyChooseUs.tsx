@@ -372,11 +372,11 @@ function AdvantageCard({
 
   const topLine =
   id === 'exam'
-    ? 'bg-gradient-to-r from-amber-200 via-accent-500 to-amber-200'
+    ? 'bg-gradient-to-r from-amber-100 via-amber-400 to-accent-700'
     : id === 'support'
-      ? 'bg-gradient-to-r from-brand-200 via-brand-500 to-brand-200'
+      ? 'bg-gradient-to-r from-brand-100 via-brand-400 to-brand-700'
       : id === 'team'
-        ? 'bg-gradient-to-r from-orange-200 via-orange-400 to-orange-200'
+        ? 'bg-gradient-to-r from-orange-100 via-orange-400 to-orange-700'
         : `bg-gradient-to-r ${colors.line}`;
 
   const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
