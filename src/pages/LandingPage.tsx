@@ -438,7 +438,7 @@ function ReviewsSection() {
           'linear-gradient(180deg, #fffefa 0%, #fff8e3 48%, #ffffff 100%)',
       }}
     >
-      <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
+      
         
         <h2
           id="reviews-title"
