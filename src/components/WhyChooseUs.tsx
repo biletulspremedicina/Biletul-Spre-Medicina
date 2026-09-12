@@ -191,10 +191,6 @@ export default function WhyChooseUs() {
     </div>
   ))}
 </div>
-                    <p className="text-base font-medium leading-snug text-stone-700">{item.label}</p>
-                  </div>
-                ))}
-              </div>
               <div className="mt-3 flex items-center justify-center gap-2 rounded-xl bg-brand-100 px-4 py-3 text-sm font-bold text-brand-800">
                 <span aria-hidden="true">+</span> multe altele statistici
               </div>
