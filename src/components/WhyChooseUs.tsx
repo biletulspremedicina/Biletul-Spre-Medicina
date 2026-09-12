@@ -73,7 +73,8 @@ const EXAM_BENEFITS: Benefit[] = [
   },
   {
     text: 'Răspunsuri și explicații cuprinzătoare, disponibile imediat după finalizarea simulării.',
-    emphasis: 'Înțelege fiecare greșeală, îmbunătățește pregătirea.',
+   emphasis: 'Înțelege fiecare greșeală, îmbunătățește pregătirea.',
+emphasisClassName: 'text-center',
   },
 ];
 
