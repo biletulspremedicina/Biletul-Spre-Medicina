@@ -411,11 +411,7 @@ function AdvantageCard({
         </div>
 
         <div className="min-w-0">
-          <span
-            className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] ${colors.eyebrow}`}
-          >
-            {eyebrow}
-          </span>
+          
 
           <h3 className="mt-2 font-display text-xl font-extrabold leading-tight text-brand-900 sm:text-2xl">
             {title}
