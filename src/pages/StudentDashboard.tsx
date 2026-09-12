@@ -557,7 +557,6 @@ export default function StudentDashboard({
                     {isEvening ? (
                       <Moon size={44} className="mt-1 shrink-0 text-[#6877a9]" strokeWidth={1.7} />
                     ) : (
-                    <Sun size={44} className="mt-1 shrink-0 text-[#f0b218]" strokeWidth={1.7} />
                       <Sun size={44} className="mt-1 shrink-0 text-[#f0b218]" strokeWidth={1.7} />
                     )}
                     <div className="min-w-0">
