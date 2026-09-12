@@ -359,7 +359,6 @@ function CardImage({ src }: { src: string }) {
 function AdvantageCard({
   id,
   icon,
-  eyebrow,
   title,
   intro,
   benefits,
