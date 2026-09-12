@@ -34,7 +34,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
             <button onClick={onSignIn} className="btn-ghost max-sm:!rounded-lg max-sm:!bg-stone-100/80 max-sm:!px-2.5 max-sm:!py-1.5 max-sm:!text-[11px] max-sm:!leading-tight max-sm:!ring-1 max-sm:!ring-stone-200/70 max-sm:hover:!bg-stone-200/70">
               Loghează-te
             </button>
-            <button onClick={onGetStarted} className="btn-primary">
+            <button onClick={onGetStarted} className="btn-primary max-sm:!rounded-lg max-sm:!px-2.5 max-sm:!py-1.5 max-sm:!text-[11px] max-sm:!leading-tight">
               Creează cont
             </button>
           </div>
