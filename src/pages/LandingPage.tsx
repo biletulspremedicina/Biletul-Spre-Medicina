@@ -347,22 +347,22 @@ function TicketCard({ onGetStarted }: { onGetStarted: () => void }) {
           </div>
         </div>
 
-        <div className="flex flex-col items-start gap-1 border-t border-stone-200/70 bg-stone-50/80 px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:px-10">
-          <span className="order-2 text-xs text-stone-400 sm:order-1">
-            Asistență dedicată · Corectare automată
-          </span>
-          <span className="order-1 font-sans text-xs font-bold uppercase tracking-wider text-brand-600 sm:order-2">
-            {Math.max(
-              0,
-              Math.ceil(
-                (new Date('2027-07-15').getTime() -
-                  new Date().setHours(0, 0, 0, 0)) /
-                  86400000
-              )
-            )}{' '}
-            zile rămase
-          </span>
-        </div>
+        <div className="flex items-center justify-between border-t border-stone-200/70 bg-stone-50/80 px-6 py-2.5 sm:px-10">
+  <span className="text-xs text-stone-400">
+    Asistență dedicată · Corectare automată
+  </span>
+  <span className="font-sans text-xs font-bold uppercase tracking-wider text-brand-600">
+    {Math.max(
+      0,
+      Math.ceil(
+        (new Date('2027-07-15').getTime() -
+          new Date().setHours(0, 0, 0, 0)) /
+          86400000
+      )
+    )}{' '}
+    zile rămase
+  </span>
+</div>
       </div>
     </div>
   );
