@@ -514,7 +514,7 @@ export default function StudentDashboard({
           <p className="min-w-0 truncate text-[12px] font-medium text-[#536477] sm:text-[13px]">
             <span className="font-semibold text-[#2e896d]">Devino cel mai bun</span>
             <span className="mx-3 text-[#c6d1d2]">—</span>
-            Disciplina azi. Rezultate mâine.
+            Disciplina de azi se transformă în rezultatele de mâine.
           </p>
           <div className="relative ml-auto">
             <button type="button" onClick={() => setNotificationsOpen((open) => !open)}
