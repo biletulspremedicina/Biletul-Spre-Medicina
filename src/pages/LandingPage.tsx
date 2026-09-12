@@ -64,35 +64,28 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
             </p>
           </div>
 
-                   {/* Ticket visual with embedded CTA */}
-          <div
-            className="mt-12"
-            style={{
-              animation: 'fadeInUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both',
-            }}
-          >
+          {/* Ticket visual with embedded CTA */}
+          <div className="mt-12" style={{ animation: 'fadeInUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both' }}>
             <TicketCard onGetStarted={onGetStarted} />
           </div>
         </div>
       </section>
 
-      {/* Why choose us */}
+      {/* ────────────────────────── Why choose us ────────────────────────── */}
       <WhyChooseUs />
-
-      {/* Reviews */}
       <ReviewsSection />
 
-      {/* Stats / Progress preview */}
-      <section className="relative overflow-hidden border-y border-stone-800/80 bg-stone-950 py-20 sm:py-24">
-        <div className="absolute inset-0 grid-bg opacity-[0.05]" />
-        <div className="absolute -right-20 -top-20 h-80 w-80 rounded-full bg-brand-500/20 blur-3xl" />
-        <div className="absolute -left-20 -bottom-20 h-80 w-80 rounded-full bg-emerald-500/15 blur-3xl" />
+      {/* ────────────────────────── Stats / Progress preview ────────────────────────── */}
+      <section className="relative overflow-hidden bg-stone-950 py-20 sm:py-24 border-y border-stone-800/80">
+  <div className="absolute inset-0 grid-bg opacity-[0.05]" />
+  <div className="absolute -right-20 -top-20 h-80 w-80 rounded-full bg-brand-500/20 blur-3xl" />
+  <div className="absolute -left-20 -bottom-20 h-80 w-80 rounded-full bg-emerald-500/15 blur-3xl" />
 
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Reveal className="mb-8 text-center">
-            <h2 className="font-display text-3xl font-bold tracking-tight text-stone-100 sm:text-4xl">
-              Materiale noi pe platformă în:
-            </h2>
+  <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <Reveal className="mb-8 text-center">
+      <h2 className="font-display text-3xl font-bold tracking-tight text-stone-100 sm:text-4xl">
+        Materiale noi pe platformă în:
+      </h2>
     </Reveal>
 
     <Reveal delay={80}>
