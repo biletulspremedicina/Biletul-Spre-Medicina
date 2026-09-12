@@ -73,6 +73,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
 
       {/* ────────────────────────── Why choose us ────────────────────────── */}
       <WhyChooseUs />
+      <ReviewsSection />
 
       {/* ────────────────────────── Stats / Progress preview ────────────────────────── */}
       <section className="relative overflow-hidden bg-stone-950 py-20 sm:py-24 border-y border-stone-800/80">
