@@ -18,6 +18,7 @@ import {
   LogOut,
   Menu,
   MessageCircle,
+  Moon,
   PlayCircle,
   RotateCcw,
   Sparkles,
@@ -255,6 +256,7 @@ export default function StudentDashboard({
   if (loading) return <Loading message="Se încarcă pagina ta..." />;
 
   const hasActiveSub = !!subscription;
+  const isEvening = hourInBucharest(new Date()) >= 18;
   const allAttempts = simulations.flatMap((sim) => sim.attempts);
   const submittedSimAttempts = allAttempts.filter((attempt) => !!attempt.submitted_at);
   const submittedPracticeAttempts = practiceAttempts.filter((attempt) => !!attempt.submitted_at);
@@ -552,7 +554,12 @@ export default function StudentDashboard({
                 <section className="relative flex min-h-[356px] flex-col overflow-hidden rounded-[12px] border border-[#cde9df] bg-[linear-gradient(125deg,#fbfffd_0%,#f2fbf8_100%)] p-4 sm:p-5">
                   <div className="pointer-events-none absolute -right-8 top-14 h-52 w-52 rounded-full border-[30px] border-[#ddf5eb]/55" aria-hidden="true" />
                   <div className="relative flex items-start gap-5">
+                    {isEvening ? (
+                      <Moon size={44} className="mt-1 shrink-0 text-[#6877a9]" strokeWidth={1.7} />
+                    ) : (
                     <Sun size={44} className="mt-1 shrink-0 text-[#f0b218]" strokeWidth={1.7} />
+                      <Sun size={44} className="mt-1 shrink-0 text-[#f0b218]" strokeWidth={1.7} />
+                    )}
                     <div className="min-w-0">
                       <p className="text-[22px] font-semibold leading-tight" style={serif}>{getGreeting()}</p>
                       <h1 className="mt-1 flex flex-wrap items-center gap-2 text-[32px] font-bold leading-tight sm:text-[35px]" style={serif}>
