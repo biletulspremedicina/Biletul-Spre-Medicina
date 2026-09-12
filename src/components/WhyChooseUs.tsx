@@ -369,6 +369,7 @@ function AdvantageCard({
 }: AdvantageCardProps) {
   const isActive = activeCard === id;
   const colors = CARD_STYLES[tone];
+const isRightCard = id === 'exam' || id === 'support' || id === 'team';
 
   const topLine =
   id === 'simulations'
