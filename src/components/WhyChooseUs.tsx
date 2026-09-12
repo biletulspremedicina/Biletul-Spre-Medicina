@@ -183,13 +183,7 @@ export default function WhyChooseUs() {
 
       <div className="relative mx-auto max-w-7xl">
         <Reveal className="mx-auto mb-10 max-w-3xl text-center motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none sm:mb-12">
-          <span className="inline-flex items-center gap-2 rounded-full border border-brand-200/80 bg-white/85 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.17em] text-brand-700 shadow-sm">
-            <span
-              className="h-2 w-2 rounded-full bg-brand-500"
-              aria-hidden="true"
-            />
-            Află despre noi
-          </span>
+         
 
           <h2
             id="why-choose-us-title"
