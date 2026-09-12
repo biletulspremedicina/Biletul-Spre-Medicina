@@ -370,14 +370,14 @@ function AdvantageCard({
   const isActive = activeCard === id;
   const colors = CARD_STYLES[tone];
 
-  const centerGradient =
-    id === 'exam'
-      ? 'radial-gradient(ellipse at center, #fff2d3 0%, #ffffff 78%)'
-      : id === 'support'
-        ? 'radial-gradient(ellipse at center, #e7f6ed 0%, #ffffff 78%)'
-        : id === 'team'
-          ? 'radial-gradient(ellipse at center, #fff0df 0%, #ffffff 78%)'
-          : undefined;
+  const topLine =
+  id === 'exam'
+    ? 'bg-gradient-to-r from-transparent via-accent-500 to-transparent'
+    : id === 'support'
+      ? 'bg-gradient-to-r from-transparent via-brand-500 to-transparent'
+      : id === 'team'
+        ? 'bg-gradient-to-r from-transparent via-orange-400 to-transparent'
+        : `bg-gradient-to-r ${colors.line}`;
 
   const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     if (event.key === 'Enter' || event.key === ' ') {
