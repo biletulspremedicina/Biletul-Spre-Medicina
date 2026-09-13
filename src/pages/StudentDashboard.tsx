@@ -21,6 +21,7 @@ import {
   Moon,
   PlayCircle,
   RotateCcw,
+  Settings2,
   Sparkles,
   Sun,
   Target,
@@ -33,9 +34,10 @@ import {
 import { supabase, type Attempt, type PracticeAttempt, type PracticeLessonRPC, type Simulation, type Subscription } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import Loading from '@/components/Loading';
+import StudentSettings from '@/pages/StudentSettings';
 
 type IncomingTab = 'all' | 'practice' | 'umfcd' | 'dashboard';
-type PageId = 'home' | 'all' | 'practice' | 'umfcd' | 'review';
+type PageId = 'home' | 'all' | 'practice' | 'umfcd' | 'review' | 'settings';
 
 type Props = {
   onStartSimulation: (simulationId: string) => void;
@@ -200,7 +202,8 @@ export default function StudentDashboard({
   onOpenPracticeLesson,
   initialTab = 'all',
 }: Props) {
-  const { profile, signOut } = useAuth();
+  const { profile, refreshProfile, signOut } = useAuth();
+  const userId = profile?.id;
   const [page, setPage] = useState<PageId>(() => initialPage(initialTab));
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -210,6 +213,7 @@ export default function StudentDashboard({
   const [practiceAttempts, setPracticeAttempts] = useState<PracticeAttempt[]>([]);
   const [practiceSets, setPracticeSets] = useState<PracticeSetRow[]>([]);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [subscriptionHistory, setSubscriptionHistory] = useState<Subscription[]>([]);
   const [subPrice, setSubPrice] = useState(30);
   const [buyingSub, setBuyingSub] = useState(false);
   const [subMessage, setSubMessage] = useState<string | null>(null);
@@ -243,16 +247,16 @@ export default function StudentDashboard({
   }, []);
 
   const loadDashboard = useCallback(async () => {
-    if (!profile) return;
+    if (!userId) return;
     setLoading(true);
     setLoadError(null);
     try {
       const [simRes, subRes, attemptRes, practiceAttemptRes, practiceSetRes, lessonRes, settingsRes] =
         await Promise.all([
           supabase.from('simulations').select('*').order('created_at', { ascending: false }),
-          supabase.from('subscriptions').select('*').eq('user_id', profile.id).order('end_at', { ascending: false }),
-          supabase.from('attempts').select('*').eq('user_id', profile.id),
-          supabase.from('practice_attempts').select('*').eq('user_id', profile.id),
+          supabase.from('subscriptions').select('*').eq('user_id', userId).order('end_at', { ascending: false }),
+          supabase.from('attempts').select('*').eq('user_id', userId),
+          supabase.from('practice_attempts').select('*').eq('user_id', userId),
           supabase.from('practice_sets').select('id, lesson_id').eq('is_active', true),
           supabase.rpc('get_practice_lessons'),
           supabase.from('app_settings').select('*').eq('id', 1).maybeSingle(),
@@ -267,6 +271,7 @@ export default function StudentDashboard({
         (item) => item.status === 'active' && new Date(item.end_at) > now
       ) as Subscription | undefined;
       setSubscription(activeSub || null);
+      setSubscriptionHistory((subRes.data || []) as Subscription[]);
 
       const sims = (simRes.data || []) as Simulation[];
       const attempts = (attemptRes.data || []) as Attempt[];
@@ -297,7 +302,7 @@ export default function StudentDashboard({
     } finally {
       setLoading(false);
     }
-  }, [profile]);
+  }, [userId]);
 
   useEffect(() => {
     void loadDashboard();
@@ -532,11 +537,16 @@ export default function StudentDashboard({
       </nav>
 
       <div className="mt-auto border-t border-white/20 pt-6">
-        <div className="flex items-center gap-3 px-2">
+        <button type="button" onClick={() => goTo('settings')}
+          aria-label="Deschide setările contului"
+          aria-current={page === 'settings' ? 'page' : undefined}
+          className={`flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 ${
+            page === 'settings' ? 'bg-white/15' : ''
+          }`}>
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#215f50] text-sm font-bold text-white">
             {(profile?.full_name || profile?.email || 'E').trim().charAt(0).toUpperCase()}
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="truncate text-[13px] font-semibold text-white">
               {profile?.full_name || profile?.email || 'Elev'}
             </p>
@@ -548,7 +558,8 @@ export default function StudentDashboard({
               {hasActiveSub ? 'Abonament activ' : 'Fără abonament activ'}
             </p>
           </div>
-        </div>
+          <Settings2 size={16} className="shrink-0 text-white/60" aria-hidden="true" />
+        </button>
         {!hasActiveSub && (
           <button type="button" onClick={handleBuySubscription} disabled={buyingSub}
             className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-amber-300 px-3 py-2.5 text-xs font-bold text-[#183d31] hover:bg-amber-200 disabled:opacity-60">
@@ -753,6 +764,13 @@ export default function StudentDashboard({
                 ))}
               </div>
             </>
+          ) : page === 'settings' ? (
+            <StudentSettings
+              profile={profile}
+              subscription={subscription}
+              subscriptionHistory={subscriptionHistory}
+              onRefreshProfile={refreshProfile}
+            />
           ) : page === 'practice' ? (
             <section>
               <PageHeading icon={<GraduationCap size={27} />} title="Antrenament pe capitole"
@@ -837,6 +855,7 @@ export default function StudentDashboard({
     </div>
   );
 }
+
 
 function CompactCountdown() {
   const [now, setNow] = useState(() => new Date());
