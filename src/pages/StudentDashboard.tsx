@@ -74,7 +74,7 @@ const STAT_IMAGE_SOURCES = [
   '/8.png', // Aici vine sursa imaginea 8 – Capitole începute
 ];
 
-const UMFCD_IMAGE_SRC = ''; // Aici vine sursa imaginii pentru Examene UMFCD
+const UMFCD_IMAGE_SRC = '/UMFCD.png'; // Imaginea pentru Examene UMFCD
 
 const serif = { fontFamily: 'Georgia, Cambria, "Times New Roman", serif' };
 const validAnswer = (value: unknown) =>
@@ -104,19 +104,67 @@ const hash = (text: string) => {
   return value >>> 0;
 };
 
-// Valoare demonstrativă pentru machetă. De înlocuit cu o interogare reală.
+type CommunityPlan = {
+  morningTarget: number;
+  eveningTarget: number;
+  hourlyPercent: number[];
+};
+
+const DAY_MS = 86_400_000;
+const FIRST_DEMO_DAY = Math.floor(Date.UTC(2024, 0, 1) / DAY_MS);
+const communityPlanCache = new Map<number, CommunityPlan>();
+
+function chooseDailyTarget(day: string, phase: string, minimum: number, maximum: number, previous?: number) {
+  const choices = Array.from({ length: maximum - minimum + 1 }, (_, index) => minimum + index)
+    .filter((value) => value !== previous);
+  return choices[hash(`${day}-${phase}`) % choices.length];
+}
+
+function makeHourlySteps(total: number, hours: number, seed: string) {
+  const weights = Array.from({ length: hours }, (_, index) => 70 + (hash(`${seed}-${index}`) % 61));
+  const weightTotal = weights.reduce((sum, weight) => sum + weight, 0);
+  const values = [0];
+  let weightSoFar = 0;
+  let previous = 0;
+
+  weights.forEach((weight, index) => {
+    weightSoFar += weight;
+    const remainingHours = hours - index - 1;
+    const ideal = index === hours - 1 ? total : Math.round((total * weightSoFar) / weightTotal);
+    const next = Math.min(total - remainingHours, Math.max(previous + 1, ideal));
+    values.push(next);
+    previous = next;
+  });
+
+  return values;
+}
+
+// Simulare vizuală, identică pentru toți vizitatorii; de înlocuit ulterior cu date reale.
 function demoCommunityPercent(now: Date) {
-  const today = dateKey(now);
-  const [year, month, day] = today.split('-').map(Number);
-  const dayNumber = Math.floor(Date.UTC(year, month - 1, day) / 86_400_000);
-  // Benzile alternative garantează că ținta nu se repetă în două zile consecutive.
-  const target = 60 + (hash(today) % 13) + (dayNumber % 2 ? 13 : 0);
-  const hour = hourInBucharest(now);
-  if (hour === 0) return 0;
-  const weights = Array.from({ length: 23 }, (_, index) => 1 + (hash(`${today}-${index}`) % 5));
-  const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
-  const elapsedWeight = weights.slice(0, hour).reduce((sum, weight) => sum + weight, 0);
-  return Math.min(target, hour + Math.floor(((target - 23) * elapsedWeight) / totalWeight));
+  const [year, month, day] = dateKey(now).split('-').map(Number);
+  const currentDay = Math.floor(Date.UTC(year, month - 1, day) / DAY_MS);
+  const firstDay = Math.min(FIRST_DEMO_DAY, currentDay);
+  let previousPlan: CommunityPlan | undefined;
+
+  for (let dayNumber = firstDay; dayNumber <= currentDay; dayNumber += 1) {
+    const cached = communityPlanCache.get(dayNumber);
+    if (cached) {
+      previousPlan = cached;
+      continue;
+    }
+
+    const dayName = new Date(dayNumber * DAY_MS).toISOString().slice(0, 10);
+    const morningTarget = chooseDailyTarget(dayName, 'X', 7, 15, previousPlan?.morningTarget);
+    const eveningTarget = chooseDailyTarget(dayName, 'Y', 80, 90, previousPlan?.eveningTarget);
+    const morning = makeHourlySteps(morningTarget, 7, `${dayName}-morning`);
+    const afternoon = makeHourlySteps(eveningTarget - morningTarget, 16, `${dayName}-afternoon`)
+      .slice(1).map((value) => morningTarget + value);
+    const plan = { morningTarget, eveningTarget, hourlyPercent: [...morning, ...afternoon] };
+    communityPlanCache.set(dayNumber, plan);
+    previousPlan = plan;
+  }
+
+  return communityPlanCache.get(currentDay)!.hourlyPercent[hourInBucharest(now)];
 }
 
 function nextMaterialTime(now: Date) {
@@ -175,8 +223,23 @@ export default function StudentDashboard({
 
   useEffect(() => {
     const update = () => setCommunityPercent(demoCommunityPercent(new Date()));
-    const id = window.setInterval(update, 60_000);
-    return () => window.clearInterval(id);
+    let timer: number;
+    const scheduleNextHour = () => {
+      const delay = 3_600_000 - (Date.now() % 3_600_000) + 50;
+      timer = window.setTimeout(() => {
+        update();
+        scheduleNextHour();
+      }, delay);
+    };
+    const updateWhenVisible = () => {
+      if (document.visibilityState === 'visible') update();
+    };
+    scheduleNextHour();
+    document.addEventListener('visibilitychange', updateWhenVisible);
+    return () => {
+      window.clearTimeout(timer);
+      document.removeEventListener('visibilitychange', updateWhenVisible);
+    };
   }, []);
 
   const loadDashboard = useCallback(async () => {
@@ -432,7 +495,7 @@ export default function StudentDashboard({
     { id: 'home', label: 'Acasă', icon: <Home size={19} /> },
     { id: 'all', label: 'Simulări biologie', icon: <FileText size={19} /> },
     { id: 'practice', label: 'Antrenament pe capitole', icon: <GraduationCap size={20} /> },
-    { id: 'umfcd', label: 'Examene UMFCD', icon: <UmfcdIcon size={19} /> },
+    { id: 'umfcd', label: 'Examene UMFCD', icon: <UmfcdIcon size={19} imageSize={28} /> },
     { id: 'review', label: 'Întrebări de revizuit', icon: <Bookmark size={19} /> },
   ];
 
@@ -462,7 +525,7 @@ export default function StudentDashboard({
                 ? 'bg-white/15 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'
                 : 'text-[#cde5dc] hover:bg-white/10 hover:text-white'
             }`}>
-            <span className="shrink-0">{item.icon}</span>
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center">{item.icon}</span>
             <span className="leading-snug">{item.label}</span>
           </button>
         ))}
@@ -708,7 +771,7 @@ export default function StudentDashboard({
             </section>
           ) : page === 'all' || page === 'umfcd' ? (
             <section>
-              <PageHeading icon={page === 'all' ? <FileText size={27} /> : <UmfcdIcon size={27} />}
+              <PageHeading icon={page === 'all' ? <FileText size={27} /> : <UmfcdIcon size={27} imageSize={38} />}
                 title={page === 'all' ? 'Simulări biologie' : 'Examene UMFCD'}
                 subtitle={page === 'all'
                   ? 'Testează-ți pregătirea prin simulările disponibile.'
@@ -832,16 +895,16 @@ function StatVisual({ stat }: { stat: Stat }) {
   ) : stat.icon;
 }
 
-function UmfcdIcon({ size }: { size: number }) {
+function UmfcdIcon({ size, imageSize }: { size: number; imageSize: number }) {
   const [imageFailed, setImageFailed] = useState(false);
   if (!UMFCD_IMAGE_SRC || imageFailed) return <Crown size={size} />;
   return (
     <img
       src={UMFCD_IMAGE_SRC}
       alt=""
-      width={size}
-      height={size}
-      className="shrink-0 object-contain"
+      width={imageSize}
+      height={imageSize}
+      className="max-w-none shrink-0 object-contain"
       onError={() => setImageFailed(true)}
       draggable={false}
     />
