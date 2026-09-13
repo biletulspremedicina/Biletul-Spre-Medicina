@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { supabase, type ChatMessage, type ChatReason, CHAT_REASON_LABELS } from '@/lib/supabase';
+import { supabase, type ChatMessage, type ChatReason } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
-import { MessageCircle, X, Send, Loader2, ChevronDown, Circle, Star } from 'lucide-react';
+import { MessageCircle, Send, Loader2, ChevronDown, Circle, Star } from 'lucide-react';
 
 type ReasonOption = { value: ChatReason; label: string };
 
@@ -30,7 +30,7 @@ export default function SupportChat() {
   const [hoverRating, setHoverRating] = useState(0);
   const [ratingSaved, setRatingSaved] = useState(false);
   const [ratingLoading, setRatingLoading] = useState(false);
-  const [adminOnline, setAdminOnline] = useState(true);
+  const adminOnline = true;
 
   // Form state
   const [reason, setReason] = useState<ChatReason | ''>('');
@@ -57,7 +57,7 @@ export default function SupportChat() {
     const { data, error: rpcError } = await supabase.rpc('get_my_chat_conversation');
     if (rpcError) return;
     if (data && (data as unknown[]).length > 0) {
-      const conv = (data as unknown as { out_id: string; out_unread_count: number; out_status: string; out_rating: number | null })[0];
+      const conv = (data as unknown as { out_id: string; out_unread_count: number; out_status: string; out_rating: number | null }[])[0];
       setConversationId(conv.out_id);
       setUnreadCount(conv.out_unread_count);
       setConvStatus(conv.out_status);
@@ -74,7 +74,7 @@ export default function SupportChat() {
     });
     if (rpcError) return;
     if (data && (data as unknown[]).length > 0) {
-      const conv = (data as unknown as { out_id: string; out_unread_count: number; out_status: string; out_rating: number | null })[0];
+      const conv = (data as unknown as { out_id: string; out_unread_count: number; out_status: string; out_rating: number | null }[])[0];
       setConversationId(conv.out_id);
       setUnreadCount(conv.out_unread_count);
       setConvStatus(conv.out_status);
@@ -204,13 +204,13 @@ export default function SupportChat() {
       if (isAuthenticated) {
         const { data } = await supabase.rpc('get_my_chat_conversation');
         if (data && (data as unknown[]).length > 0) {
-          const conv = (data as unknown as { out_unread_count: number })[0];
+          const conv = (data as unknown as { out_unread_count: number }[])[0];
           setUnreadCount(conv.out_unread_count);
         }
       } else if (anonToken) {
         const { data } = await supabase.rpc('get_anon_chat_conversation', { p_anonymous_token: anonToken });
         if (data && (data as unknown[]).length > 0) {
-          const conv = (data as unknown as { out_unread_count: number })[0];
+          const conv = (data as unknown as { out_unread_count: number }[])[0];
           setUnreadCount(conv.out_unread_count);
         }
       }
@@ -344,7 +344,7 @@ export default function SupportChat() {
     setRatingLoading(false);
   };
 
-  const canSendForm = reason && description.trim().length >= 10 && description.trim().length <= 1000;
+  const canSendForm = reason !== '' && description.trim().length >= 10 && description.trim().length <= 1000;
 
   return (
     <>
@@ -519,9 +519,6 @@ function ChatView({
   textareaRef: React.RefObject<HTMLTextAreaElement>;
   isAnonymous: boolean;
 }) {
-  const { session } = useAuth();
-  const myId = session?.user?.id;
-
   return (
     <>
       <div className="flex-1 overflow-y-auto px-3 py-3" style={{ minHeight: '200px' }}>
