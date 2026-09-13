@@ -539,7 +539,6 @@ export default function StudentDashboard({
         <button type="button" onClick={() => goTo('settings')}
           aria-label="Deschide setările contului"
           aria-current={page === 'settings' ? 'page' : undefined}
-          className="flex w-full items-center gap-3 px-2 py-2 text-left focus-visible:rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70">
           className={`flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 ${
             page === 'settings' ? 'bg-white/15' : ''
           }`}>
