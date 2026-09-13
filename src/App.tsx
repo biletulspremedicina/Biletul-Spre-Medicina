@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useLayoutEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import LandingPage from '@/pages/LandingPage';
@@ -25,6 +25,18 @@ type Route =
   | 'practice-solve'
   | 'practice-results';
 
+type StudentTheme = 'light' | 'dark' | 'system';
+const STUDENT_THEME_KEY = 'bsm-student-theme';
+
+function savedStudentTheme(): StudentTheme {
+  try {
+    const saved = localStorage.getItem(STUDENT_THEME_KEY);
+    return saved === 'dark' || saved === 'system' ? saved : 'light';
+  } catch {
+    return 'light';
+  }
+}
+
 function AppContent() {
   const { session, profile, loading } = useAuth();
   const [route, setRoute] = useState<Route>('landing');
@@ -37,6 +49,31 @@ function AppContent() {
   const [practiceBuyingSub, setPracticeBuyingSub] = useState(false);
   const [practiceSubNonce, setPracticeSubNonce] = useState(0);
   const [studentInitialTab, setStudentInitialTab] = useState<'all' | 'practice' | 'umfcd' | 'dashboard'>('all');
+  const [studentTheme, setStudentTheme] = useState<StudentTheme>(savedStudentTheme);
+  const [systemPrefersDark, setSystemPrefersDark] = useState(() => window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const update = () => setSystemPrefersDark(media.matches);
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, []);
+
+  useLayoutEffect(() => {
+    const dark = Boolean(session && profile?.role !== 'admin' &&
+      (studentTheme === 'dark' || (studentTheme === 'system' && systemPrefersDark)));
+    document.documentElement.classList.toggle('student-dark', dark);
+    return () => document.documentElement.classList.remove('student-dark');
+  }, [session, profile?.role, studentTheme, systemPrefersDark]);
+
+  const changeStudentTheme = (next: StudentTheme) => {
+    setStudentTheme(next);
+    try {
+      localStorage.setItem(STUDENT_THEME_KEY, next);
+    } catch {
+      // The current session still uses the selected theme if storage is unavailable.
+    }
+  };
 
   useEffect(() => {
     if (loading) return;
@@ -214,6 +251,8 @@ if (route === 'practice-sets' && activePracticeLessonId) {
         onViewResults={handleViewResults}
         onOpenPracticeLesson={handleOpenPracticeLesson}
         initialTab={studentInitialTab}
+        theme={studentTheme}
+        onThemeChange={changeStudentTheme}
       />
       <SupportChat />
     </>
