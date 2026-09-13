@@ -43,6 +43,8 @@ type Props = {
   onViewResults: (simulationId: string, attemptId?: string) => void;
   onOpenPracticeLesson: (lessonId: string, lessonTitle: string) => void;
   initialTab?: IncomingTab;
+  theme: 'light' | 'dark' | 'system';
+  onThemeChange: (theme: 'light' | 'dark' | 'system') => void;
 };
 
 type SimWithStatus = Simulation & {
@@ -200,6 +202,8 @@ export default function StudentDashboard({
   onViewResults,
   onOpenPracticeLesson,
   initialTab = 'all',
+  theme,
+  onThemeChange,
 }: Props) {
   const { profile, refreshProfile, signOut } = useAuth();
   const userId = profile?.id;
@@ -768,6 +772,8 @@ export default function StudentDashboard({
               subscription={subscription}
               subscriptionHistory={subscriptionHistory}
               onRefreshProfile={refreshProfile}
+              theme={theme}
+              onThemeChange={onThemeChange}
             />
           ) : page === 'practice' ? (
             <section>
