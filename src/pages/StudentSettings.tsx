@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Crown, Loader2, Lock, Settings2 } from 'lucide-react';
+import { Crown, Loader2, Lock, Monitor, Moon, Settings2, Sun } from 'lucide-react';
 import { supabase, type Profile, type Subscription } from '@/lib/supabase';
 
 type StudentSettingsProps = {
@@ -7,13 +7,15 @@ type StudentSettingsProps = {
   subscription: Subscription | null;
   subscriptionHistory: Subscription[];
   onRefreshProfile: () => Promise<void>;
+  theme: 'light' | 'dark' | 'system';
+  onThemeChange: (theme: 'light' | 'dark' | 'system') => void;
 };
 
 const DAY_MS = 86_400_000;
 const serif = { fontFamily: 'Georgia, Cambria, "Times New Roman", serif' };
 
 export default function StudentSettings({
-  profile, subscription, subscriptionHistory, onRefreshProfile,
+  profile, subscription, subscriptionHistory, onRefreshProfile, theme, onThemeChange,
 }: StudentSettingsProps) {
   const [fullName, setFullName] = useState(profile?.full_name || '');
   const [newPassword, setNewPassword] = useState('');
@@ -99,6 +101,28 @@ export default function StudentSettings({
         <div>
           <h1 className="text-[29px] font-bold leading-tight text-[#163c32]" style={serif}>Setări</h1>
           <p className="mt-1 text-sm text-[#617587]">Administrează datele contului și urmărește abonamentul tău.</p>
+        </div>
+      </div>
+      <div className="mb-5 rounded-2xl border border-[#dfe9e4] bg-white p-5 shadow-[0_5px_22px_rgba(25,65,49,0.04)] sm:p-6">
+        <h2 className="font-display text-lg font-bold text-[#173b31]">Aspectul platformei</h2>
+        <p className="mt-1 text-sm text-[#728479]">Alege cum arată zona ta de studiu pe acest dispozitiv.</p>
+        <div className="mt-4 grid gap-2.5 sm:grid-cols-3" role="group" aria-label="Tema platformei">
+          {([
+            { value: 'light', label: 'Luminoasă', icon: <Sun size={20} /> },
+            { value: 'dark', label: 'Întunecată', icon: <Moon size={20} /> },
+            { value: 'system', label: 'După sistem', icon: <Monitor size={20} /> },
+          ] as const).map((option) => (
+            <button key={option.value} type="button" onClick={() => onThemeChange(option.value)}
+              aria-pressed={theme === option.value}
+              className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ${
+                theme === option.value
+                  ? 'border-brand-500 bg-brand-50 text-brand-700'
+                  : 'border-stone-200 bg-white text-stone-700 hover:border-brand-300 hover:bg-stone-50'
+              }`}>
+              {option.icon}
+              {option.label}
+            </button>
+          ))}
         </div>
       </div>
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(300px,0.8fr)] lg:items-start">
