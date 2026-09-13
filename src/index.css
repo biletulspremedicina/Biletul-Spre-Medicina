@@ -71,3 +71,125 @@
     background-size: 48px 48px;
   }
 }
+
+/* Student-only dark theme. The class is applied only while a student is signed in;
+   landing, authentication and administration keep their existing appearance. */
+html.student-dark {
+  color-scheme: dark;
+  background: #0d1916;
+}
+
+html.student-dark body {
+  background: #0d1916;
+  color: #e7f0e9;
+}
+
+html.student-dark :is(
+  [class~="bg-white"], [class~="bg-white/80"], [class~="bg-white/95"],
+  [class~="bg-[#fbfdfb]"], [class~="bg-[#f8faf9]"],
+  [class~="bg-[#f7fcf9]"], [class~="bg-[#f5fbf8]"],
+  [class~="bg-[#f2f7f4]"], [class~="bg-[#f1f6f3]"]
+) {
+  background-color: #172923;
+}
+
+html.student-dark :is([class~="bg-stone-50"], [class~="bg-stone-50/80"])
+{ background-color: #0d1916; }
+
+html.student-dark :is(
+  [class~="bg-stone-100"], [class~="bg-stone-100/80"],
+  [class~="bg-stone-200"], [class~="bg-stone-200/70"],
+  [class~="bg-stone-300"], [class~="bg-[#dbe9e2]"],
+  [class~="bg-[#edf6f2]"], [class~="bg-[#edf7f2]"],
+  [class~="bg-[#e9f5ef]"], [class~="bg-[#e6f5ed]"],
+  [class~="bg-[#e3f4ea]"], [class~="bg-[#e1f6ed]"],
+  [class~="bg-[#e0f3e9]"], [class~="bg-[#dff5eb]"],
+  [class~="bg-brand-50"], [class~="bg-brand-100"],
+  [class~="bg-emerald-50"], [class~="bg-green-50"], [class~="bg-green-100"]
+) {
+  background-color: #213a31;
+}
+
+html.student-dark :is(
+  [class~="bg-amber-50"], [class~="bg-amber-100"],
+  [class~="bg-[#fff1d9]"], [class~="bg-[#fff2dc]"]
+) { background-color: #3a3020; }
+
+html.student-dark :is([class~="bg-red-50"], [class~="bg-red-100"])
+{ background-color: #392525; }
+
+html.student-dark :is([class~="bg-blue-50"], [class~="bg-blue-100"], [class~="bg-sky-50"])
+{ background-color: #1b3040; }
+
+html.student-dark :is(
+  [class~="border-stone-50"], [class~="border-stone-100"],
+  [class~="border-stone-200"], [class~="border-stone-300"],
+  [class~="border-stone-200/70"], [class~="border-stone-300/60"],
+  [class~="border-brand-100"], [class~="border-brand-200"],
+  [class~="border-green-200"], [class~="border-emerald-200"],
+  [class~="border-amber-100"], [class~="border-amber-200"],
+  [class~="border-blue-200"], [class~="border-sky-100"],
+  [class~="border-sky-200"], [class~="border-red-200"],
+  [class^="border-[#a"], [class*=" border-[#a"],
+  [class^="border-[#b"], [class*=" border-[#b"],
+  [class^="border-[#c"], [class*=" border-[#c"],
+  [class^="border-[#d"], [class*=" border-[#d"],
+  [class^="border-[#e"], [class*=" border-[#e"]
+) { border-color: #35554a; }
+
+html.student-dark :is(
+  [class~="text-stone-900"], [class~="text-stone-800"],
+  [class~="text-stone-700"], [class~="text-brand-900"],
+  [class^="text-[#0"], [class*=" text-[#0"],
+  [class^="text-[#1"], [class*=" text-[#1"],
+  [class^="text-[#2"], [class*=" text-[#2"]
+) { color: #e8f2eb; }
+
+html.student-dark :is(
+  [class~="text-stone-600"], [class~="text-stone-500"],
+  [class~="text-stone-400"],
+  [class^="text-[#5"], [class*=" text-[#5"],
+  [class^="text-[#6"], [class*=" text-[#6"],
+  [class^="text-[#7"], [class*=" text-[#7"],
+  [class^="text-[#8"], [class*=" text-[#8"]
+) { color: #adc2b6; }
+
+html.student-dark :is([class~="text-brand-500"], [class~="text-brand-600"],
+  [class~="text-brand-700"], [class~="text-green-600"],
+  [class~="text-green-700"], [class~="text-green-800"],
+  [class~="text-green-900"], [class~="text-emerald-800"])
+{ color: #8bd6ad; }
+
+html.student-dark :is([class~="text-amber-600"], [class~="text-amber-700"],
+  [class~="text-amber-800"], [class~="text-[#b77a13]"])
+{ color: #f4c875; }
+
+html.student-dark :is([class~="text-blue-700"], [class~="text-blue-800"],
+  [class~="text-sky-700"], [class~="text-sky-800"])
+{ color: #96c9ec; }
+
+html.student-dark :is([class~="text-red-600"], [class~="text-red-700"],
+  [class~="text-red-800"], [class~="text-red-900"])
+{ color: #ff9e9e; }
+
+html.student-dark :is([class~="hover:bg-stone-50"], [class~="hover:bg-stone-100"],
+  [class~="hover:bg-white"], [class~="hover:bg-brand-50"]):hover {
+  background-color: #29463b;
+}
+
+html.student-dark :is(input, textarea, select):not([type="checkbox"]):not([type="radio"]) {
+  color: #e8f2eb;
+  background-color: #1b3029;
+  border-color: #426054;
+  caret-color: #a4e4c2;
+}
+
+html.student-dark :is(input, textarea)::placeholder { color: #91a99c; }
+
+html.student-dark [class*="bg-[linear-gradient(125deg"] {
+  background-image: linear-gradient(125deg, #182e27 0%, #193b30 100%);
+}
+
+html.student-dark [class~="bg-amber-300"][class~="text-[#183d31]"] {
+  color: #183d31;
+}
