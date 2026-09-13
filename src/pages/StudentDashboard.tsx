@@ -74,7 +74,7 @@ const STAT_IMAGE_SOURCES = [
   '/8.png', // Aici vine sursa imaginea 8 – Capitole începute
 ];
 
-const UMFCD_IMAGE_SRC = '/UMFCD.png'; // Imaginea pentru Examene UMFCD
+const UMFCD_IMAGE_SRC = ''; // Aici vine sursa imaginii pentru Examene UMFCD
 
 const serif = { fontFamily: 'Georgia, Cambria, "Times New Roman", serif' };
 const validAnswer = (value: unknown) =>
@@ -432,7 +432,7 @@ export default function StudentDashboard({
     { id: 'home', label: 'Acasă', icon: <Home size={19} /> },
     { id: 'all', label: 'Simulări biologie', icon: <FileText size={19} /> },
     { id: 'practice', label: 'Antrenament pe capitole', icon: <GraduationCap size={20} /> },
-    { id: 'umfcd', label: 'Examene UMFCD', icon: <UmfcdIcon size={19} imageSize={28} /> },
+    { id: 'umfcd', label: 'Examene UMFCD', icon: <UmfcdIcon size={19} /> },
     { id: 'review', label: 'Întrebări de revizuit', icon: <Bookmark size={19} /> },
   ];
 
@@ -462,7 +462,7 @@ export default function StudentDashboard({
                 ? 'bg-white/15 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'
                 : 'text-[#cde5dc] hover:bg-white/10 hover:text-white'
             }`}>
-            <span className="flex h-5 w-5 shrink-0 items-center justify-center">{item.icon}</span>
+            <span className="shrink-0">{item.icon}</span>
             <span className="leading-snug">{item.label}</span>
           </button>
         ))}
@@ -708,7 +708,7 @@ export default function StudentDashboard({
             </section>
           ) : page === 'all' || page === 'umfcd' ? (
             <section>
-              <PageHeading icon={page === 'all' ? <FileText size={27} /> : <UmfcdIcon size={27} imageSize={38} />}
+              <PageHeading icon={page === 'all' ? <FileText size={27} /> : <UmfcdIcon size={27} />}
                 title={page === 'all' ? 'Simulări biologie' : 'Examene UMFCD'}
                 subtitle={page === 'all'
                   ? 'Testează-ți pregătirea prin simulările disponibile.'
@@ -832,16 +832,16 @@ function StatVisual({ stat }: { stat: Stat }) {
   ) : stat.icon;
 }
 
-function UmfcdIcon({ size, imageSize }: { size: number; imageSize: number }) {
+function UmfcdIcon({ size }: { size: number }) {
   const [imageFailed, setImageFailed] = useState(false);
   if (!UMFCD_IMAGE_SRC || imageFailed) return <Crown size={size} />;
   return (
     <img
       src={UMFCD_IMAGE_SRC}
       alt=""
-      width={imageSize}
-      height={imageSize}
-      className="max-w-none shrink-0 object-contain"
+      width={size}
+      height={size}
+      className="shrink-0 object-contain"
       onError={() => setImageFailed(true)}
       draggable={false}
     />
