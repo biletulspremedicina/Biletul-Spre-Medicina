@@ -21,7 +21,6 @@ import {
   Moon,
   PlayCircle,
   RotateCcw,
-  Settings2,
   Sparkles,
   Sun,
   Target,
@@ -540,9 +539,7 @@ export default function StudentDashboard({
         <button type="button" onClick={() => goTo('settings')}
           aria-label="Deschide setările contului"
           aria-current={page === 'settings' ? 'page' : undefined}
-          className={`flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 ${
-            page === 'settings' ? 'bg-white/15' : ''
-          }`}>
+          className="flex w-full items-center gap-3 px-2 py-2 text-left focus-visible:rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#215f50] text-sm font-bold text-white">
             {(profile?.full_name || profile?.email || 'E').trim().charAt(0).toUpperCase()}
           </div>
@@ -558,7 +555,6 @@ export default function StudentDashboard({
               {hasActiveSub ? 'Abonament activ' : 'Fără abonament activ'}
             </p>
           </div>
-          <Settings2 size={16} className="shrink-0 text-white/60" aria-hidden="true" />
         </button>
         {!hasActiveSub && (
           <button type="button" onClick={handleBuySubscription} disabled={buyingSub}
