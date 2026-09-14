@@ -86,7 +86,7 @@ const NAV_IMAGE_SOURCES = {
   all: '/Simularibiologie.png', // Aici pui sursa imaginii SIMULARI BIOLOGIE
   practice: '/Capitole.png', // Aici pui sursa imaginii ANTRENAMENT PE CAPITOLE
   umfcd: '', // Aici pui sursa imaginii EXAMENE UMFCD
-  review: '', // Aici pui sursa imaginii INTREBARI DE REVIZUIT
+  review: '/Revizie.png', // Aici pui sursa imaginii INTREBARI DE REVIZUIT
 };
 
 const serif = { fontFamily: 'Georgia, Cambria, "Times New Roman", serif' };
