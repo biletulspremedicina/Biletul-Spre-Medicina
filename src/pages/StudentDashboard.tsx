@@ -79,6 +79,16 @@ const STAT_IMAGE_SOURCES = [
 
 const UMFCD_IMAGE_SRC = '/UMFCD.png'; // Imaginea pentru Examene UMFCD
 
+// Completează adresele dintre ghilimele pentru imaginile din meniul din stânga.
+// Până atunci rămân iconițele actuale (inclusiv sigla UMFCD).
+const NAV_IMAGE_SOURCES = {
+  home: '', // Aici pui sursa imaginii ACASA
+  all: '', // Aici pui sursa imaginii SIMULARI BIOLOGIE
+  practice: '', // Aici pui sursa imaginii ANTRENAMENT PE CAPITOLE
+  umfcd: '', // Aici pui sursa imaginii EXAMENE UMFCD
+  review: '', // Aici pui sursa imaginii INTREBARI DE REVIZUIT
+};
+
 const serif = { fontFamily: 'Georgia, Cambria, "Times New Roman", serif' };
 const validAnswer = (value: unknown) =>
   typeof value === 'string' && /^[A-E]$/.test(value.toUpperCase());
@@ -499,12 +509,12 @@ export default function StudentDashboard({
     },
   ];
 
-  const navItems: { id: PageId; label: string; icon: ReactNode }[] = [
-    { id: 'home', label: 'Acasă', icon: <Home size={19} /> },
-    { id: 'all', label: 'Simulări biologie', icon: <FileText size={19} /> },
-    { id: 'practice', label: 'Antrenament pe capitole', icon: <GraduationCap size={20} /> },
-    { id: 'umfcd', label: 'Examene UMFCD', icon: <UmfcdIcon size={19} imageSize={28} /> },
-    { id: 'review', label: 'Întrebări de revizuit', icon: <Bookmark size={19} /> },
+  const navItems: { id: PageId; label: string; icon: ReactNode; imageSrc: string }[] = [
+    { id: 'home', label: 'Acasă', icon: <Home size={19} />, imageSrc: NAV_IMAGE_SOURCES.home },
+    { id: 'all', label: 'Simulări biologie', icon: <FileText size={19} />, imageSrc: NAV_IMAGE_SOURCES.all },
+    { id: 'practice', label: 'Antrenament pe capitole', icon: <GraduationCap size={20} />, imageSrc: NAV_IMAGE_SOURCES.practice },
+    { id: 'umfcd', label: 'Examene UMFCD', icon: <UmfcdIcon size={19} imageSize={28} />, imageSrc: NAV_IMAGE_SOURCES.umfcd },
+    { id: 'review', label: 'Întrebări de revizuit', icon: <Bookmark size={19} />, imageSrc: NAV_IMAGE_SOURCES.review },
   ];
 
   const sidebar = (
@@ -533,7 +543,9 @@ export default function StudentDashboard({
                 ? 'bg-white/15 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'
                 : 'text-[#cde5dc] hover:bg-white/10 hover:text-white'
             }`}>
-            <span className="flex h-5 w-5 shrink-0 items-center justify-center">{item.icon}</span>
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center">
+              <SidebarNavIcon key={`${item.id}-${item.imageSrc}`} src={item.imageSrc} fallback={item.icon} />
+            </span>
             <span className="leading-snug">{item.label}</span>
           </button>
         ))}
@@ -860,6 +872,15 @@ export default function StudentDashboard({
   );
 }
 
+
+function SidebarNavIcon({ src, fallback }: { src: string; fallback: ReactNode }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  if (!src || imageFailed) return <>{fallback}</>;
+  return (
+    <img src={src} alt="" className="h-6 w-6 max-w-none shrink-0 object-contain"
+      onError={() => setImageFailed(true)} draggable={false} />
+  );
+}
 
 function CompactCountdown() {
   const [now, setNow] = useState(() => new Date());
