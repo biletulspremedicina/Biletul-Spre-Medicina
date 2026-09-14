@@ -86,7 +86,7 @@ const NAV_IMAGE_SOURCES = {
   all: '/Simularibiologie.png', // Aici pui sursa imaginii SIMULARI BIOLOGIE
   practice: '/Capitole.png', // Aici pui sursa imaginii ANTRENAMENT PE CAPITOLE
   umfcd: '', // Aici pui sursa imaginii EXAMENE UMFCD
-  review: '/Revizie2.png', // Aici pui sursa imaginii INTREBARI DE REVIZUIT
+  review: '/Revizie.png', // Aici pui sursa imaginii INTREBARI DE REVIZUIT
 };
 
 const serif = { fontFamily: 'Georgia, Cambria, "Times New Roman", serif' };
@@ -192,6 +192,24 @@ function getGreeting() {
   if (hour < 11) return 'Bună dimineața,';
   if (hour < 18) return 'Bună ziua,';
   return 'Bună seara,';
+}
+
+const DAILY_MOTIVATION_MESSAGES = [
+  'Construiește-ți nota grilă cu grilă.',
+  'Consecvența bate volumul. Câteva grile zilnic fac diferența.',
+  'Focus pe proces. Rezultatele vin de la sine.',
+  'Ai tot ce-ți trebuie: logică, răbdare și Biletul Spre Medicină.',
+  'Nu trebuie să știi totul azi. Trebuie doar să știi mai mult decât ieri.',
+  'O grilă greșită în antrenament e o grilă salvată la examen.',
+  'Calitate, nu doar cantitate. Înțelege motivul din spatele fiecărui răspuns.',
+  'Păstrează-ți ritmul. Pregătirea e un maraton, nu un sprint.',
+  'Cu fiecare grilă ești mai aproape de locul tău la medicină!',
+];
+
+function dailyMotivationMessage(date: Date) {
+  const [year, month, day] = dateKey(date).split('-').map(Number);
+  const dayNumber = Math.floor(Date.UTC(year, month - 1, day) / DAY_MS);
+  return DAILY_MOTIVATION_MESSAGES[dayNumber % DAILY_MOTIVATION_MESSAGES.length];
 }
 
 function formatSeconds(seconds: number) {
@@ -669,7 +687,7 @@ export default function StudentDashboard({
                         {hasActiveSub && <Crown className="text-amber-400" size={24} fill="currentColor" aria-label="Abonament activ" />}
                       </h1>
                       <p className="mt-2 max-w-[410px] text-[15px] leading-relaxed text-[#52667b]">
-                        Cu fiecare grilă ești mai aproape de locul tău la medicină!
+                        {dailyMotivationMessage(new Date())}
                       </p>
                     </div>
                   </div>
