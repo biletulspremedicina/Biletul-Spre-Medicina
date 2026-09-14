@@ -86,7 +86,7 @@ const NAV_IMAGE_SOURCES = {
   all: '/Simularibiologie.png', // Aici pui sursa imaginii SIMULARI BIOLOGIE
   practice: '/Capitole.png', // Aici pui sursa imaginii ANTRENAMENT PE CAPITOLE
   umfcd: '', // Aici pui sursa imaginii EXAMENE UMFCD
-  review: '/Revizie2.png', // Aici pui sursa imaginii INTREBARI DE REVIZUIT
+  review: '/Revizie.png', // Aici pui sursa imaginii INTREBARI DE REVIZUIT
 };
 
 const serif = { fontFamily: 'Georgia, Cambria, "Times New Roman", serif' };
@@ -457,9 +457,9 @@ export default function StudentDashboard({
     finishedGridsByDay.set(key, (finishedGridsByDay.get(key) || 0) + answerCount(attempt.answers));
   });
   const weekDayLabels = ['Dum', 'Lu', 'Ma', 'Mi', 'Joi', 'Vi', 'Sâm'];
-  const lastSevenDays = Array.from({ length: 7 }, (_, index) => {
+  const lastFourteenDays = Array.from({ length: 14 }, (_, index) => {
     const [year, month, day] = todayKey.split('-').map(Number);
-    const calendarDay = new Date(Date.UTC(year, month - 1, day - (6 - index), 12));
+    const calendarDay = new Date(Date.UTC(year, month - 1, day - (13 - index), 12));
     const key = calendarDay.toISOString().slice(0, 10);
     return {
       key,
@@ -632,7 +632,7 @@ export default function StudentDashboard({
             className="mr-3 rounded-lg p-2 text-[#164d3e] hover:bg-[#e9f5ef] lg:hidden" aria-label="Deschide meniul">
             <Menu size={22} />
           </button>
-          <p className="min-w-0 truncate text-[12px] font-medium text-[#536477] sm:text-[13px]">
+          <p className="pointer-events-none absolute left-1/2 top-1/2 max-w-[70%] -translate-x-1/2 -translate-y-1/2 truncate text-center text-[12px] font-medium text-[#536477] sm:text-[13px]">
             <span className="font-semibold text-[#2e896d]">Devino cel mai bun</span>
             <span className="mx-3 text-[#c6d1d2]">—</span>
             Disciplina de azi → Rezultatele de mâine.
@@ -671,7 +671,7 @@ export default function StudentDashboard({
 
           {page === 'home' ? (
             <>
-              <div className="grid gap-4 xl:grid-cols-[1.45fr_0.96fr_1.12fr]">
+              <div className="grid gap-4 xl:grid-cols-[1.6fr_1fr]">
                 <section className="relative flex min-h-[356px] flex-col overflow-hidden rounded-[12px] border border-[#cde9df] bg-[linear-gradient(125deg,#fbfffd_0%,#f2fbf8_100%)] p-4 sm:p-5">
                   <div className="pointer-events-none absolute -right-8 top-14 h-52 w-52 rounded-full border-[30px] border-[#ddf5eb]/55" aria-hidden="true" />
                   <div className="relative flex items-start gap-5">
@@ -684,7 +684,6 @@ export default function StudentDashboard({
                       <p className="text-[22px] font-semibold leading-tight" style={serif}>{getGreeting()}</p>
                       <h1 className="mt-1 flex flex-wrap items-center gap-2 text-[32px] font-bold leading-tight sm:text-[35px]" style={serif}>
                         {profile?.full_name || 'Elev'}
-                        {hasActiveSub && <Crown className="text-amber-400" size={24} fill="currentColor" aria-label="Abonament activ" />}
                       </h1>
                       <p className="mt-2 max-w-[410px] text-[15px] leading-relaxed text-[#52667b]">
                         {dailyMotivationMessage(new Date())}
@@ -693,27 +692,32 @@ export default function StudentDashboard({
                   </div>
 
                   <div className="relative mt-auto grid gap-2 rounded-[34px] border border-[#e6f0ed] bg-white px-4 py-5 shadow-[0_12px_36px_rgba(22,71,57,0.04)] sm:grid-cols-2 sm:gap-0 sm:px-5">
-                    <div className="flex items-center gap-3 sm:border-r sm:border-[#dbe9e5] sm:pr-4">
-                      <div className="flex h-[86px] w-[86px] shrink-0 items-center justify-center rounded-full p-[7px]"
-                        style={{ background: `conic-gradient(#188765 ${communityPercent}%, #e0f2ea 0)` }}>
-                        <div className="flex h-full w-full items-center justify-center rounded-full bg-white text-[24px] font-extrabold text-[#113d32]">
-                          {communityPercent}%
+                    <div className="flex flex-col gap-3 sm:border-r sm:border-[#dbe9e5] sm:pr-4">
+                      <p className="text-[13px] font-bold leading-snug">Activitatea comunității astăzi</p>
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-[86px] w-[86px] shrink-0 items-center justify-center rounded-full p-[7px]"
+                          style={{ background: `conic-gradient(#188765 ${communityPercent}%, #e0f2ea 0)` }}>
+                          <div className="flex h-full w-full items-center justify-center rounded-full bg-white text-[24px] font-extrabold text-[#113d32]">
+                            {communityPercent}%
+                          </div>
                         </div>
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-[13px] font-bold leading-snug">Activitatea comunității azi</p>
-                        <p className="mt-2 text-[11px] leading-relaxed text-[#607587]">
-                          Procent demonstrativ al abonaților activi astăzi
-                        </p>
+                        <div className="min-w-0">
+                          <p className="text-[11px] leading-relaxed text-[#607587]">
+                            din candidați deja au lucrat astăzi pe platformă.
+                          </p>
+                          <p className="mt-2 text-[11px] font-bold text-[#113d32]">
+                            Ce mai aștepți?
+                          </p>
+                        </div>
                       </div>
                     </div>
                     <div className="flex min-w-0 flex-col justify-center pt-3 text-center sm:pl-5 sm:pt-0">
-                      <p className="text-[13px] font-bold leading-snug">Grile lucrate în ultimele 7 zile</p>
+                      <p className="text-[13px] font-bold leading-snug">Grile lucrate în ultimele 14 zile</p>
                       <div className="mt-2 overflow-x-auto">
-                        <table className="w-full table-fixed text-center" aria-label="Grile lucrate în fiecare dintre ultimele șapte zile">
+                        <table className="w-full table-fixed text-center" aria-label="Grile lucrate în fiecare dintre ultimele paisprezece zile">
                           <thead>
                             <tr className="text-[10px] font-semibold text-[#607587]">
-                              {lastSevenDays.map((day) => (
+                              {lastFourteenDays.map((day) => (
                                 <th key={day.key} scope="col" className="px-0.5 pb-1 font-semibold" title={day.key}>
                                   {day.label}
                                 </th>
@@ -722,7 +726,7 @@ export default function StudentDashboard({
                           </thead>
                           <tbody>
                             <tr className="text-[12px] font-bold tabular-nums text-[#115c48]">
-                              {lastSevenDays.map((day) => (
+                              {lastFourteenDays.map((day) => (
                                 <td key={day.key} className="border-t border-[#e4eeea] px-0.5 pt-1.5">
                                   {day.count}
                                 </td>
@@ -733,30 +737,6 @@ export default function StudentDashboard({
                       </div>
                     </div>
                   </div>
-                </section>
-
-                <section className="flex min-h-[356px] flex-col rounded-[12px] border border-[#dfe6ec] bg-white p-5">
-                  <h2 className="text-[27px] font-bold leading-tight" style={serif}>Progres global</h2>
-                  <p className="mt-1 text-[13px] leading-relaxed text-[#5d6e85]">
-                    Întrebări distincte rezolvate cel puțin o dată din totalul disponibil pe platformă.
-                  </p>
-                  <div className="my-auto flex justify-center py-3">
-                    <div role="img" aria-label={`Progres global: ${progressPercent}%`}
-                      className="flex h-[170px] w-[170px] items-center justify-center rounded-full p-[17px]"
-                      style={{ background: `conic-gradient(#187c61 ${progressPercent}%, #e8eaf0 0)` }}>
-                      <div className="flex h-full w-full items-center justify-center rounded-full bg-white text-[36px] font-bold" style={serif}>
-                        {progressPercent}%
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-center text-[17px] font-bold" style={serif}>
-                    {questionsCovered.toLocaleString('ro-RO')} întrebări parcurse
-                  </p>
-                  <p className="mt-1 text-center text-[11px] text-[#87929f]">
-                    {totalAvailableQuestions > 0
-                      ? `din ${totalAvailableQuestions.toLocaleString('ro-RO')} disponibile`
-                      : 'Întrebările vor apărea după publicare'}
-                  </p>
                 </section>
 
                 <section className="relative flex min-h-[356px] flex-col overflow-hidden rounded-[12px] bg-[#034638] p-6 text-white">
