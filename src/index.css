@@ -193,3 +193,14 @@ html.student-dark [class*="bg-[linear-gradient(125deg"] {
 html.student-dark [class~="bg-amber-300"][class~="text-[#183d31]"] {
   color: #183d31;
 }
+
+/* Keep the original pastel circles behind the dashboard statistic images. */
+html.student-dark [class~="bg-[#dff5eb]"] {
+  background-color: #dff5eb;
+  color: #0e6b51;
+}
+
+html.student-dark [class~="bg-[#fff1d9]"] {
+  background-color: #fff1d9;
+  color: #e8a212;
+}
