@@ -194,13 +194,13 @@ html.student-dark [class~="bg-amber-300"][class~="text-[#183d31]"] {
   color: #183d31;
 }
 
-/* Keep the original pastel circles behind the dashboard statistic images. */
-html.student-dark [class~="bg-[#dff5eb]"] {
-  background-color: #7fae98;
-  color: #124a38;
-}
+/* The eight statistic badges use four colors in a fixed two-row sequence. */
+.stat-icon-blue { background-color: #e3f0fd; color: #276091; }
+.stat-icon-yellow { background-color: #fff0d5; color: #a36b18; }
+.stat-icon-green { background-color: #dff5eb; color: #0e6b51; }
+.stat-icon-red { background-color: #fbe6e5; color: #a74343; }
 
-html.student-dark [class~="bg-[#fff1d9]"] {
-  background-color: #bd9b6f;
-  color: #66471d;
-}
+html.student-dark .stat-icon-blue { background-color: #6e91b1; color: #173d5b; }
+html.student-dark .stat-icon-yellow { background-color: #bd9b6f; color: #66471d; }
+html.student-dark .stat-icon-green { background-color: #7fae98; color: #124a38; }
+html.student-dark .stat-icon-red { background-color: #ae7779; color: #53272a; }
