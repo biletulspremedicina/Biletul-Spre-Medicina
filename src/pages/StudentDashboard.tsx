@@ -84,7 +84,7 @@ const UMFCD_IMAGE_SRC = '/UMFCD.png'; // Imaginea pentru Examene UMFCD
 const NAV_IMAGE_SOURCES = {
   home: '/Home.png', // Aici pui sursa imaginii ACASA
   all: '/Simularibiologie.png', // Aici pui sursa imaginii SIMULARI BIOLOGIE
-  practice: '', // Aici pui sursa imaginii ANTRENAMENT PE CAPITOLE
+  practice: '/Capitole.png', // Aici pui sursa imaginii ANTRENAMENT PE CAPITOLE
   umfcd: '', // Aici pui sursa imaginii EXAMENE UMFCD
   review: '', // Aici pui sursa imaginii INTREBARI DE REVIZUIT
 };
