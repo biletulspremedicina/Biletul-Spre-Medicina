@@ -196,11 +196,11 @@ html.student-dark [class~="bg-amber-300"][class~="text-[#183d31]"] {
 
 /* Keep the original pastel circles behind the dashboard statistic images. */
 html.student-dark [class~="bg-[#dff5eb]"] {
-  background-color: #bddccb;
-  color: #0e6b51;
+  background-color: #7fae98;
+  color: #124a38;
 }
 
 html.student-dark [class~="bg-[#fff1d9]"] {
-  background-color: #eed9b6;
-  color: #e8a212;
+  background-color: #bd9b6f;
+  color: #66471d;
 }
