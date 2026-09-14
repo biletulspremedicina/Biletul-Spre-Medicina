@@ -62,7 +62,7 @@ type Stat = {
   detail: string;
   icon: ReactNode;
   imageSrc: string;
-  tone: 'mint' | 'amber';
+  tone: 'blue' | 'yellow' | 'green' | 'red';
 };
 
 // Completează doar adresele dintre ghilimele. Până atunci rămân pictogramele actuale.
@@ -456,56 +456,56 @@ export default function StudentDashboard({
       value: accuracy === null ? '—' : `${accuracy}%`,
       note: 'Din răspunsurile trimise',
       detail: 'Procentul răspunsurilor corecte din întrebările la care ai răspuns în activitățile finalizate.',
-      icon: <Target size={26} strokeWidth={2.2} />, imageSrc: STAT_IMAGE_SOURCES[0], tone: 'mint',
+      icon: <Target size={26} strokeWidth={2.2} />, imageSrc: STAT_IMAGE_SOURCES[0], tone: 'blue',
     },
     {
       label: 'Cel mai bun rezultat la o simulare',
       value: bestResult === null ? '—' : `${bestResult}%`,
       note: 'Din simulările finalizate',
       detail: 'Cel mai mare procent obținut la o simulare finalizată.',
-      icon: <Trophy size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[1], tone: 'amber',
+      icon: <Trophy size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[1], tone: 'yellow',
     },
     {
       label: 'Rezultatul ultimei simulări',
       value: latestResult === null ? '—' : `${latestResult}%`,
       note: 'Cea mai recentă simulare',
       detail: 'Procentul obținut la ultima simulare pe care ai finalizat-o.',
-      icon: <FileText size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[2], tone: 'mint',
+      icon: <FileText size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[2], tone: 'green',
     },
     {
       label: 'Media rezultatelor la simulări',
       value: averageResult === null ? '—' : `${averageResult}%`,
       note: 'Media tuturor simulărilor',
       detail: 'Media aritmetică a procentelor obținute la simulările finalizate.',
-      icon: <ChartNoAxesCombined size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[3], tone: 'mint',
+      icon: <ChartNoAxesCombined size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[3], tone: 'red',
     },
     {
       label: 'Seria actuală de zile active',
       value: `${streak} ${streak === 1 ? 'zi' : 'zile'}`,
       note: 'Zile consecutive cu activitate',
       detail: 'Zile consecutive în care ai răspuns la întrebări. Ziua curentă nu rupe seria înainte să începi să lucrezi.',
-      icon: <Flame size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[4], tone: 'amber',
+      icon: <Flame size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[4], tone: 'yellow',
     },
     {
       label: 'Timp mediu pe întrebare',
       value: formatSeconds(timePerQuestion),
       note: 'Din simulările finalizate',
       detail: 'Durata simulărilor finalizate, împărțită la numărul întrebărilor la care ai răspuns.',
-      icon: <Clock3 size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[5], tone: 'mint',
+      icon: <Clock3 size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[5], tone: 'blue',
     },
     {
       label: 'Simulări terminate în timpul alocat',
       value: String(finishedInTime),
       note: 'Din simulările finalizate',
       detail: 'Numărul simulărilor trimise înainte de expirarea duratei alocate.',
-      icon: <Check size={26} strokeWidth={2.5} />, imageSrc: STAT_IMAGE_SOURCES[6], tone: 'mint',
+      icon: <Check size={26} strokeWidth={2.5} />, imageSrc: STAT_IMAGE_SOURCES[6], tone: 'red',
     },
     {
       label: 'Capitole începute',
       value: String(startedLessons.size),
       note: 'Ai răspuns la cel puțin o grilă',
       detail: 'Un capitol este început când răspunzi la prima întrebare dintr-un set al său.',
-      icon: <BookOpen size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[7], tone: 'mint',
+      icon: <BookOpen size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[7], tone: 'green',
     },
   ];
 
@@ -917,9 +917,9 @@ function StatCard({ stat, onClick }: { stat: Stat; onClick: () => void }) {
     <button type="button" onClick={onClick}
       className="group flex min-h-[176px] w-full flex-col rounded-[11px] border border-[#e0e7ed] bg-white p-[18px] text-left shadow-[0_3px_13px_rgba(33,55,69,0.025)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#b8d9cb] hover:shadow-[0_12px_30px_rgba(24,74,58,0.09)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3a9b78] motion-reduce:transition-none">
       <div className="flex w-full items-start gap-4">
-        <span className={`flex h-[58px] w-[58px] shrink-0 items-center justify-center rounded-full ${
-          stat.tone === 'amber' ? 'bg-[#fff1d9] text-[#e8a212]' : 'bg-[#dff5eb] text-[#0e6b51]'
-        }`}><StatVisual stat={stat} /></span>
+        <span className={`stat-icon-${stat.tone} flex h-[58px] w-[58px] shrink-0 items-center justify-center rounded-full`}>
+          <StatVisual stat={stat} />
+        </span>
         <span className="flex min-w-0 flex-1 items-start justify-between gap-2">
           <span className="min-w-0 pt-2 text-[17px] font-bold leading-[1.22]" style={serif}>{stat.label}</span>
         </span>
