@@ -2,8 +2,8 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase, type PracticeLesson, type BankQuestion } from '@/lib/supabase';
 import {
   Plus, Edit2, Trash2, Archive, ArchiveRestore, Search, Loader2, X, Save,
-  BookOpen, Layers, ChevronLeft, AlertTriangle, CheckSquare, Square,
-  FileDown, FileUp, Download, ArrowUp, ArrowDown, Eye,
+  BookOpen, Layers, ChevronLeft, CheckSquare, Square,
+  FileUp, Download, Eye,
 } from 'lucide-react';
 import {
   generateNewQuestionsTemplate,
@@ -12,11 +12,13 @@ import {
   type NewQuestionValidation,
 } from '@/lib/newQuestionsImport';
 import NewQuestionsImportPreviewDialog from '@/components/admin/NewQuestionsImportPreviewDialog';
+import { loadBankQuestions, loadQuestionSetMemberships, type QuestionSet, type QuestionSetMemberships } from '@/lib/questionBankAdmin';
 
 export default function QuestionBankAdmin() {
   const [lessons, setLessons] = useState<PracticeLesson[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedLesson, setSelectedLesson] = useState<PracticeLesson | null>(null);
+  const [chapterSearch, setChapterSearch] = useState('');
 
   const loadLessons = useCallback(async () => {
     setLoading(true);
@@ -32,6 +34,10 @@ export default function QuestionBankAdmin() {
     loadLessons();
   }, [loadLessons]);
 
+  const visibleLessons = lessons.filter((lesson) =>
+    `${lesson.title} ${lesson.subject}`.toLowerCase().includes(chapterSearch.trim().toLowerCase())
+  );
+
   if (selectedLesson) {
     return (
       <BankLessonView
@@ -46,21 +52,30 @@ export default function QuestionBankAdmin() {
       <div className="mb-6">
         <h2 className="font-display text-xl font-bold text-stone-900">Banca de grile</h2>
         <p className="text-sm text-stone-500 mt-1">
-          Selectează o lecție pentru a vizualiza și administra grilele din bancă.
+          Selectează un capitol pentru a vizualiza și administra grilele din bancă.
         </p>
       </div>
+
+      {lessons.length > 0 && (
+        <div className="relative mb-4">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+          <input className="input pl-10" placeholder="Caută capitol sau materie..." value={chapterSearch} onChange={(e) => setChapterSearch(e.target.value)} />
+        </div>
+      )}
 
       {loading ? (
         <p className="text-sm text-stone-500">Se încarcă...</p>
       ) : lessons.length === 0 ? (
         <div className="card p-12 text-center text-stone-500">
           <BookOpen size={40} className="mx-auto mb-4 text-stone-300" />
-          <p className="text-lg font-medium">Nu există lecții.</p>
-          <p className="text-sm mt-1">Creează lecții în secțiunea „Grile pe lecții" mai întâi.</p>
+          <p className="text-lg font-medium">Nu există capitole.</p>
+          <p className="text-sm mt-1">Creează-le în secțiunea „Lecții & Seturi” mai întâi.</p>
         </div>
+      ) : visibleLessons.length === 0 ? (
+        <p className="text-sm text-stone-500">Nu am găsit capitole pentru căutarea introdusă.</p>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {lessons.map((lesson) => (
+          {visibleLessons.map((lesson) => (
             <LessonBankCard key={lesson.id} lesson={lesson} onOpen={() => setSelectedLesson(lesson)} />
           ))}
         </div>
@@ -128,10 +143,14 @@ function LessonBankCard({ lesson, onOpen }: { lesson: PracticeLesson; onOpen: ()
 
 function BankLessonView({ lesson, onBack }: { lesson: PracticeLesson; onBack: () => void }) {
   const [questions, setQuestions] = useState<BankQuestion[]>([]);
+  const [memberships, setMemberships] = useState<QuestionSetMemberships>(new Map());
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | 'CS' | 'CG'>('all');
   const [statusFilter, setStatusFilter] = useState<'active' | 'archived' | 'all'>('active');
+  const [usageFilter, setUsageFilter] = useState<'all' | 'unused' | 'used'>('all');
+  const [page, setPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [editing, setEditing] = useState<BankQuestion | null>(null);
   const [creating, setCreating] = useState(false);
@@ -142,38 +161,52 @@ function BankLessonView({ lesson, onBack }: { lesson: PracticeLesson; onBack: ()
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const loadSequence = useRef(0);
 
   const load = useCallback(async () => {
+    const sequence = ++loadSequence.current;
     setLoading(true);
-    let query = supabase
-      .from('practice_bank_questions')
-      .select('*')
-      .eq('lesson_id', lesson.id)
-      .order('created_at', { ascending: false });
-
-    if (statusFilter === 'active') {
-      query = query.eq('is_archived', false);
-    } else if (statusFilter === 'archived') {
-      query = query.eq('is_archived', true);
+    setLoadError(null);
+    try {
+      const loadedQuestions = await loadBankQuestions(lesson.id, statusFilter);
+      const loadedMemberships = await loadQuestionSetMemberships(loadedQuestions.map((q) => q.id));
+      if (sequence !== loadSequence.current) return;
+      setQuestions(loadedQuestions);
+      setMemberships(loadedMemberships);
+      const loadedIds = new Set(loadedQuestions.map((q) => q.id));
+      setSelectedIds((current) => new Set([...current].filter((id) => loadedIds.has(id))));
+    } catch (err) {
+      if (sequence === loadSequence.current) {
+        setQuestions([]);
+        setMemberships(new Map());
+        setSelectedIds(new Set());
+        setLoadError(err instanceof Error ? err.message : 'Nu s-a putut încărca banca de grile.');
+      }
+    } finally {
+      if (sequence === loadSequence.current) setLoading(false);
     }
-
-    const { data } = await query;
-    setQuestions((data || []) as BankQuestion[]);
-    setLoading(false);
   }, [lesson.id, statusFilter]);
 
   useEffect(() => {
     load();
+    return () => { loadSequence.current += 1; };
   }, [load]);
 
   const filtered = questions.filter((q) => {
     if (typeFilter !== 'all' && q.type !== typeFilter) return false;
+    const setCount = memberships.get(q.id)?.length || 0;
+    if (usageFilter === 'unused' && setCount > 0) return false;
+    if (usageFilter === 'used' && setCount === 0) return false;
     if (search.trim()) {
       const s = search.toLowerCase();
       if (!q.question_text.toLowerCase().includes(s) && !q.explanation.toLowerCase().includes(s)) return false;
     }
     return true;
   });
+  const pageSize = 30;
+  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const currentPage = Math.min(page, pageCount);
+  const visibleQuestions = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const toggleSelect = (id: string) => {
     const next = new Set(selectedIds);
@@ -183,10 +216,13 @@ function BankLessonView({ lesson, onBack }: { lesson: PracticeLesson; onBack: ()
   };
 
   const toggleSelectAll = () => {
-    if (selectedIds.size === filtered.length) {
-      setSelectedIds(new Set());
+    const visibleIds = visibleQuestions.map((q) => q.id);
+    if (visibleIds.every((id) => selectedIds.has(id))) {
+      const next = new Set(selectedIds);
+      visibleIds.forEach((id) => next.delete(id));
+      setSelectedIds(next);
     } else {
-      setSelectedIds(new Set(filtered.map((q) => q.id)));
+      setSelectedIds(new Set([...selectedIds, ...visibleIds]));
     }
   };
 
@@ -244,7 +280,8 @@ function BankLessonView({ lesson, onBack }: { lesson: PracticeLesson; onBack: ()
 
     try {
       const rows = await parseNewQuestionsXlsx(file);
-      const result = validateNewQuestions(rows, questions, { contentType: 'bank' });
+      const existingQuestions = await loadBankQuestions(lesson.id, 'all');
+      const result = validateNewQuestions(rows, existingQuestions, { contentType: 'bank' });
       setImportValidation(result);
       if (result.errors.length === 0) {
         setMessage({ type: 'success', text: `${result.validQuestions.length} grile gata pentru import.` });
@@ -294,14 +331,14 @@ function BankLessonView({ lesson, onBack }: { lesson: PracticeLesson; onBack: ()
   return (
     <div>
       <button onClick={onBack} className="btn-ghost mb-4">
-        <ChevronLeft size={16} /> Înapoi la lecții
+        <ChevronLeft size={16} /> Înapoi la capitole
       </button>
 
       <div className="mb-4 flex items-center justify-between">
         <div>
           <h2 className="font-display text-xl font-bold text-stone-900">Banca de grile — {lesson.title}</h2>
           <p className="text-sm text-stone-500 mt-1">
-            {questions.filter((q) => !q.is_archived).length} grile active · {questions.filter((q) => q.is_archived).length} arhivate
+            {questions.length} grile încărcate · {filtered.length} după filtre
           </p>
         </div>
         <button onClick={() => setCreating(true)} className="btn-primary">
@@ -348,13 +385,13 @@ function BankLessonView({ lesson, onBack }: { lesson: PracticeLesson; onBack: ()
             className="input pl-10"
             placeholder="Caută în enunț..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           />
         </div>
         <select
           className="input max-w-[140px]"
           value={typeFilter}
-          onChange={(e) => setTypeFilter(e.target.value as 'all' | 'CS' | 'CG')}
+          onChange={(e) => { setTypeFilter(e.target.value as 'all' | 'CS' | 'CG'); setPage(1); }}
         >
           <option value="all">Toate tipurile</option>
           <option value="CS">CS</option>
@@ -363,16 +400,25 @@ function BankLessonView({ lesson, onBack }: { lesson: PracticeLesson; onBack: ()
         <select
           className="input max-w-[140px]"
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as 'active' | 'archived' | 'all')}
+          onChange={(e) => { setStatusFilter(e.target.value as 'active' | 'archived' | 'all'); setSelectedIds(new Set()); setPage(1); }}
         >
           <option value="active">Active</option>
           <option value="archived">Arhivate</option>
           <option value="all">Toate</option>
         </select>
+        <select
+          className="input max-w-[190px]"
+          value={usageFilter}
+          onChange={(e) => { setUsageFilter(e.target.value as typeof usageFilter); setPage(1); }}
+        >
+          <option value="all">Toate grilele</option>
+          <option value="unused">Nealocate</option>
+          <option value="used">În cel puțin un set</option>
+        </select>
       </div>
 
       {/* Selection actions */}
-      {selectedIds.size > 0 && (
+      {selectedIds.size > 0 && !loading && !loadError && (
         <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-brand-200 bg-brand-50 px-4 py-3">
           <span className="text-sm font-medium text-brand-700">{selectedIds.size} grile selectate</span>
           <div className="flex gap-2 ml-auto">
@@ -392,24 +438,26 @@ function BankLessonView({ lesson, onBack }: { lesson: PracticeLesson; onBack: ()
       {/* Question list */}
       {loading ? (
         <p className="text-sm text-stone-500">Se încarcă...</p>
+      ) : loadError ? (
+        <p className="text-sm text-red-700">Nu s-a putut încărca banca: {loadError}</p>
       ) : filtered.length === 0 ? (
         <div className="card p-12 text-center text-stone-500">
           <BookOpen size={40} className="mx-auto mb-4 text-stone-300" />
-          <p className="text-lg font-medium">Nu există grile în bancă.</p>
-          <p className="text-sm mt-1">Adaugă grile manual sau importă din Excel.</p>
+          <p className="text-lg font-medium">Nu există grile pentru filtrele alese.</p>
+          <p className="text-sm mt-1">Schimbă filtrele sau adaugă grile în acest capitol.</p>
         </div>
       ) : (
         <div>
           <div className="mb-2 flex items-center gap-2">
             <button onClick={toggleSelectAll} className="btn-ghost text-xs">
-              {selectedIds.size === filtered.length && filtered.length > 0
-                ? <><CheckSquare size={14} /> Deselectează toate</>
-                : <><Square size={14} /> Selectează toate</>}
+              {visibleQuestions.every((q) => selectedIds.has(q.id))
+                ? <><CheckSquare size={14} /> Deselectează pagina</>
+                : <><Square size={14} /> Selectează pagina</>}
             </button>
-            <span className="text-xs text-stone-500">{filtered.length} grile</span>
+            <span className="text-xs text-stone-500">{filtered.length} grile · pagina {currentPage} din {pageCount}</span>
           </div>
           <div className="space-y-2">
-            {filtered.map((q) => (
+            {visibleQuestions.map((q) => (
               <BankQuestionRow
                 key={q.id}
                 question={q}
@@ -418,10 +466,17 @@ function BankLessonView({ lesson, onBack }: { lesson: PracticeLesson; onBack: ()
                 onEdit={() => setEditing(q)}
                 onArchive={() => handleArchive(q)}
                 onDelete={() => handleDelete(q)}
-                lessonId={lesson.id}
+                sets={memberships.get(q.id) || []}
               />
             ))}
           </div>
+          {pageCount > 1 && (
+            <div className="mt-4 flex items-center justify-center gap-3">
+              <button className="btn-secondary text-xs" disabled={currentPage === 1} onClick={() => setPage(currentPage - 1)}>Înapoi</button>
+              <span className="text-xs text-stone-500">Pagina {currentPage} din {pageCount}</span>
+              <button className="btn-secondary text-xs" disabled={currentPage === pageCount} onClick={() => setPage(currentPage + 1)}>Înainte</button>
+            </div>
+          )}
         </div>
       )}
 
@@ -474,7 +529,7 @@ function BankLessonView({ lesson, onBack }: { lesson: PracticeLesson; onBack: ()
 // ── Bank Question Row ───────────────────────────────────────────────────
 
 function BankQuestionRow({
-  question, isSelected, onToggle, onEdit, onArchive, onDelete, lessonId,
+  question, isSelected, onToggle, onEdit, onArchive, onDelete, sets,
 }: {
   question: BankQuestion;
   isSelected: boolean;
@@ -482,38 +537,8 @@ function BankQuestionRow({
   onEdit: () => void;
   onArchive: () => void;
   onDelete: () => void;
-  lessonId: string;
+  sets: QuestionSet[];
 }) {
-  const [setCount, setSetCount] = useState(0);
-  const [showSets, setShowSets] = useState(false);
-  const [setNames, setSetNames] = useState<{ id: string; title: string }[]>([]);
-
-  useEffect(() => {
-    (async () => {
-      const { count } = await supabase
-        .from('practice_set_questions')
-        .select('*', { count: 'exact', head: true })
-        .eq('question_id', question.id);
-      setSetCount(count || 0);
-    })();
-  }, [question.id]);
-
-  const loadSetNames = async () => {
-    const { data } = await supabase
-      .from('practice_set_questions')
-      .select('set_id')
-      .eq('question_id', question.id);
-    if (data && data.length > 0) {
-      const setIds = data.map((d: { set_id: string }) => d.set_id);
-      const { data: sets } = await supabase
-        .from('practice_sets')
-        .select('id, title')
-        .in('id', setIds)
-        .eq('lesson_id', lessonId);
-      setSetNames((sets || []) as { id: string; title: string }[]);
-    }
-  };
-
   return (
     <div className={`rounded-xl border bg-white px-4 py-3 ${question.is_archived ? 'border-stone-200 opacity-60' : 'border-stone-200'} ${isSelected ? 'ring-2 ring-brand-400' : ''}`}>
       <div className="flex items-center gap-3">
@@ -521,14 +546,8 @@ function BankQuestionRow({
           {isSelected ? <CheckSquare size={18} className="text-brand-600" /> : <Square size={18} />}
         </button>
         <span className="badge bg-stone-100 text-stone-600 flex-shrink-0">{question.type}</span>
-        <span className="text-sm text-stone-700 truncate flex-1">{question.question_text}</span>
+        <span className="text-sm text-stone-700 break-words min-w-0 flex-1">{question.question_text}</span>
         <span className="text-xs font-bold text-brand-600 flex-shrink-0">Corect: {question.correct_answer}</span>
-        <button
-          onClick={() => { setShowSets(!showSets); if (!showSets) loadSetNames(); }}
-          className="text-xs text-stone-500 hover:text-stone-700 flex-shrink-0 flex items-center gap-1"
-        >
-          <Layers size={13} /> {setCount} seturi
-        </button>
         <button onClick={onEdit} className="btn-ghost text-xs px-2 py-1 flex-shrink-0"><Edit2 size={13} /></button>
         <button onClick={onArchive} className="btn-ghost text-xs px-2 py-1 flex-shrink-0">
           {question.is_archived ? <ArchiveRestore size={13} /> : <Archive size={13} />}
@@ -538,17 +557,18 @@ function BankQuestionRow({
         </button>
       </div>
 
-      {showSets && (
-        <div className="mt-2 ml-10 flex flex-wrap gap-2">
-          {setNames.length === 0 ? (
-            <span className="text-xs text-stone-400">Nu este folosită în niciun set.</span>
-          ) : (
-            setNames.map((s) => (
-              <span key={s.id} className="badge bg-brand-50 text-brand-700">{s.title}</span>
-            ))
-          )}
-        </div>
-      )}
+      <div className="mt-2 ml-10 flex flex-wrap items-center gap-2">
+        {sets.length === 0 ? (
+          <span className="badge bg-stone-100 text-stone-600">Nealocată</span>
+        ) : (
+          <>
+            <span className="text-xs font-medium text-stone-500"><Layers size={13} className="inline mr-1" />În {sets.length} {sets.length === 1 ? 'set' : 'seturi'}:</span>
+            {sets.map((set) => (
+              <span key={set.id} className="badge bg-brand-50 text-brand-700">{set.title}</span>
+            ))}
+          </>
+        )}
+      </div>
     </div>
   );
 }
@@ -841,7 +861,7 @@ function CreateSetFromSelectionDialog({
 
     setSaving(true);
     try {
-      const { data, error: rpcError } = await supabase.rpc('admin_create_set_from_questions', {
+      const { error: rpcError } = await supabase.rpc('admin_create_set_from_questions', {
         p_lesson_id: lesson.id,
         p_title: title.trim(),
         p_description: description.trim(),
