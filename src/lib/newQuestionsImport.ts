@@ -8,7 +8,6 @@ const BRAND_600 = 'FF2A6B4E';
 const WHITE = 'FFFFFFFF';
 const BORDER_GREY = 'FFD0D0D0';
 const TEXT_DARK = 'FF1F2937';
-const LIGHT_GREEN_BG = 'FFE2EFDA';
 
 const NEW_QUESTION_COLUMNS = [
   'Nr. crt.',
@@ -306,7 +305,7 @@ export function parseNewQuestionsXlsx(file: File): Promise<NewQuestionRow[]> {
         const rows: NewQuestionRow[] = [];
         const MAX_ROWS = 500;
 
-        for (let i = 1; i < json.length && rows.length < MAX_ROWS; i++) {
+        for (let i = 1; i < json.length; i++) {
           const rawRow = json[i] as unknown[];
           if (!rawRow || rawRow.every((v) => v === null || v === undefined || v === '')) continue;
 
@@ -317,13 +316,18 @@ export function parseNewQuestionsXlsx(file: File): Promise<NewQuestionRow[]> {
           // Skip rows where everything is empty including type
           if (!typeRaw && !enuntRaw && !correctRaw) continue;
 
+          if (rows.length >= MAX_ROWS) {
+            reject(new Error(`Fișierul conține mai mult de ${MAX_ROWS} grile. Împarte-l în fișiere mai mici pentru a evita un import incomplet.`));
+            return;
+          }
+
           const nrCrtRaw = getCell(rawRow, 'Nr. crt.');
           const nrCrt = nrCrtRaw ? parseInt(nrCrtRaw, 10) : null;
 
           rows.push({
             rowNumber: i + 1, // 1-based Excel row
             nrCrt: nrCrt && !isNaN(nrCrt) ? nrCrt : null,
-            type: (typeRaw === 'CG' ? 'CG' : 'CS') as 'CS' | 'CG',
+            type: typeRaw as 'CS' | 'CG',
             questionText: enuntRaw,
             optionA: getCell(rawRow, 'Varianta A'),
             optionB: getCell(rawRow, 'Varianta B'),

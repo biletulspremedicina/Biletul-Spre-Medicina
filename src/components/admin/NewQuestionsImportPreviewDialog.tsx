@@ -115,7 +115,7 @@ export default function NewQuestionsImportPreviewDialog({
           <p className="mb-4 text-xs text-stone-500">Fișier: {fileName}</p>
 
           {/* Published warning */}
-          {isPublished && (
+           {isPublished && contentType !== 'bank' && (
             <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 p-4">
               <h3 className="flex items-center gap-2 text-sm font-bold text-amber-800">
                 <AlertTriangle size={16} /> Conținut publicat
@@ -124,7 +124,12 @@ export default function NewQuestionsImportPreviewDialog({
                 Acest conținut este public. Grilele importate vor deveni vizibile elevilor după confirmare.
               </p>
             </div>
-          )}
+           )}
+           {contentType === 'bank' && (
+             <p className="mb-4 rounded-xl border border-brand-200 bg-brand-50 p-4 text-xs text-brand-700">
+               Grilele importate rămân în banca acestui capitol. Elevii le vor vedea numai după ce le adaugi într-un set publicat.
+             </p>
+           )}
 
           {/* Summary */}
           <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">

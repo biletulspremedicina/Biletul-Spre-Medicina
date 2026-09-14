@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
-import { supabase, type PracticeLesson, type PracticeSet, type PracticeQuestion, type BankQuestion } from '@/lib/supabase';
+import { supabase, type PracticeLesson, type PracticeSet, type BankQuestion } from '@/lib/supabase';
+import { loadBankQuestions, loadQuestionSetMemberships, type QuestionSetMemberships } from '@/lib/questionBankAdmin';
 import {
   Plus, Edit2, Trash2, Eye, EyeOff, ChevronLeft, Save, X, Loader2, BookOpen,
   Layers, AlertTriangle, Copy, ArrowUp, ArrowDown, CheckSquare, Square, Search,
@@ -812,39 +813,58 @@ function BankPickerDialog({
   onCancel: () => void;
 }) {
   const [bankQuestions, setBankQuestions] = useState<BankQuestion[]>([]);
+  const [memberships, setMemberships] = useState<QuestionSetMemberships>(new Map());
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | 'CS' | 'CG'>('all');
+  const [usageFilter, setUsageFilter] = useState<'all' | 'unused' | 'used' | 'current'>('all');
+  const [page, setPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [applying, setApplying] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const existingSet = new Set(existingQuestionIds);
+  const isInCurrentSet = (questionId: string) =>
+    existingSet.has(questionId) || (memberships.get(questionId) || []).some((set) => set.id === setId);
 
   useEffect(() => {
+    let cancelled = false;
     (async () => {
-      const { data } = await supabase
-        .from('practice_bank_questions')
-        .select('*')
-        .eq('lesson_id', lesson.id)
-        .eq('is_archived', false)
-        .order('created_at', { ascending: false });
-      setBankQuestions((data || []) as BankQuestion[]);
-      setLoading(false);
+      try {
+        const questions = await loadBankQuestions(lesson.id);
+        const questionMemberships = await loadQuestionSetMemberships(questions.map((q) => q.id));
+        if (cancelled) return;
+        setBankQuestions(questions);
+        setMemberships(questionMemberships);
+      } catch (err) {
+        if (!cancelled) setLoadError(err instanceof Error ? err.message : 'Nu s-au putut încărca grilele din bancă.');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     })();
+    return () => { cancelled = true; };
   }, [lesson.id]);
 
   const filtered = bankQuestions.filter((q) => {
-    if (existingSet.has(q.id)) return false;
     if (typeFilter !== 'all' && q.type !== typeFilter) return false;
+    const sets = memberships.get(q.id) || [];
+    if (usageFilter === 'unused' && sets.length > 0) return false;
+    if (usageFilter === 'used' && sets.length === 0) return false;
+    if (usageFilter === 'current' && !isInCurrentSet(q.id)) return false;
     if (search.trim()) {
       const s = search.toLowerCase();
       if (!q.question_text.toLowerCase().includes(s)) return false;
     }
     return true;
   });
+  const pageSize = 30;
+  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const currentPage = Math.min(page, pageCount);
+  const visibleQuestions = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const toggleSelect = (id: string) => {
+    if (isInCurrentSet(id)) return;
     const next = new Set(selectedIds);
     if (next.has(id)) next.delete(id);
     else next.add(id);
@@ -882,39 +902,69 @@ function BankPickerDialog({
           <div className="mb-4 flex flex-wrap gap-2">
             <div className="relative flex-1 min-w-[180px]">
               <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
-              <input className="input pl-10" placeholder="Caută..." value={search} onChange={(e) => setSearch(e.target.value)} />
+              <input className="input pl-10" placeholder="Caută în enunț..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
             </div>
-            <select className="input max-w-[120px]" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as 'all' | 'CS' | 'CG')}>
+            <select className="input max-w-[120px]" value={typeFilter} onChange={(e) => { setTypeFilter(e.target.value as 'all' | 'CS' | 'CG'); setPage(1); }}>
               <option value="all">Toate</option>
               <option value="CS">CS</option>
               <option value="CG">CG</option>
+            </select>
+            <select className="input max-w-[190px]" value={usageFilter} onChange={(e) => { setUsageFilter(e.target.value as typeof usageFilter); setPage(1); }}>
+              <option value="all">Toate grilele</option>
+              <option value="unused">Nealocate</option>
+              <option value="used">În cel puțin un set</option>
+              <option value="current">În setul curent</option>
             </select>
           </div>
 
           {loading ? (
             <p className="text-sm text-stone-500">Se încarcă...</p>
+          ) : loadError ? (
+            <p className="text-sm text-red-700">Nu s-a putut încărca banca: {loadError}</p>
           ) : filtered.length === 0 ? (
             <p className="text-sm text-stone-500 py-4">
-              Nu există grile disponibile. Grilele deja în set sunt ascunse. Adaugă grile noi în banca de grile a lecției.
+              Nu există grile pentru filtrele alese.
             </p>
           ) : (
             <div className="space-y-2">
-              {filtered.map((q) => (
+              <p className="text-xs text-stone-500">{filtered.length} grile găsite · pag. {currentPage} din {pageCount}. Grilele din setul curent rămân vizibile, dar nu pot fi adăugate din nou.</p>
+              {visibleQuestions.map((q) => (
                 <button
                   key={q.id}
                   onClick={() => toggleSelect(q.id)}
-                  className={`w-full flex items-center gap-3 rounded-xl border px-4 py-3 text-left transition-all ${
-                    selectedIds.has(q.id) ? 'border-brand-500 bg-brand-50 ring-1 ring-brand-400' : 'border-stone-200 hover:bg-stone-50'
+                  disabled={isInCurrentSet(q.id)}
+                  className={`w-full flex items-start gap-3 rounded-xl border px-4 py-3 text-left transition-all ${
+                    isInCurrentSet(q.id) ? 'border-stone-200 bg-stone-50 cursor-not-allowed' : selectedIds.has(q.id) ? 'border-brand-500 bg-brand-50 ring-1 ring-brand-400' : 'border-stone-200 hover:bg-stone-50'
                   }`}
                 >
                   {selectedIds.has(q.id)
                     ? <CheckSquare size={18} className="text-brand-600 flex-shrink-0" />
                     : <Square size={18} className="text-stone-400 flex-shrink-0" />}
                   <span className="badge bg-stone-100 text-stone-600 flex-shrink-0">{q.type}</span>
-                  <span className="text-sm text-stone-700 truncate flex-1">{q.question_text}</span>
-                  <span className="text-xs font-bold text-brand-600 flex-shrink-0">{q.correct_answer}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm text-stone-700 break-words">{q.question_text}</span>
+                    <span className="mt-2 flex flex-wrap items-center gap-1">
+                      {(memberships.get(q.id) || []).length === 0 ? (
+                        <span className="badge bg-stone-100 text-stone-600">Nealocată</span>
+                      ) : (
+                        (memberships.get(q.id) || []).map((set) => (
+                          <span key={set.id} className={`badge ${set.id === setId ? 'bg-amber-100 text-amber-800' : 'bg-brand-50 text-brand-700'}`}>
+                            {set.id === setId ? 'Deja în acest set: ' : 'În setul: '}{set.title}
+                          </span>
+                        ))
+                      )}
+                    </span>
+                  </span>
+                  <span className="text-xs font-bold text-brand-600 flex-shrink-0">Corect: {q.correct_answer}</span>
                 </button>
               ))}
+              {pageCount > 1 && (
+                <div className="flex items-center justify-center gap-3 pt-3">
+                  <button className="btn-secondary text-xs" disabled={currentPage === 1} onClick={() => setPage(currentPage - 1)}>Înapoi</button>
+                  <span className="text-xs text-stone-500">Pagina {currentPage} din {pageCount}</span>
+                  <button className="btn-secondary text-xs" disabled={currentPage === pageCount} onClick={() => setPage(currentPage + 1)}>Înainte</button>
+                </div>
+              )}
             </div>
           )}
 
@@ -925,7 +975,7 @@ function BankPickerDialog({
           <span className="text-xs text-stone-500">{selectedIds.size} grile selectate</span>
           <div className="flex gap-3">
             <button onClick={onCancel} disabled={applying} className="btn-secondary">Renunță</button>
-            <button onClick={handleAdd} disabled={applying || selectedIds.size === 0} className="btn-primary">
+            <button onClick={handleAdd} disabled={applying || loading || !!loadError || selectedIds.size === 0} className="btn-primary">
               {applying && <Loader2 size={16} className="animate-spin" />}
               <Plus size={16} /> Adaugă {selectedIds.size > 0 ? `(${selectedIds.size})` : ''}
             </button>
