@@ -789,7 +789,7 @@ export default function StudentDashboard({
             />
           ) : page === 'practice' ? (
             <section>
-              <PageHeading icon={<GraduationCap size={27} />} title="Antrenament pe capitole"
+              <PageHeading icon={<SidebarNavIcon src={NAV_IMAGE_SOURCES.practice} fallback={<GraduationCap size={27} />} size={34} />} title="Antrenament pe capitole"
                 subtitle="Alege un capitol și exersează grilele în ritmul tău." />
               {practiceLessons.length === 0 ? (
                 <EmptyState icon={<BookOpen size={36} />} title="Nu există capitole publicate momentan."
@@ -805,7 +805,9 @@ export default function StudentDashboard({
             </section>
           ) : page === 'all' || page === 'umfcd' ? (
             <section>
-              <PageHeading icon={page === 'all' ? <FileText size={27} /> : <UmfcdIcon size={27} imageSize={38} />}
+              <PageHeading icon={page === 'all'
+                ? <SidebarNavIcon src={NAV_IMAGE_SOURCES.all} fallback={<FileText size={27} />} size={34} />
+                : <SidebarNavIcon src={NAV_IMAGE_SOURCES.umfcd} fallback={<UmfcdIcon size={27} imageSize={38} />} size={38} />}
                 title={page === 'all' ? 'Simulări biologie' : 'Examene UMFCD'}
                 subtitle={page === 'all'
                   ? 'Testează-ți pregătirea prin simulările disponibile.'
@@ -838,7 +840,7 @@ export default function StudentDashboard({
             </section>
           ) : (
             <section>
-              <PageHeading icon={<Bookmark size={27} />} title="Întrebări de revizuit"
+              <PageHeading icon={<SidebarNavIcon src={NAV_IMAGE_SOURCES.review} fallback={<Bookmark size={27} />} size={34} />} title="Întrebări de revizuit"
                 subtitle="Întrebările marcate pentru recapitulare vor fi organizate aici." />
               <EmptyState icon={<Bookmark size={36} />} title="Zona de revizuire nu este încă disponibilă."
                 text="Legătura cu grilele marcate va fi adăugată când această funcție este publicată." />
@@ -873,11 +875,11 @@ export default function StudentDashboard({
 }
 
 
-function SidebarNavIcon({ src, fallback }: { src: string; fallback: ReactNode }) {
+function SidebarNavIcon({ src, fallback, size = 24 }: { src: string; fallback: ReactNode; size?: number }) {
   const [imageFailed, setImageFailed] = useState(false);
   if (!src || imageFailed) return <>{fallback}</>;
   return (
-    <img src={src} alt="" className="h-6 w-6 max-w-none shrink-0 object-contain"
+    <img src={src} alt="" width={size} height={size} className="max-w-none shrink-0 object-contain"
       onError={() => setImageFailed(true)} draggable={false} />
   );
 }
