@@ -358,16 +358,6 @@ export function parseNewQuestionsXlsx(file: File): Promise<NewQuestionRow[]> {
   });
 }
 
-// ── Normalization for duplicate detection ────────────────────────────────
-
-function normalizeText(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/\s+/g, ' ')
-    .replace(/[.,;:!?()[\]{}""''\-_/\\]/g, '')
-    .trim();
-}
-
 // ── Validation ───────────────────────────────────────────────────────────
 
 export function validateNewQuestions(
@@ -384,17 +374,8 @@ export function validateNewQuestions(
 
   const validAnswers = new Set(['A', 'B', 'C', 'D', 'E']);
 
-  // Build normalized set of existing question texts
-  const existingNormalized = new Set<string>();
-  for (const q of existingQuestions) {
-    existingNormalized.add(normalizeText(q.question_text || ''));
-  }
-
   // Track Nr. crt. uniqueness
   const seenNrCrt = new Set<number>();
-  // Track normalized texts within this file
-  const seenTexts = new Set<string>();
-  const seenNormalized = new Set<string>();
 
   for (const row of rows) {
     const rowErrors: string[] = [];
@@ -442,35 +423,6 @@ export function validateNewQuestions(
         rowErrors.push(`Rând ${row.rowNumber}: Nr. crt. ${row.nrCrt} este duplicat.`);
       } else {
         seenNrCrt.add(row.nrCrt);
-      }
-    }
-
-    // Duplicate check against existing DB questions
-    const normalized = normalizeText(row.questionText);
-    if (normalized && existingNormalized.has(normalized)) {
-      const locationLabel = options.contentType === 'simulation'
-        ? 'simularea'
-        : options.contentType === 'practice_set'
-          ? 'setul'
-          : 'banca de grile a lecției';
-      rowErrors.push(`Rând ${row.rowNumber}: Enunț duplicat — există deja în ${locationLabel} curentă.`);
-    }
-
-    // Duplicate check within file (exact text)
-    if (row.questionText.trim() && seenTexts.has(row.questionText.trim())) {
-      rowErrors.push(`Rând ${row.rowNumber}: Enunț duplicat în fișier.`);
-    }
-    if (row.questionText.trim()) seenTexts.add(row.questionText.trim());
-
-    // Similarity warning (normalized but not exact dup)
-    if (normalized && !seenNormalized.has(normalized)) {
-      seenNormalized.add(normalized);
-    } else if (normalized && rowErrors.length === 0) {
-      // Already in seenNormalized from a previous row that wasn't caught as exact dup
-      // but normalized matches — only warn if it wasn't caught above
-      const alreadyErrored = rowErrors.some((e) => e.includes('duplicat'));
-      if (!alreadyErrored) {
-        warnings.push(`Rând ${row.rowNumber}: Enunț asemănător cu alt rând din fișier.`);
       }
     }
 
