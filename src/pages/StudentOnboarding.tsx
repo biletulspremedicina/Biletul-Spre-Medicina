@@ -11,7 +11,7 @@ type StudyTime = 'under_30' | '30_60' | '60_120' | 'over_120';
 
 const totalSteps = 5;
 const ONBOARDING_IMAGES = {
-  attempt: 'https://cdn.jsdelivr.net/gh/hfg-gmuend/openmoji/color/svg/1F393.svg',
+  attempt: 'https://cdn.jsdelivr.net/gh/hfg-gmuend/openmoji/color/svg/1F501.svg',
   score: 'https://cdn.jsdelivr.net/gh/hfg-gmuend/openmoji/color/svg/1F3AF.svg',
   faculty: 'https://cdn.jsdelivr.net/gh/hfg-gmuend/openmoji/color/svg/1F3EB.svg',
   admission: 'https://cdn.jsdelivr.net/gh/hfg-gmuend/openmoji/color/svg/1F4C6.svg',
@@ -30,7 +30,7 @@ export default function StudentOnboarding({ onComplete }: Props) {
 
   useEffect(() => {
     if (!finished) return;
-    const timer = window.setTimeout(onComplete, 1600);
+    const timer = window.setTimeout(onComplete, 3000);
     return () => window.clearTimeout(timer);
   }, [finished, onComplete]);
 
@@ -81,7 +81,7 @@ export default function StudentOnboarding({ onComplete }: Props) {
                 <div className="onboarding-success-check flex h-24 w-24 items-center justify-center rounded-full bg-brand-600 text-white shadow-[0_18px_40px_rgba(42,107,78,0.28)]">
                   <Check size={52} strokeWidth={3} className="onboarding-success-tick" />
                 </div>
-                <h1 className="mt-7 font-display text-3xl font-bold text-stone-900">Totul este pregătit!</h1>
+                <h1 className="mt-7 font-display text-3xl font-bold text-stone-900">Mulțumim pentru timpul acordat!</h1>
                 <p className="mt-2 text-sm text-stone-500 sm:text-base">Bine ai venit în Biletul Spre Medicină.</p>
               </div>
             ) : step === 1 ? (
