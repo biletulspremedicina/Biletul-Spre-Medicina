@@ -25,12 +25,13 @@ import {
   Sun,
   Target,
   Timer,
+  Trash2,
   Trophy,
   X,
   FileText,
   ChartNoAxesCombined,
 } from 'lucide-react';
-import { supabase, type Attempt, type PracticeAttempt, type PracticeLessonRPC, type Simulation, type Subscription } from '@/lib/supabase';
+import { supabase, type Attempt, type PracticeAttempt, type PracticeLessonRPC, type ReviewQuestionRPC, type Simulation, type Subscription } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import Loading from '@/components/Loading';
 import StudentSettings from '@/pages/StudentSettings';
@@ -86,7 +87,7 @@ const NAV_IMAGE_SOURCES = {
   all: '/Simularibiologie.png', // Aici pui sursa imaginii SIMULARI BIOLOGIE
   practice: '/Capitole.png', // Aici pui sursa imaginii ANTRENAMENT PE CAPITOLE
   umfcd: '', // Aici pui sursa imaginii EXAMENE UMFCD
-  review: '/Revizie.png', // Aici pui sursa imaginii INTREBARI DE REVIZUIT
+  review: '/Revizie2.png', // Aici pui sursa imaginii INTREBARI DE REVIZUIT
 };
 
 const serif = { fontFamily: 'Georgia, Cambria, "Times New Roman", serif' };
@@ -253,6 +254,10 @@ export default function StudentDashboard({
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [communityPercent, setCommunityPercent] = useState(() => demoCommunityPercent(new Date()));
+  const [reviewQuestions, setReviewQuestions] = useState<ReviewQuestionRPC[]>([]);
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const [reviewError, setReviewError] = useState<string | null>(null);
+  const [removingReviewId, setRemovingReviewId] = useState<string | null>(null);
 
   const confirmSignOut = async () => {
     setSigningOut(true);
@@ -350,6 +355,41 @@ export default function StudentDashboard({
   useEffect(() => {
     void loadDashboard();
   }, [loadDashboard]);
+
+  const loadReviewQuestions = useCallback(async () => {
+    if (!userId) return;
+    setReviewLoading(true);
+    setReviewError(null);
+    const { data, error } = await supabase.rpc('get_review_questions');
+    if (error) {
+      console.error('Review questions load error:', error);
+      setReviewError('Grilele salvate nu au putut fi încărcate. Încearcă din nou.');
+    } else {
+      setReviewQuestions((data || []) as unknown as ReviewQuestionRPC[]);
+    }
+    setReviewLoading(false);
+  }, [userId]);
+
+  useEffect(() => {
+    if (page === 'review') void loadReviewQuestions();
+  }, [page, loadReviewQuestions]);
+
+  const removeReviewQuestion = async (question: ReviewQuestionRPC) => {
+    setRemovingReviewId(question.out_review_id);
+    const { error } = await supabase.rpc('remove_review_question', {
+      p_source_type: question.out_source_type,
+      p_question_id: question.out_question_id,
+    });
+    if (error) {
+      console.error('Review question remove error:', error);
+      setReviewError('Grila nu a putut fi eliminată. Încearcă din nou.');
+    } else {
+      setReviewQuestions((current) => current.filter(
+        (item) => item.out_review_id !== question.out_review_id
+      ));
+    }
+    setRemovingReviewId(null);
+  };
 
   const handleBuySubscription = async () => {
     setBuyingSub(true);
@@ -469,9 +509,9 @@ export default function StudentDashboard({
     finishedGridsByDay.set(key, (finishedGridsByDay.get(key) || 0) + answerCount(attempt.answers));
   });
   const weekDayLabels = ['Dum', 'Lu', 'Ma', 'Mi', 'Joi', 'Vi', 'Sâm'];
-  const lastFourteenDays = Array.from({ length: 14 }, (_, index) => {
+  const lastSevenDays = Array.from({ length: 7 }, (_, index) => {
     const [year, month, day] = todayKey.split('-').map(Number);
-    const calendarDay = new Date(Date.UTC(year, month - 1, day - (13 - index), 12));
+    const calendarDay = new Date(Date.UTC(year, month - 1, day - (6 - index), 12));
     const key = calendarDay.toISOString().slice(0, 10);
     return {
       key,
@@ -639,15 +679,14 @@ export default function StudentDashboard({
       {sidebar}
 
       <div className="min-w-0">
-        <header className="relative z-20 flex h-[60px] items-center border-b border-[#e6eaeb] bg-white px-5 sm:px-7">
-          <div className="flex items-center">
-            <button type="button" onClick={() => setMobileMenuOpen(true)}
-              className="mr-3 rounded-lg p-2 text-[#164d3e] hover:bg-[#e9f5ef] lg:hidden" aria-label="Deschide meniul">
-              <Menu size={22} />
-            </button>
-            <span className="hidden text-[12px] font-semibold text-[#2e896d] sm:inline sm:text-[13px]">Devino cel mai bun</span>
-          </div>
-          <p className="pointer-events-none absolute left-1/2 max-w-[55%] -translate-x-1/2 truncate text-center text-[11px] font-medium text-[#536477] sm:text-[13px]">
+        <header className="relative z-20 flex h-[60px] items-center justify-between border-b border-[#e6eaeb] bg-white px-5 sm:px-7">
+          <button type="button" onClick={() => setMobileMenuOpen(true)}
+            className="mr-3 rounded-lg p-2 text-[#164d3e] hover:bg-[#e9f5ef] lg:hidden" aria-label="Deschide meniul">
+            <Menu size={22} />
+          </button>
+          <p className="min-w-0 truncate text-[12px] font-medium text-[#536477] sm:text-[13px]">
+            <span className="font-semibold text-[#2e896d]">Devino cel mai bun</span>
+            <span className="mx-3 text-[#c6d1d2]">—</span>
             Disciplina de azi → Rezultatele de mâine.
           </p>
           <div className="relative ml-auto">
@@ -705,31 +744,44 @@ export default function StudentDashboard({
                     </div>
                   </div>
 
-                  <div className="relative mt-auto grid gap-4 rounded-[34px] border border-[#e6f0ed] bg-white px-4 py-5 shadow-[0_12px_36px_rgba(22,71,57,0.04)] sm:grid-cols-2 sm:gap-0 sm:px-5">
-                    <div className="flex min-w-0 flex-col sm:border-r sm:border-[#dbe9e5] sm:pr-5">
-                      <p className="text-center text-[13px] font-bold leading-snug">Activitatea comunității azi</p>
-                      <div className="mt-3 flex items-center gap-3">
-                        <div className="flex h-[86px] w-[86px] shrink-0 items-center justify-center rounded-full p-[7px]"
-                          style={{ background: `conic-gradient(#188765 ${communityPercent}%, #e0f2ea 0)` }}>
-                          <div className="flex h-full w-full items-center justify-center rounded-full bg-white text-[24px] font-extrabold text-[#113d32]">
-                            {communityPercent}%
-                          </div>
+                  <div className="relative mt-auto grid gap-2 rounded-[34px] border border-[#e6f0ed] bg-white px-4 py-5 shadow-[0_12px_36px_rgba(22,71,57,0.04)] sm:grid-cols-2 sm:gap-0 sm:px-5">
+                    <div className="flex items-center gap-3 sm:border-r sm:border-[#dbe9e5] sm:pr-4">
+                      <div className="flex h-[86px] w-[86px] shrink-0 items-center justify-center rounded-full p-[7px]"
+                        style={{ background: `conic-gradient(#188765 ${communityPercent}%, #e0f2ea 0)` }}>
+                        <div className="flex h-full w-full items-center justify-center rounded-full bg-white text-[24px] font-extrabold text-[#113d32]">
+                          {communityPercent}%
                         </div>
-                        <div className="min-w-0 text-[11px] leading-relaxed text-[#52667b]">
-                          <p>dintre candidați au lucrat deja astăzi pe platformă.</p>
-                          <p className="mt-2 font-bold text-[#174a38]">Ce mai aștepți?</p>
-                        </div>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[13px] font-bold leading-snug">Activitatea comunității azi</p>
+                        <p className="mt-2 text-[11px] leading-relaxed text-[#607587]">
+                          Procent demonstrativ al abonaților activi astăzi
+                        </p>
                       </div>
                     </div>
                     <div className="flex min-w-0 flex-col justify-center pt-3 text-center sm:pl-5 sm:pt-0">
-                      <p className="text-[13px] font-bold leading-snug">Grile lucrate în ultimele 14 zile</p>
-                      <div className="mt-2 grid grid-cols-7 gap-x-1 gap-y-2" aria-label="Grile lucrate în fiecare dintre ultimele paisprezece zile">
-                        {lastFourteenDays.map((day) => (
-                          <div key={day.key} className="min-w-0 text-center" title={day.key}>
-                            <span className="block truncate text-[9px] font-semibold text-[#607587]">{day.label}</span>
-                            <span className="mt-0.5 block border-t border-[#e4eeea] pt-1 text-[11px] font-bold tabular-nums text-[#115c48]">{day.count}</span>
-                          </div>
-                        ))}
+                      <p className="text-[13px] font-bold leading-snug">Grile lucrate în ultimele 7 zile</p>
+                      <div className="mt-2 overflow-x-auto">
+                        <table className="w-full table-fixed text-center" aria-label="Grile lucrate în fiecare dintre ultimele șapte zile">
+                          <thead>
+                            <tr className="text-[10px] font-semibold text-[#607587]">
+                              {lastSevenDays.map((day) => (
+                                <th key={day.key} scope="col" className="px-0.5 pb-1 font-semibold" title={day.key}>
+                                  {day.label}
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr className="text-[12px] font-bold tabular-nums text-[#115c48]">
+                              {lastSevenDays.map((day) => (
+                                <td key={day.key} className="border-t border-[#e4eeea] px-0.5 pt-1.5">
+                                  {day.count}
+                                </td>
+                              ))}
+                            </tr>
+                          </tbody>
+                        </table>
                       </div>
                     </div>
                   </div>
@@ -771,13 +823,24 @@ export default function StudentDashboard({
                     </h2>
                   </div>
                   <CompactCountdown />
+                  <div className="relative mt-auto border-t border-white/25 pt-5">
+                    <div className="flex items-start gap-4">
+                      <BookOpen size={25} className="shrink-0 text-[#70e0b8]" strokeWidth={1.8} />
+                      <p className="text-[12px] leading-[1.65] text-[#f1fbf7]">
+                        Alătură-te comunității de viitori medici și fii primul care accesează noile simulări și grile explicate.
+                      </p>
+                    </div>
+                  </div>
                 </section>
               </div>
 
-              <div className="mb-4 mt-6">
+              <div className="mb-4 mt-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
                 <h2 className="text-[29px] font-bold leading-tight sm:text-[32px]" style={serif}>
                   Statistici și performanță
                 </h2>
+                <p className="pb-1 text-[12px] text-[#66798d]">
+                  O privire de ansamblu asupra parcursului tău.
+                </p>
               </div>
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 {stats.map((stat) => (
@@ -848,9 +911,48 @@ export default function StudentDashboard({
           ) : (
             <section>
               <PageHeading icon={<SidebarNavIcon src={NAV_IMAGE_SOURCES.review} fallback={<Bookmark size={27} />} size={34} />} title="Întrebări de revizuit"
-                subtitle="Întrebările marcate pentru recapitulare vor fi organizate aici." />
-              <EmptyState icon={<Bookmark size={36} />} title="Zona de revizuire nu este încă disponibilă."
-                text="Legătura cu grilele marcate va fi adăugată când această funcție este publicată." />
+                subtitle="Toate grilele pe care le-ai salvat, împreună cu răspunsurile și explicațiile lor." />
+
+              {!hasActiveSub && (
+                <div className="mb-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                  Grilele salvate din materialele care necesită abonament sunt ascunse și vor reapărea după reactivarea abonamentului.
+                </div>
+              )}
+
+              {reviewError && (
+                <div role="alert" className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                  <span>{reviewError}</span>
+                  <button type="button" onClick={() => void loadReviewQuestions()} className="font-bold underline">
+                    Reîncearcă
+                  </button>
+                </div>
+              )}
+
+              {reviewLoading ? (
+                <div className="py-12"><Loading message="Se încarcă grilele salvate..." /></div>
+              ) : reviewQuestions.length === 0 ? (
+                <EmptyState icon={<Bookmark size={36} />} title="Nu ai adăugat încă nicio grilă."
+                  text="După ce finalizezi o simulare sau un set de antrenament, poți salva aici orice grilă din pagina de rezultate." />
+              ) : (
+                <>
+                  <div className="mb-5 flex items-center justify-between gap-3">
+                    <p className="text-sm font-semibold text-[#385467]">
+                      {reviewQuestions.length} {reviewQuestions.length === 1 ? 'grilă salvată' : 'grile salvate'}
+                    </p>
+                  </div>
+                  <div className="space-y-5">
+                    {reviewQuestions.map((question, index) => (
+                      <ReviewQuestionCard
+                        key={question.out_review_id}
+                        question={question}
+                        index={index + 1}
+                        removing={removingReviewId === question.out_review_id}
+                        onRemove={() => void removeReviewQuestion(question)}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
             </section>
           )}
         </main>
@@ -1018,6 +1120,125 @@ function PageHeading({ icon, title, subtitle }: { icon: ReactNode; title: string
         <p className="mt-1 text-sm text-[#617587]">{subtitle}</p>
       </div>
     </div>
+  );
+}
+
+function ReviewQuestionCard({
+  question,
+  index,
+  removing,
+  onRemove,
+}: {
+  question: ReviewQuestionRPC;
+  index: number;
+  removing: boolean;
+  onRemove: () => void;
+}) {
+  const isCG = question.out_q_type === 'CG';
+  const answerIsCorrect = question.out_user_answer === question.out_correct_answer;
+
+  return (
+    <article className="rounded-[22px] border border-[#dce7e2] bg-white p-5 shadow-[0_8px_28px_rgba(25,67,53,0.04)] sm:p-6">
+      <div className="flex items-start gap-3">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#edf5f1] text-xs font-bold text-[#365b4d]">
+          {index}
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-semibold text-stone-600">
+              {isCG ? 'Complement Grupat' : 'Complement Simplu'}
+            </span>
+            <span className="rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-semibold text-brand-700">
+              {question.out_source_type === 'simulation' ? 'Simulare' : 'Antrenament'} · {question.out_source_title}
+            </span>
+            {question.out_requires_subscription && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700">
+                <Crown size={11} /> Abonament
+              </span>
+            )}
+          </div>
+          <h2 className="mt-3 text-base font-semibold leading-relaxed text-stone-900">
+            {question.out_question_text}
+          </h2>
+        </div>
+        <button
+          type="button"
+          onClick={onRemove}
+          disabled={removing}
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-red-100 bg-red-50 px-2.5 py-2 text-xs font-semibold text-red-700 transition-colors hover:border-red-200 hover:bg-red-100 disabled:cursor-wait disabled:opacity-60"
+          aria-label="Elimină grila din lista de revizuit"
+        >
+          {removing ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+          <span className="hidden sm:inline">Elimină</span>
+        </button>
+      </div>
+
+      {isCG ? (
+        <div className="ml-0 mt-4 space-y-2 sm:ml-11">
+          {[1, 2, 3, 4].map((number) => {
+            const statement = question[`out_statement_${number}` as keyof ReviewQuestionRPC] as string;
+            if (!statement) return null;
+            return (
+              <div key={number} className="flex gap-2 rounded-xl border border-stone-200 bg-stone-50/60 px-4 py-2.5 text-sm text-stone-700">
+                <span className="font-bold text-stone-500">{number}.</span>
+                <span>{statement}</span>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="ml-0 mt-4 grid gap-2 sm:ml-11">
+          {(['A', 'B', 'C', 'D', 'E'] as const).map((letter) => {
+            const option = question[`out_option_${letter.toLowerCase()}` as keyof ReviewQuestionRPC] as string;
+            if (!option) return null;
+            const isCorrectOption = question.out_correct_answer === letter;
+            const isUserChoice = question.out_user_answer === letter;
+            return (
+              <div key={letter} className={`flex items-center gap-3 rounded-xl border px-4 py-2.5 text-sm ${
+                isCorrectOption
+                  ? 'border-green-300 bg-green-50 text-green-900'
+                  : isUserChoice
+                    ? 'border-red-300 bg-red-50 text-red-900'
+                    : 'border-stone-200 bg-white text-stone-700'
+              }`}>
+                <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                  isCorrectOption
+                    ? 'bg-green-600 text-white'
+                    : isUserChoice
+                      ? 'bg-red-500 text-white'
+                      : 'bg-stone-100 text-stone-600'
+                }`}>
+                  {letter}
+                </span>
+                <span className="flex-1">{option}</span>
+                {isCorrectOption && <span className="text-xs font-bold text-green-700">Corect</span>}
+                {isUserChoice && !isCorrectOption && <span className="text-xs font-bold text-red-700">Răspunsul tău</span>}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <div className="ml-0 mt-4 grid gap-2 sm:ml-11 sm:grid-cols-2">
+        <div className="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm">
+          <span className="text-stone-500">Răspunsul tău: </span>
+          <strong className={answerIsCorrect ? 'text-green-700' : 'text-red-700'}>
+            {question.out_user_answer || 'Nerăspuns'}
+          </strong>
+        </div>
+        <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm">
+          <span className="text-green-800">Răspuns corect: </span>
+          <strong className="text-green-800">{question.out_correct_answer}</strong>
+        </div>
+      </div>
+
+      <div className="ml-0 mt-4 rounded-xl border border-brand-100 bg-brand-50 p-4 sm:ml-11">
+        <p className="text-xs font-bold uppercase tracking-wide text-brand-700">Explicație</p>
+        <p className="mt-1 text-sm leading-relaxed text-stone-700">
+          {question.out_explanation || 'Această grilă nu are încă o explicație.'}
+        </p>
+      </div>
+    </article>
   );
 }
 
