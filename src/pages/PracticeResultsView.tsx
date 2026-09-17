@@ -250,7 +250,7 @@ export default function PracticeResultsView({ setId, attemptId, onExit, onRetake
                                 ) : (
                                   <img src="/Revizie2.png" alt="" className="h-4 w-4 shrink-0 object-contain" />
                                 )}
-                                {reviewQuestionIds.has(r.out_question_id) ? 'Adăugată' : 'Adaugă la revizuit'}
+                                {reviewQuestionIds.has(r.out_question_id) ? 'Adăugată' : 'Grilă de revizuit'}
                               </button>
                             </div>
                             <p className="text-stone-900 font-medium leading-relaxed mb-3">{r.out_question_text}</p>
