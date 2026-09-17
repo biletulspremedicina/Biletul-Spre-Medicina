@@ -46,16 +46,11 @@ export default function StudentOnboarding({ onComplete }: Props) {
 
         <section className="my-auto overflow-hidden rounded-[28px] border border-brand-100 bg-white shadow-[0_24px_70px_rgba(24,70,55,0.12)]">
           <div className="border-b border-stone-100 px-5 py-5 sm:px-9 sm:py-6">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-600">Bun venit în comunitatea NOASTRĂ</p>
-                <p className="mt-1 text-sm text-stone-500">Nu vrem ca întrebările noastre să fie prea indiscrete, ci doar sa știm cum te putem ajuta cel mai bine.</p>
             <div className="relative text-center">
               <div className="mx-auto max-w-xl sm:px-14">
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-600">Bine ai venit în comunitatea noastră!</p>
                 <p className="mt-1 text-sm leading-relaxed text-stone-500">Nu vrem ca întrebările noastre să fie prea indiscrete, ci doar să știm cum te putem ajuta cel mai bine.</p>
               </div>
-              <span className="shrink-0 rounded-full bg-brand-50 px-3 py-1.5 text-xs font-bold text-brand-700">
               <span className="mt-3 inline-flex shrink-0 rounded-full bg-brand-50 px-3 py-1.5 text-xs font-bold text-brand-700 sm:absolute sm:right-0 sm:top-0 sm:mt-0">
                 {step} / {totalSteps}
               </span>
