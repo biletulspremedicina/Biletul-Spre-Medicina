@@ -4,6 +4,12 @@ import { useAuth } from '@/context/AuthContext';
 import { MessageCircle, Send, Loader2, ChevronDown, Circle, Star } from 'lucide-react';
 
 type ReasonOption = { value: ChatReason; label: string };
+type ConversationSummary = {
+  out_id: string;
+  out_unread_count: number;
+  out_status: string;
+  out_rating: number | null;
+};
 
 const REASONS: ReasonOption[] = [
   { value: 'platform_account', label: 'Platformă sau cont' },
@@ -40,47 +46,44 @@ export default function SupportChat() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const isOpenRef = useRef(isOpen);
 
   const isAuthenticated = !!session && profile?.role !== 'admin';
   const isClosed = convStatus === 'closed';
 
-  // Load existing conversation on mount
   useEffect(() => {
+    isOpenRef.current = isOpen;
+  }, [isOpen]);
+
+  const refreshConversation = useCallback(async () => {
+    let data: unknown = null;
     if (isAuthenticated) {
-      loadAuthenticatedConversation();
+      const response = await supabase.rpc('get_my_chat_conversation');
+      if (response.error) return;
+      data = response.data;
     } else {
-      loadAnonConversation();
+      const token = anonToken || localStorage.getItem(ANON_TOKEN_KEY);
+      if (!token) return;
+      if (!anonToken) setAnonToken(token);
+      const response = await supabase.rpc('get_anon_chat_conversation', {
+        p_anonymous_token: token,
+      });
+      if (response.error) return;
+      data = response.data;
     }
-  }, [isAuthenticated]);
 
-  const loadAuthenticatedConversation = async () => {
-    const { data, error: rpcError } = await supabase.rpc('get_my_chat_conversation');
-    if (rpcError) return;
-    if (data && (data as unknown[]).length > 0) {
-      const conv = (data as unknown as { out_id: string; out_unread_count: number; out_status: string; out_rating: number | null }[])[0];
-      setConversationId(conv.out_id);
-      setUnreadCount(conv.out_unread_count);
-      setConvStatus(conv.out_status);
-      setRating(conv.out_rating);
-    }
-  };
+    const conv = ((data || []) as ConversationSummary[])[0];
+    if (!conv) return;
+    setConversationId(conv.out_id);
+    setUnreadCount(isOpenRef.current ? 0 : Number(conv.out_unread_count) || 0);
+    setConvStatus(conv.out_status);
+    setRating(conv.out_rating);
+  }, [isAuthenticated, anonToken]);
 
-  const loadAnonConversation = async () => {
-    const token = localStorage.getItem(ANON_TOKEN_KEY);
-    if (!token) return;
-    setAnonToken(token);
-    const { data, error: rpcError } = await supabase.rpc('get_anon_chat_conversation', {
-      p_anonymous_token: token,
-    });
-    if (rpcError) return;
-    if (data && (data as unknown[]).length > 0) {
-      const conv = (data as unknown as { out_id: string; out_unread_count: number; out_status: string; out_rating: number | null }[])[0];
-      setConversationId(conv.out_id);
-      setUnreadCount(conv.out_unread_count);
-      setConvStatus(conv.out_status);
-      setRating(conv.out_rating);
-    }
-  };
+  // Load the current conversation and its exact unread count.
+  useEffect(() => {
+    void refreshConversation();
+  }, [refreshConversation]);
 
   // Load messages when conversationId changes
   const loadMessages = useCallback(async () => {
@@ -130,7 +133,17 @@ export default function SupportChat() {
     }
   }, [conversationId, isAuthenticated, loadMessages, loadAnonMessages]);
 
-  // Realtime subscription
+  const markConversationRead = useCallback(async () => {
+    if (!conversationId) return;
+    if (isAuthenticated) {
+      await supabase.rpc('mark_chat_messages_read', { p_conversation_id: conversationId });
+    } else if (anonToken) {
+      await supabase.rpc('mark_anon_messages_read', { p_anonymous_token: anonToken });
+    }
+    setUnreadCount(0);
+  }, [conversationId, isAuthenticated, anonToken]);
+
+  // Realtime subscription: messages and conversation status update without refresh.
   useEffect(() => {
     if (!conversationId) return;
 
@@ -150,11 +163,13 @@ export default function SupportChat() {
             if (prev.some((m) => m.id === newMsg.id)) return prev;
             return [...prev, newMsg];
           });
-          if (newMsg.sender_role === 'admin' && isOpen) {
-            if (isAuthenticated && conversationId) {
-              supabase.rpc('mark_chat_messages_read', { p_conversation_id: conversationId });
-            } else if (anonToken) {
-              supabase.rpc('mark_anon_messages_read', { p_anonymous_token: anonToken });
+          if (newMsg.sender_role === 'admin') {
+            if (isOpenRef.current) {
+              void markConversationRead();
+            } else {
+              // Instant visual feedback, followed by an exact server-side recount.
+              setUnreadCount((current) => current + 1);
+              void refreshConversation();
             }
           }
         }
@@ -173,50 +188,46 @@ export default function SupportChat() {
           setRating(updated.rating);
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          void refreshConversation();
+          if (isAuthenticated) void loadMessages();
+          else void loadAnonMessages();
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [conversationId, isOpen, isAuthenticated, anonToken]);
+  }, [conversationId, isAuthenticated, loadAnonMessages, loadMessages, markConversationRead, refreshConversation]);
 
   // Mark messages read when chat opens
   useEffect(() => {
     if (isOpen && conversationId) {
-      setUnreadCount(0);
-      if (isAuthenticated) {
-        supabase.rpc('mark_chat_messages_read', { p_conversation_id: conversationId });
-      } else if (anonToken) {
-        supabase.rpc('mark_anon_messages_read', { p_anonymous_token: anonToken });
-      }
+      void markConversationRead();
     }
-  }, [isOpen, conversationId, isAuthenticated, anonToken]);
+  }, [isOpen, conversationId, markConversationRead]);
 
   // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Poll unread count when chat is closed
+  // Recovery check for missed events (sleeping tab, temporary network loss, anonymous chat).
   useEffect(() => {
-    if (isOpen || !conversationId) return;
-    const interval = setInterval(async () => {
-      if (isAuthenticated) {
-        const { data } = await supabase.rpc('get_my_chat_conversation');
-        if (data && (data as unknown[]).length > 0) {
-          const conv = (data as unknown as { out_unread_count: number }[])[0];
-          setUnreadCount(conv.out_unread_count);
-        }
-      } else if (anonToken) {
-        const { data } = await supabase.rpc('get_anon_chat_conversation', { p_anonymous_token: anonToken });
-        if (data && (data as unknown[]).length > 0) {
-          const conv = (data as unknown as { out_unread_count: number }[])[0];
-          setUnreadCount(conv.out_unread_count);
-        }
-      }
-    }, 15000);
-    return () => clearInterval(interval);
-  }, [isOpen, conversationId, isAuthenticated, anonToken]);
+    if (!conversationId) return;
+    const interval = window.setInterval(() => void refreshConversation(), isAuthenticated ? 15000 : 5000);
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible') void refreshConversation();
+    };
+    window.addEventListener('focus', refreshWhenVisible);
+    document.addEventListener('visibilitychange', refreshWhenVisible);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener('focus', refreshWhenVisible);
+      document.removeEventListener('visibilitychange', refreshWhenVisible);
+    };
+  }, [conversationId, isAuthenticated, refreshConversation]);
 
   // Show button for: authenticated non-admins OR unauthenticated visitors
   if (isAuthenticated) {
