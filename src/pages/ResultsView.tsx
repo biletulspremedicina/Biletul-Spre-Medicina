@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { supabase, type Simulation, type Attempt, type AttemptResult, type Subscription } from '@/lib/supabase';
+import { supabase, type Simulation, type Attempt, type AttemptResult, type Subscription, type ReviewQuestionRefRPC } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
-import { Lock, Trophy, CheckCircle2, XCircle, ChevronLeft, Clock, Crown, RotateCcw, History } from 'lucide-react';
+import { Lock, Trophy, CheckCircle2, XCircle, ChevronLeft, Clock, Crown, RotateCcw, History, Bookmark, BookmarkCheck, Loader2 } from 'lucide-react';
 import Logo from '@/components/Logo';
 import Loading from '@/components/Loading';
 
@@ -21,6 +21,8 @@ export default function ResultsView({ simulationId, attemptId, onExit, onRetake 
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [resultsLoading, setResultsLoading] = useState(false);
+  const [reviewQuestionIds, setReviewQuestionIds] = useState<Set<string>>(() => new Set());
+  const [reviewBusyId, setReviewBusyId] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -82,6 +84,45 @@ export default function ResultsView({ simulationId, attemptId, onExit, onRetake 
       setResultsLoading(false);
     })();
   }, [selectedAttemptId]);
+
+  useEffect(() => {
+    if (!profile) return;
+    (async () => {
+      const { data } = await supabase.rpc('get_review_question_ids');
+      const rows = (data || []) as unknown as ReviewQuestionRefRPC[];
+      setReviewQuestionIds(new Set(
+        rows.filter((row) => row.out_source_type === 'simulation').map((row) => row.out_question_id)
+      ));
+    })();
+  }, [profile]);
+
+  const toggleReviewQuestion = async (questionId: string, userAnswer?: string) => {
+    const isSaved = reviewQuestionIds.has(questionId);
+    setReviewBusyId(questionId);
+    const { error } = isSaved
+      ? await supabase.rpc('remove_review_question', {
+          p_source_type: 'simulation',
+          p_question_id: questionId,
+        })
+      : await supabase.rpc('add_review_question', {
+          p_source_type: 'simulation',
+          p_source_id: simulationId,
+          p_question_id: questionId,
+          p_user_answer: userAnswer || null,
+        });
+
+    if (!error) {
+      setReviewQuestionIds((current) => {
+        const next = new Set(current);
+        if (isSaved) next.delete(questionId);
+        else next.add(questionId);
+        return next;
+      });
+    } else {
+      console.error('Review question update error:', error);
+    }
+    setReviewBusyId(null);
+  };
 
   if (loading) return <Loading message="Se încarcă rezultatele..." />;
 
@@ -251,6 +292,25 @@ export default function ResultsView({ simulationId, attemptId, onExit, onRetake 
                                   <XCircle size={12} /> Greșit · 0 puncte
                                 </span>
                               )}
+                              <button
+                                type="button"
+                                onClick={() => void toggleReviewQuestion(r.question_id, userAnswer)}
+                                disabled={reviewBusyId === r.question_id}
+                                className={`ml-auto inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition-colors disabled:cursor-wait disabled:opacity-60 ${
+                                  reviewQuestionIds.has(r.question_id)
+                                    ? 'border-brand-200 bg-brand-50 text-brand-700 hover:bg-brand-100'
+                                    : 'border-stone-200 bg-white text-stone-600 hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700'
+                                }`}
+                              >
+                                {reviewBusyId === r.question_id ? (
+                                  <Loader2 size={14} className="animate-spin" />
+                                ) : reviewQuestionIds.has(r.question_id) ? (
+                                  <BookmarkCheck size={14} />
+                                ) : (
+                                  <Bookmark size={14} />
+                                )}
+                                {reviewQuestionIds.has(r.question_id) ? 'Adăugată' : 'Adaugă la revizuit'}
+                              </button>
                             </div>
                             <p className="text-stone-900 font-medium leading-relaxed mb-3">{r.question_text}</p>
                           </div>
