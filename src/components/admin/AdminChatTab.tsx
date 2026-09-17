@@ -291,6 +291,9 @@ function ChatDetail({
   const [deleting, setDeleting] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   const loadMessages = useCallback(async () => {
     const { data, error: msgError } = await supabase
@@ -320,6 +323,16 @@ function ChatDetail({
     const channel = supabase
       .channel(`admin-chat:${conv.out_id}`)
       .on(
+    const channel = supabase
+      .channel(`support-chat:${conv.out_id}`)
+      .on('broadcast', { event: 'messages_changed' }, () => {
+        void (async () => {
+          await loadMessages();
+          await supabase.rpc('mark_chat_messages_read', { p_conversation_id: conv.out_id });
+          await onConversationsChanged();
+        })();
+      })
+      .on(
         'postgres_changes',
         {
           event: 'INSERT',
@@ -342,8 +355,14 @@ function ChatDetail({
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') void loadMessages();
       });
+    realtimeChannelRef.current = channel;
 
     return () => {
+      supabase.removeChannel(channel);
+    };
+
+    return () => {
+      if (realtimeChannelRef.current === channel) realtimeChannelRef.current = null;
       supabase.removeChannel(channel);
     };
   }, [conv.out_id, loadMessages, onConversationsChanged]);
@@ -373,6 +392,14 @@ function ChatDetail({
       setInput('');
       await loadMessages();
       onConversationsChanged();
+      setInput('');
+      await loadMessages();
+      onConversationsChanged();
+      await realtimeChannelRef.current?.send({
+        type: 'broadcast',
+        event: 'messages_changed',
+        payload: { conversationId: conv.out_id },
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Eroare la trimiterea mesajului.');
     }
