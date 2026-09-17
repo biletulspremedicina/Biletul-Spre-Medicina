@@ -82,7 +82,7 @@ export default function StudentOnboarding({ onComplete }: Props) {
                   <Check size={52} strokeWidth={3} className="onboarding-success-tick" />
                 </div>
                 <h1 className="mt-7 font-display text-3xl font-bold text-stone-900">Mulțumim pentru timpul acordat!</h1>
-                <p className="mt-2 text-sm text-stone-500 sm:text-base">Bine ai venit în Biletul Spre Medicină.</p>
+                <p className="mt-2 text-sm text-stone-500 sm:text-base">Bine ai venit în comunitatea Biletul Spre Medicină.</p>
               </div>
             ) : step === 1 ? (
               <Question imageSrc={ONBOARDING_IMAGES.attempt} title="Pentru a câta oară susții examenul de admitere?">
