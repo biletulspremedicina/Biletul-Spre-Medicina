@@ -86,7 +86,7 @@ const NAV_IMAGE_SOURCES = {
   all: '/Simularibiologie.png', // Aici pui sursa imaginii SIMULARI BIOLOGIE
   practice: '/Capitole.png', // Aici pui sursa imaginii ANTRENAMENT PE CAPITOLE
   umfcd: '', // Aici pui sursa imaginii EXAMENE UMFCD
-  review: '/Revizie.png', // Aici pui sursa imaginii INTREBARI DE REVIZUIT
+  review: '/Revizie2.png', // Aici pui sursa imaginii INTREBARI DE REVIZUIT
 };
 
 const serif = { fontFamily: 'Georgia, Cambria, "Times New Roman", serif' };
@@ -457,9 +457,9 @@ export default function StudentDashboard({
     finishedGridsByDay.set(key, (finishedGridsByDay.get(key) || 0) + answerCount(attempt.answers));
   });
   const weekDayLabels = ['Dum', 'Lu', 'Ma', 'Mi', 'Joi', 'Vi', 'Sâm'];
-  const lastFourteenDays = Array.from({ length: 14 }, (_, index) => {
+  const lastSevenDays = Array.from({ length: 7 }, (_, index) => {
     const [year, month, day] = todayKey.split('-').map(Number);
-    const calendarDay = new Date(Date.UTC(year, month - 1, day - (13 - index), 12));
+    const calendarDay = new Date(Date.UTC(year, month - 1, day - (6 - index), 12));
     const key = calendarDay.toISOString().slice(0, 10);
     return {
       key,
@@ -627,15 +627,14 @@ export default function StudentDashboard({
       {sidebar}
 
       <div className="min-w-0">
-        <header className="relative z-20 flex h-[60px] items-center border-b border-[#e6eaeb] bg-white px-5 sm:px-7">
-          <div className="flex items-center">
-            <button type="button" onClick={() => setMobileMenuOpen(true)}
-              className="mr-3 rounded-lg p-2 text-[#164d3e] hover:bg-[#e9f5ef] lg:hidden" aria-label="Deschide meniul">
-              <Menu size={22} />
-            </button>
-            <span className="hidden text-[12px] font-semibold text-[#2e896d] sm:inline sm:text-[13px]">Devino cel mai bun</span>
-          </div>
-          <p className="pointer-events-none absolute left-1/2 max-w-[55%] -translate-x-1/2 truncate text-center text-[11px] font-medium text-[#536477] sm:text-[13px]">
+        <header className="relative z-20 flex h-[60px] items-center justify-between border-b border-[#e6eaeb] bg-white px-5 sm:px-7">
+          <button type="button" onClick={() => setMobileMenuOpen(true)}
+            className="mr-3 rounded-lg p-2 text-[#164d3e] hover:bg-[#e9f5ef] lg:hidden" aria-label="Deschide meniul">
+            <Menu size={22} />
+          </button>
+          <p className="min-w-0 truncate text-[12px] font-medium text-[#536477] sm:text-[13px]">
+            <span className="font-semibold text-[#2e896d]">Devino cel mai bun</span>
+            <span className="mx-3 text-[#c6d1d2]">—</span>
             Disciplina de azi → Rezultatele de mâine.
           </p>
           <div className="relative ml-auto">
@@ -693,31 +692,44 @@ export default function StudentDashboard({
                     </div>
                   </div>
 
-                  <div className="relative mt-auto grid gap-4 rounded-[34px] border border-[#e6f0ed] bg-white px-4 py-5 shadow-[0_12px_36px_rgba(22,71,57,0.04)] sm:grid-cols-2 sm:gap-0 sm:px-5">
-                    <div className="flex min-w-0 flex-col sm:border-r sm:border-[#dbe9e5] sm:pr-5">
-                      <p className="text-center text-[13px] font-bold leading-snug">Activitatea comunității azi</p>
-                      <div className="mt-3 flex items-center gap-3">
-                        <div className="flex h-[86px] w-[86px] shrink-0 items-center justify-center rounded-full p-[7px]"
-                          style={{ background: `conic-gradient(#188765 ${communityPercent}%, #e0f2ea 0)` }}>
-                          <div className="flex h-full w-full items-center justify-center rounded-full bg-white text-[24px] font-extrabold text-[#113d32]">
-                            {communityPercent}%
-                          </div>
+                  <div className="relative mt-auto grid gap-2 rounded-[34px] border border-[#e6f0ed] bg-white px-4 py-5 shadow-[0_12px_36px_rgba(22,71,57,0.04)] sm:grid-cols-2 sm:gap-0 sm:px-5">
+                    <div className="flex items-center gap-3 sm:border-r sm:border-[#dbe9e5] sm:pr-4">
+                      <div className="flex h-[86px] w-[86px] shrink-0 items-center justify-center rounded-full p-[7px]"
+                        style={{ background: `conic-gradient(#188765 ${communityPercent}%, #e0f2ea 0)` }}>
+                        <div className="flex h-full w-full items-center justify-center rounded-full bg-white text-[24px] font-extrabold text-[#113d32]">
+                          {communityPercent}%
                         </div>
-                        <div className="min-w-0 text-[11px] leading-relaxed text-[#52667b]">
-                          <p>dintre candidați au lucrat deja astăzi pe platformă.</p>
-                          <p className="mt-2 font-bold text-[#174a38]">Ce mai aștepți?</p>
-                        </div>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[13px] font-bold leading-snug">Activitatea comunității azi</p>
+                        <p className="mt-2 text-[11px] leading-relaxed text-[#607587]">
+                          Procent demonstrativ al abonaților activi astăzi
+                        </p>
                       </div>
                     </div>
                     <div className="flex min-w-0 flex-col justify-center pt-3 text-center sm:pl-5 sm:pt-0">
-                      <p className="text-[13px] font-bold leading-snug">Grile lucrate în ultimele 14 zile</p>
-                      <div className="mt-2 grid grid-cols-7 gap-x-1 gap-y-2" aria-label="Grile lucrate în fiecare dintre ultimele paisprezece zile">
-                        {lastFourteenDays.map((day) => (
-                          <div key={day.key} className="min-w-0 text-center" title={day.key}>
-                            <span className="block truncate text-[9px] font-semibold text-[#607587]">{day.label}</span>
-                            <span className="mt-0.5 block border-t border-[#e4eeea] pt-1 text-[11px] font-bold tabular-nums text-[#115c48]">{day.count}</span>
-                          </div>
-                        ))}
+                      <p className="text-[13px] font-bold leading-snug">Grile lucrate în ultimele 7 zile</p>
+                      <div className="mt-2 overflow-x-auto">
+                        <table className="w-full table-fixed text-center" aria-label="Grile lucrate în fiecare dintre ultimele șapte zile">
+                          <thead>
+                            <tr className="text-[10px] font-semibold text-[#607587]">
+                              {lastSevenDays.map((day) => (
+                                <th key={day.key} scope="col" className="px-0.5 pb-1 font-semibold" title={day.key}>
+                                  {day.label}
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr className="text-[12px] font-bold tabular-nums text-[#115c48]">
+                              {lastSevenDays.map((day) => (
+                                <td key={day.key} className="border-t border-[#e4eeea] px-0.5 pt-1.5">
+                                  {day.count}
+                                </td>
+                              ))}
+                            </tr>
+                          </tbody>
+                        </table>
                       </div>
                     </div>
                   </div>
@@ -759,13 +771,24 @@ export default function StudentDashboard({
                     </h2>
                   </div>
                   <CompactCountdown />
+                  <div className="relative mt-auto border-t border-white/25 pt-5">
+                    <div className="flex items-start gap-4">
+                      <BookOpen size={25} className="shrink-0 text-[#70e0b8]" strokeWidth={1.8} />
+                      <p className="text-[12px] leading-[1.65] text-[#f1fbf7]">
+                        Alătură-te comunității de viitori medici și fii primul care accesează noile simulări și grile explicate.
+                      </p>
+                    </div>
+                  </div>
                 </section>
               </div>
 
-              <div className="mb-4 mt-6">
+              <div className="mb-4 mt-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
                 <h2 className="text-[29px] font-bold leading-tight sm:text-[32px]" style={serif}>
                   Statistici și performanță
                 </h2>
+                <p className="pb-1 text-[12px] text-[#66798d]">
+                  O privire de ansamblu asupra parcursului tău.
+                </p>
               </div>
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 {stats.map((stat) => (
