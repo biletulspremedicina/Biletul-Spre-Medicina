@@ -50,8 +50,13 @@ export default function StudentOnboarding({ onComplete }: Props) {
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-600">Bun venit în comunitatea NOASTRĂ</p>
                 <p className="mt-1 text-sm text-stone-500">Nu vrem ca întrebările noastre să fie prea indiscrete, ci doar sa știm cum te putem ajuta cel mai bine.</p>
+            <div className="relative text-center">
+              <div className="mx-auto max-w-xl sm:px-14">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-600">Bine ai venit în comunitatea noastră!</p>
+                <p className="mt-1 text-sm leading-relaxed text-stone-500">Nu vrem ca întrebările noastre să fie prea indiscrete, ci doar să știm cum te putem ajuta cel mai bine.</p>
               </div>
               <span className="shrink-0 rounded-full bg-brand-50 px-3 py-1.5 text-xs font-bold text-brand-700">
+              <span className="mt-3 inline-flex shrink-0 rounded-full bg-brand-50 px-3 py-1.5 text-xs font-bold text-brand-700 sm:absolute sm:right-0 sm:top-0 sm:mt-0">
                 {step} / {totalSteps}
               </span>
             </div>
