@@ -1,5 +1,5 @@
-import { useState, type ReactNode } from 'react';
-import { ArrowLeft, ArrowRight, Check, Clock3, GraduationCap, MapPin, Target } from 'lucide-react';
+import { useEffect, useState, type ReactNode } from 'react';
+import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 import Logo from '@/components/Logo';
 
 type Props = {
@@ -10,6 +10,13 @@ type AdmissionTiming = 'current_year' | 'next_year' | 'later' | 'undecided';
 type StudyTime = 'under_30' | '30_60' | '60_120' | 'over_120';
 
 const totalSteps = 5;
+const ONBOARDING_IMAGES = {
+  attempt: 'https://cdn.jsdelivr.net/gh/hfg-gmuend/openmoji/color/svg/1F393.svg',
+  score: 'https://cdn.jsdelivr.net/gh/hfg-gmuend/openmoji/color/svg/1F3AF.svg',
+  faculty: 'https://cdn.jsdelivr.net/gh/hfg-gmuend/openmoji/color/svg/1F3EB.svg',
+  admission: 'https://cdn.jsdelivr.net/gh/hfg-gmuend/openmoji/color/svg/1F4C6.svg',
+  time: 'https://cdn.jsdelivr.net/gh/hfg-gmuend/openmoji/color/svg/23F0.svg',
+};
 
 export default function StudentOnboarding({ onComplete }: Props) {
   const [step, setStep] = useState(1);
@@ -19,6 +26,13 @@ export default function StudentOnboarding({ onComplete }: Props) {
   const [otherFaculty, setOtherFaculty] = useState('');
   const [admissionTiming, setAdmissionTiming] = useState<AdmissionTiming | null>(null);
   const [studyTime, setStudyTime] = useState<StudyTime | null>(null);
+  const [finished, setFinished] = useState(false);
+
+  useEffect(() => {
+    if (!finished) return;
+    const timer = window.setTimeout(onComplete, 1600);
+    return () => window.clearTimeout(timer);
+  }, [finished, onComplete]);
 
   const currentValid =
     (step === 1 && attempt !== null) ||
@@ -34,7 +48,7 @@ export default function StudentOnboarding({ onComplete }: Props) {
 
   const finish = () => {
     if (!attempt || !facultyChoice || !admissionTiming || !studyTime || !currentValid) return;
-    onComplete();
+    setFinished(true);
   };
 
   return (
@@ -62,18 +76,24 @@ export default function StudentOnboarding({ onComplete }: Props) {
           </div>
 
           <div className="min-h-[390px] px-5 py-8 sm:px-9 sm:py-10">
-            {step === 1 && (
-              <Question icon={<GraduationCap size={26} />} title="Pentru a câta oară susții examenul de admitere?"
-                text="Alege varianta care descrie parcursul tău actual.">
+            {finished ? (
+              <div className="flex min-h-[310px] flex-col items-center justify-center text-center">
+                <div className="onboarding-success-check flex h-24 w-24 items-center justify-center rounded-full bg-brand-600 text-white shadow-[0_18px_40px_rgba(42,107,78,0.28)]">
+                  <Check size={52} strokeWidth={3} className="onboarding-success-tick" />
+                </div>
+                <h1 className="mt-7 font-display text-3xl font-bold text-stone-900">Totul este pregătit!</h1>
+                <p className="mt-2 text-sm text-stone-500 sm:text-base">Bine ai venit în Biletul Spre Medicină.</p>
+              </div>
+            ) : step === 1 ? (
+              <Question imageSrc={ONBOARDING_IMAGES.attempt} title="Pentru a câta oară susții examenul de admitere?">
                 <Choice selected={attempt === 1} onClick={() => setAttempt(1)}>Este prima încercare</Choice>
                 <Choice selected={attempt === 2} onClick={() => setAttempt(2)}>Este a doua încercare</Choice>
                 <Choice selected={attempt === 3} onClick={() => setAttempt(3)}>A treia încercare sau mai mult</Choice>
               </Question>
-            )}
+            ) : null}
 
-            {step === 2 && (
-              <Question icon={<Target size={25} />} title="Cum îți evaluezi nivelul actual?"
-                text="Nu este un test. Alege punctajul care crezi că te reprezintă acum.">
+            {!finished && step === 2 && (
+              <Question imageSrc={ONBOARDING_IMAGES.score} title="Cum îți evaluezi nivelul actual?">
                 <div className="rounded-2xl border border-brand-100 bg-brand-50/70 px-5 py-6 sm:px-7">
                   <div className="flex items-end justify-between gap-4">
                     <span className="text-sm font-semibold text-stone-600">Punctaj estimat</span>
@@ -87,9 +107,8 @@ export default function StudentOnboarding({ onComplete }: Props) {
               </Question>
             )}
 
-            {step === 3 && (
-              <Question icon={<MapPin size={24} />} title="La ce facultate vrei să dai admiterea?"
-                text="Alege facultatea pe care o ai în vedere în acest moment.">
+            {!finished && step === 3 && (
+              <Question imageSrc={ONBOARDING_IMAGES.faculty} title="La ce facultate vrei să dai admiterea?">
                 <Choice selected={facultyChoice === 'UMFCD'} onClick={() => setFacultyChoice('UMFCD')}>UMFCD</Choice>
                 <Choice selected={facultyChoice === 'other'} onClick={() => setFacultyChoice('other')}>Altă facultate de medicină</Choice>
                 {facultyChoice === 'other' && (
@@ -101,9 +120,8 @@ export default function StudentOnboarding({ onComplete }: Props) {
               </Question>
             )}
 
-            {step === 4 && (
-              <Question icon={<GraduationCap size={25} />} title="Când vei susține examenul?"
-                text="Poți alege perioada care se potrivește planului tău actual.">
+            {!finished && step === 4 && (
+              <Question imageSrc={ONBOARDING_IMAGES.admission} title="Când vei susține examenul?">
                 <Choice selected={admissionTiming === 'current_year'} onClick={() => setAdmissionTiming('current_year')}>Admiterea din anul acesta</Choice>
                 <Choice selected={admissionTiming === 'next_year'} onClick={() => setAdmissionTiming('next_year')}>Admiterea de anul viitor</Choice>
                 <Choice selected={admissionTiming === 'later'} onClick={() => setAdmissionTiming('later')}>Mai târziu</Choice>
@@ -111,9 +129,8 @@ export default function StudentOnboarding({ onComplete }: Props) {
               </Question>
             )}
 
-            {step === 5 && (
-              <Question icon={<Clock3 size={25} />} title="Cât timp poți aloca pregătirii într-o zi?"
-                text="Alege o variantă realistă pentru programul tău obișnuit.">
+            {!finished && step === 5 && (
+              <Question imageSrc={ONBOARDING_IMAGES.time} title="Cât timp poți aloca pregătirii într-o zi?">
                 <Choice selected={studyTime === 'under_30'} onClick={() => setStudyTime('under_30')}>Sub 30 de minute</Choice>
                 <Choice selected={studyTime === '30_60'} onClick={() => setStudyTime('30_60')}>30–60 de minute</Choice>
                 <Choice selected={studyTime === '60_120'} onClick={() => setStudyTime('60_120')}>1–2 ore</Choice>
@@ -122,7 +139,7 @@ export default function StudentOnboarding({ onComplete }: Props) {
             )}
           </div>
 
-          <div className="flex items-center justify-between gap-3 border-t border-stone-100 bg-stone-50/80 px-5 py-5 sm:px-9">
+          {!finished && <div className="flex items-center justify-between gap-3 border-t border-stone-100 bg-stone-50/80 px-5 py-5 sm:px-9">
             <button type="button" onClick={() => setStep((current) => Math.max(1, current - 1))}
               disabled={step === 1} className="btn-secondary px-4 disabled:invisible">
               <ArrowLeft size={17} /> Înapoi
@@ -139,19 +156,37 @@ export default function StudentOnboarding({ onComplete }: Props) {
                 </button>
               )}
             </div>
-          </div>
+          </div>}
         </section>
       </div>
+      <style>{`
+        @keyframes onboardingSuccessPop {
+          0% { opacity: 0; transform: scale(0.45); }
+          65% { opacity: 1; transform: scale(1.12); }
+          100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes onboardingSuccessTick {
+          0% { opacity: 0; transform: scale(0.4) rotate(-18deg); }
+          60% { opacity: 1; transform: scale(1.16) rotate(3deg); }
+          100% { opacity: 1; transform: scale(1) rotate(0); }
+        }
+        .onboarding-success-check { animation: onboardingSuccessPop 520ms cubic-bezier(.2,.85,.3,1) both; }
+        .onboarding-success-tick { animation: onboardingSuccessTick 420ms ease-out 220ms both; }
+        @media (prefers-reduced-motion: reduce) {
+          .onboarding-success-check, .onboarding-success-tick { animation: none; }
+        }
+      `}</style>
     </main>
   );
 }
 
-function Question({ icon, title, text, children }: { icon: ReactNode; title: string; text: string; children: ReactNode }) {
+function Question({ imageSrc, title, children }: { imageSrc: string; title: string; children: ReactNode }) {
   return (
     <div className="mx-auto max-w-xl">
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-100 text-brand-700">{icon}</div>
+      <div className="flex h-16 w-16 items-center justify-center">
+        <img src={imageSrc} alt="" className="h-16 w-16 object-contain" draggable={false} />
+      </div>
       <h1 className="mt-5 font-display text-2xl font-bold leading-tight text-stone-900 sm:text-3xl">{title}</h1>
-      <p className="mt-2 text-sm leading-relaxed text-stone-500 sm:text-base">{text}</p>
       <div className="mt-7 space-y-3">{children}</div>
     </div>
   );
