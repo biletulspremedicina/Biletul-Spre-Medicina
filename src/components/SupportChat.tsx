@@ -47,6 +47,7 @@ export default function SupportChat() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isOpenRef = useRef(isOpen);
+  const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   const isAuthenticated = !!session && profile?.role !== 'admin';
   const isClosed = convStatus === 'closed';
@@ -147,8 +148,16 @@ export default function SupportChat() {
   useEffect(() => {
     if (!conversationId) return;
 
+    const handleRemoteMessage = () => {
+      if (isAuthenticated) void loadMessages();
+      else void loadAnonMessages();
+      if (isOpenRef.current) void markConversationRead();
+      else void refreshConversation();
+    };
+
     const channel = supabase
-      .channel(`chat:${conversationId}`)
+      .channel(`support-chat:${conversationId}`)
+      .on('broadcast', { event: 'messages_changed' }, handleRemoteMessage)
       .on(
         'postgres_changes',
         {
@@ -195,8 +204,10 @@ export default function SupportChat() {
           else void loadAnonMessages();
         }
       });
+    realtimeChannelRef.current = channel;
 
     return () => {
+      if (realtimeChannelRef.current === channel) realtimeChannelRef.current = null;
       supabase.removeChannel(channel);
     };
   }, [conversationId, isAuthenticated, loadAnonMessages, loadMessages, markConversationRead, refreshConversation]);
@@ -323,6 +334,11 @@ export default function SupportChat() {
         if (rpcError) throw rpcError;
         await loadAnonMessages();
       }
+      await realtimeChannelRef.current?.send({
+        type: 'broadcast',
+        event: 'messages_changed',
+        payload: { conversationId },
+      });
       setInput('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Eroare la trimiterea mesajului.');
