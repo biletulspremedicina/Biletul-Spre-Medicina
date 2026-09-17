@@ -297,6 +297,34 @@ export type PracticeHistoryRPC = {
   out_submitted_at: string;
 };
 
+export type ReviewQuestionRefRPC = {
+  out_source_type: 'simulation' | 'practice';
+  out_question_id: string;
+};
+
+export type ReviewQuestionRPC = {
+  out_review_id: string;
+  out_source_type: 'simulation' | 'practice';
+  out_source_title: string;
+  out_requires_subscription: boolean;
+  out_question_id: string;
+  out_q_type: 'CS' | 'CG';
+  out_question_text: string;
+  out_option_a: string;
+  out_option_b: string;
+  out_option_c: string;
+  out_option_d: string;
+  out_option_e: string;
+  out_statement_1: string;
+  out_statement_2: string;
+  out_statement_3: string;
+  out_statement_4: string;
+  out_user_answer: string | null;
+  out_correct_answer: 'A' | 'B' | 'C' | 'D' | 'E';
+  out_explanation: string;
+  out_saved_at: string;
+};
+
 export type Payment = {
   id: string;
   user_id: string;
