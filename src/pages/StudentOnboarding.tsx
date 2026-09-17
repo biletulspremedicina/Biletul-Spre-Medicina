@@ -48,7 +48,7 @@ export default function StudentOnboarding({ onComplete }: Props) {
           <div className="border-b border-stone-100 px-5 py-5 sm:px-9 sm:py-6">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-600">Configurare inițială</p>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-600">Bun venit în comunitatea BILETUL SPRE MEDICINĂ</p>
                 <p className="mt-1 text-sm text-stone-500">Câteva răspunsuri pentru a-ți înțelege mai bine parcursul.</p>
               </div>
               <span className="shrink-0 rounded-full bg-brand-50 px-3 py-1.5 text-xs font-bold text-brand-700">
