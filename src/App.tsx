@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from '@/context/AuthContext';
 import LandingPage from '@/pages/LandingPage';
 import AuthPage from '@/pages/AuthPage';
 import StudentDashboard from '@/pages/StudentDashboard';
+import StudentOnboarding from '@/pages/StudentOnboarding';
 import SimulationView from '@/pages/SimulationView';
 import ResultsView from '@/pages/ResultsView';
 import AdminDashboard from '@/pages/AdminDashboard';
@@ -49,6 +50,7 @@ function AppContent() {
   const [practiceBuyingSub, setPracticeBuyingSub] = useState(false);
   const [practiceSubNonce, setPracticeSubNonce] = useState(0);
   const [studentInitialTab, setStudentInitialTab] = useState<'all' | 'practice' | 'umfcd' | 'dashboard'>('all');
+  const [showStudentOnboarding, setShowStudentOnboarding] = useState(false);
   const [studentTheme, setStudentTheme] = useState<StudentTheme>(savedStudentTheme);
   const [systemPrefersDark, setSystemPrefersDark] = useState(() => window.matchMedia('(prefers-color-scheme: dark)').matches);
 
@@ -162,16 +164,20 @@ function AppContent() {
 
   if (!session) {
     if (route === 'signin') {
-      return <AuthPage mode="signin" onSuccess={() => {}} onSwitchMode={(m) => setRoute(m)} onBack={handleBackToLanding} />;
+      return <AuthPage mode="signin" onSuccess={() => setShowStudentOnboarding(false)} onSwitchMode={(m) => setRoute(m)} onBack={handleBackToLanding} />;
     }
     if (route === 'signup') {
-      return <AuthPage mode="signup" onSuccess={() => {}} onSwitchMode={(m) => setRoute(m)} onBack={handleBackToLanding} />;
+      return <AuthPage mode="signup" onSuccess={() => setShowStudentOnboarding(true)} onSwitchMode={(m) => setRoute(m)} onBack={handleBackToLanding} />;
     }
     return <LandingPage onGetStarted={handleGetStarted} onSignIn={handleSignIn} />;
   }
 
   if (profile?.role === 'admin') {
     return <AdminDashboard onExit={() => setRoute('landing')} />;
+  }
+
+  if (profile?.role === 'student' && showStudentOnboarding) {
+    return <StudentOnboarding onComplete={() => setShowStudentOnboarding(false)} />;
   }
 
   // Practice routes
