@@ -307,7 +307,7 @@ export default function ResultsView({ simulationId, attemptId, onExit, onRetake 
                                 ) : (
                                   <img src="/Revizie2.png" alt="" className="h-4 w-4 shrink-0 object-contain" />
                                 )}
-                                {reviewQuestionIds.has(r.question_id) ? 'Adăugată' : 'Adaugă la revizuit'}
+                                {reviewQuestionIds.has(r.question_id) ? 'Adăugată' : 'De revizuit'}
                               </button>
                             </div>
                             <p className="text-stone-900 font-medium leading-relaxed mb-3">{r.question_text}</p>
