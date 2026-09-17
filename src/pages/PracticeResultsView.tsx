@@ -3,7 +3,7 @@ import { supabase, type PracticeResultRPC, type PracticeHistoryRPC, type Subscri
 import { useAuth } from '@/context/AuthContext';
 import {
   ChevronLeft, Trophy, CheckCircle2, XCircle, RotateCcw, BookOpen, History,
-  Bookmark, BookmarkCheck, Loader2,
+  Loader2,
 } from 'lucide-react';
 import Logo from '@/components/Logo';
 import Loading from '@/components/Loading';
@@ -247,10 +247,8 @@ export default function PracticeResultsView({ setId, attemptId, onExit, onRetake
                               >
                                 {reviewBusyId === r.out_question_id ? (
                                   <Loader2 size={14} className="animate-spin" />
-                                ) : reviewQuestionIds.has(r.out_question_id) ? (
-                                  <BookmarkCheck size={14} />
                                 ) : (
-                                  <Bookmark size={14} />
+                                  <img src="/Revizie2.png" alt="" className="h-4 w-4 shrink-0 object-contain" />
                                 )}
                                 {reviewQuestionIds.has(r.out_question_id) ? 'Adăugată' : 'Adaugă la revizuit'}
                               </button>
