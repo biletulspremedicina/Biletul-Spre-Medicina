@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase, type Simulation, type Attempt, type AttemptResult, type Subscription, type ReviewQuestionRefRPC } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
-import { Lock, Trophy, CheckCircle2, XCircle, ChevronLeft, Clock, Crown, RotateCcw, History, Bookmark, BookmarkCheck, Loader2 } from 'lucide-react';
+import { Lock, Trophy, CheckCircle2, XCircle, ChevronLeft, Clock, Crown, RotateCcw, History, Loader2 } from 'lucide-react';
 import Logo from '@/components/Logo';
 import Loading from '@/components/Loading';
 
@@ -304,10 +304,8 @@ export default function ResultsView({ simulationId, attemptId, onExit, onRetake 
                               >
                                 {reviewBusyId === r.question_id ? (
                                   <Loader2 size={14} className="animate-spin" />
-                                ) : reviewQuestionIds.has(r.question_id) ? (
-                                  <BookmarkCheck size={14} />
                                 ) : (
-                                  <Bookmark size={14} />
+                                  <img src="/Revizie2.png" alt="" className="h-4 w-4 shrink-0 object-contain" />
                                 )}
                                 {reviewQuestionIds.has(r.question_id) ? 'Adăugată' : 'Adaugă la revizuit'}
                               </button>
