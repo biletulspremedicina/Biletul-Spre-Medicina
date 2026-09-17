@@ -1,1 +1,1 @@
-Alătură-te comunității de viitori medici și fii primul care accesează noile simulări și grile explicate.
+Nu trebuie 
