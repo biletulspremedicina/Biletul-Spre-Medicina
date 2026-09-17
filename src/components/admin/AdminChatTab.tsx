@@ -44,13 +44,30 @@ export default function AdminChatTab() {
       )
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'chat_messages' },
+        { event: '*', schema: 'public', table: 'chat_messages' },
         () => loadConversations()
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') void loadConversations();
+      });
 
     return () => {
       supabase.removeChannel(channel);
+    };
+  }, [loadConversations]);
+
+  // Recovery for a sleeping tab or a temporary realtime disconnect.
+  useEffect(() => {
+    const interval = window.setInterval(() => void loadConversations(), 15000);
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible') void loadConversations();
+    };
+    window.addEventListener('focus', refreshWhenVisible);
+    document.addEventListener('visibilitychange', refreshWhenVisible);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener('focus', refreshWhenVisible);
+      document.removeEventListener('visibilitychange', refreshWhenVisible);
     };
   }, [loadConversations]);
 
@@ -290,10 +307,12 @@ function ChatDetail({
   }, [conv.out_id]);
 
   useEffect(() => {
-    setLoading(true);
-    loadMessages();
-    supabase.rpc('mark_chat_messages_read', { p_conversation_id: conv.out_id });
-    onConversationsChanged();
+    (async () => {
+      setLoading(true);
+      await loadMessages();
+      await supabase.rpc('mark_chat_messages_read', { p_conversation_id: conv.out_id });
+      await onConversationsChanged();
+    })();
   }, [conv.out_id, loadMessages, onConversationsChanged]);
 
   // Realtime
@@ -314,15 +333,25 @@ function ChatDetail({
             if (prev.some((m) => m.id === newMsg.id)) return prev;
             return [...prev, newMsg];
           });
-          supabase.rpc('mark_chat_messages_read', { p_conversation_id: conv.out_id });
+          void (async () => {
+            await supabase.rpc('mark_chat_messages_read', { p_conversation_id: conv.out_id });
+            await onConversationsChanged();
+          })();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') void loadMessages();
+      });
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [conv.out_id]);
+  }, [conv.out_id, loadMessages, onConversationsChanged]);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => void loadMessages(), 5000);
+    return () => window.clearInterval(interval);
+  }, [loadMessages]);
 
   // Auto-scroll
   useEffect(() => {
