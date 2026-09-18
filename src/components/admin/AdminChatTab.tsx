@@ -291,8 +291,6 @@ function ChatDetail({
   const [deleting, setDeleting] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   const loadMessages = useCallback(async () => {
@@ -320,9 +318,6 @@ function ChatDetail({
 
   // Realtime
   useEffect(() => {
-    const channel = supabase
-      .channel(`admin-chat:${conv.out_id}`)
-      .on(
     const channel = supabase
       .channel(`support-chat:${conv.out_id}`)
       .on('broadcast', { event: 'messages_changed' }, () => {
@@ -358,10 +353,6 @@ function ChatDetail({
     realtimeChannelRef.current = channel;
 
     return () => {
-      supabase.removeChannel(channel);
-    };
-
-    return () => {
       if (realtimeChannelRef.current === channel) realtimeChannelRef.current = null;
       supabase.removeChannel(channel);
     };
@@ -389,9 +380,6 @@ function ChatDetail({
         p_content: trimmed,
       });
       if (rpcError) throw rpcError;
-      setInput('');
-      await loadMessages();
-      onConversationsChanged();
       setInput('');
       await loadMessages();
       onConversationsChanged();
