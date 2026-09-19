@@ -45,6 +45,7 @@ function AppContent() {
   const [activeAttemptId, setActiveAttemptId] = useState<string | null>(null);
   const [activePracticeLessonId, setActivePracticeLessonId] = useState<string | null>(null);
   const [activePracticeLessonTitle, setActivePracticeLessonTitle] = useState<string>('');
+  const [focusedPracticeSetId, setFocusedPracticeSetId] = useState<string | null>(null);
   const [activePracticeSetId, setActivePracticeSetId] = useState<string | null>(null);
   const [activePracticeAttemptId, setActivePracticeAttemptId] = useState<string | null>(null);
   const [practiceBuyingSub, setPracticeBuyingSub] = useState(false);
@@ -115,9 +116,10 @@ function AppContent() {
     setRoute('results');
   };
 
-  const handleOpenPracticeLesson = (lessonId: string, lessonTitle: string) => {
+  const handleOpenPracticeLesson = (lessonId: string, lessonTitle: string, focusSetId?: string) => {
     setActivePracticeLessonId(lessonId);
     setActivePracticeLessonTitle(lessonTitle);
+    setFocusedPracticeSetId(focusSetId || null);
     setRoute('practice-sets');
   };
 
@@ -188,6 +190,7 @@ if (route === 'practice-sets' && activePracticeLessonId) {
           key={`practice-sets-${activePracticeLessonId}-${practiceSubNonce}`}
           lessonId={activePracticeLessonId}
           lessonTitle={activePracticeLessonTitle}
+          focusSetId={focusedPracticeSetId || undefined}
           onStartSet={handleStartPracticeSet}
           onViewResults={handleViewPracticeResults}
           onBack={() => { setStudentInitialTab('practice'); setRoute('student-dashboard'); }}
