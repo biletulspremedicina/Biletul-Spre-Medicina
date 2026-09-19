@@ -1,10 +1,24 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase, type PracticeLesson, type PracticeSet, type BankQuestion } from '@/lib/supabase';
-import { loadBankQuestions, loadQuestionSetMemberships, type QuestionSetMemberships } from '@/lib/questionBankAdmin';
 import {
   Plus, Edit2, Trash2, Eye, EyeOff, ChevronLeft, Save, X, Loader2, BookOpen,
   Layers, AlertTriangle, Copy, ArrowUp, ArrowDown, CheckSquare, Square, Search,
+  CalendarClock,
 } from 'lucide-react';
+
+function toDateTimeLocal(value: string | null | undefined) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  const offset = date.getTimezoneOffset() * 60_000;
+  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+}
+
+function formatReleaseDate(value: string) {
+  return new Date(value).toLocaleString('ro-RO', {
+    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+  });
+}
 
 // ── Main component ──────────────────────────────────────────────────────
 
@@ -404,6 +418,7 @@ function SetAdminCard({
 }) {
   const [questionCount, setQuestionCount] = useState(0);
   const [publishError, setPublishError] = useState<string | null>(null);
+  const isScheduled = !!set.available_at && new Date(set.available_at).getTime() > Date.now();
 
   useEffect(() => {
     (async () => {
@@ -441,9 +456,14 @@ function SetAdminCard({
         return;
       }
     }
+    const nextActive = !set.is_active;
     await supabase
       .from('practice_sets')
-      .update({ is_active: !set.is_active, updated_at: new Date().toISOString() })
+      .update({
+        is_active: nextActive,
+        updated_at: new Date().toISOString(),
+        ...(!nextActive && isScheduled ? { available_at: null } : {}),
+      })
       .eq('id', set.id);
     onReload();
   };
@@ -504,7 +524,9 @@ function SetAdminCard({
           <div className="flex-1 min-w-0">
             <h3 className="font-display text-base font-semibold text-stone-900">{set.title}</h3>
           </div>
-          {set.is_active ? (
+          {set.is_active && isScheduled ? (
+            <span className="badge bg-blue-100 text-blue-700"><CalendarClock size={12} /> Programat</span>
+          ) : set.is_active ? (
             <span className="badge bg-green-100 text-green-700"><Eye size={12} /> Publicat</span>
           ) : (
             <span className="badge bg-stone-100 text-stone-500"><EyeOff size={12} /> Ciornă</span>
@@ -521,6 +543,11 @@ function SetAdminCard({
           <span className={`badge ${set.requires_subscription ? 'bg-amber-100 text-amber-700' : 'bg-brand-100 text-brand-700'}`}>
             {set.requires_subscription ? 'Cu abonament' : 'Gratuit'}
           </span>
+          {isScheduled && set.available_at && (
+            <span className="flex items-center gap-1 font-semibold text-blue-700">
+              <CalendarClock size={13} /> {formatReleaseDate(set.available_at)}
+            </span>
+          )}
         </div>
 
         {/* Progress bar */}
@@ -542,7 +569,7 @@ function SetAdminCard({
           <button onClick={onEdit} className="btn-ghost"><Edit2 size={15} /> Editează</button>
           <button onClick={toggleActive} className="btn-ghost">
             {set.is_active ? <EyeOff size={15} /> : <Eye size={15} />}
-            {set.is_active ? 'Ascunde' : 'Publică'}
+            {set.is_active ? (isScheduled ? 'Anulează programarea' : 'Ascunde') : (isScheduled ? 'Programează' : 'Publică')}
           </button>
           <button onClick={handleDuplicate} className="btn-ghost"><Copy size={15} /> Dublează</button>
           <button onClick={handleDelete} className="btn-ghost text-red-600 hover:bg-red-50"><Trash2 size={15} /></button>
@@ -565,6 +592,9 @@ function SetForm({ lessonId, set, position, onSaved, onCancel }: {
   const [description, setDescription] = useState(set?.description || '');
   const [targetCount, setTargetCount] = useState(set?.target_question_count?.toString() || '10');
   const [requiresSub, setRequiresSub] = useState(set ? set.requires_subscription : false);
+  const existingFutureRelease = !!set?.available_at && new Date(set.available_at).getTime() > Date.now();
+  const [timedPost, setTimedPost] = useState(existingFutureRelease);
+  const [availableAt, setAvailableAt] = useState(existingFutureRelease ? toDateTimeLocal(set?.available_at) : '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -573,14 +603,24 @@ function SetForm({ lessonId, set, position, onSaved, onCancel }: {
     if (!title.trim()) { setError('Titlul este obligatoriu.'); return; }
     const tc = parseInt(targetCount) || 0;
     if (tc <= 0) { setError('Numărul de grile trebuie să fie mai mare decât zero.'); return; }
+    if (timedPost && !availableAt) { setError('Alege ziua și ora publicării programate.'); return; }
+    const releaseDate = timedPost ? new Date(availableAt) : null;
+    if (timedPost && (!releaseDate || Number.isNaN(releaseDate.getTime()) || releaseDate.getTime() <= Date.now())) {
+      setError('Data pentru Timed Post trebuie să fie în viitor.');
+      return;
+    }
 
     setSaving(true);
+    let saveError: string | null = null;
     const payload = {
       lesson_id: lessonId,
       title: title.trim(),
       description: description.trim(),
       target_question_count: tc,
       requires_subscription: requiresSub,
+      available_at: timedPost
+        ? releaseDate!.toISOString()
+        : (set?.available_at && new Date(set.available_at).getTime() <= Date.now() ? set.available_at : null),
       position,
       updated_at: new Date().toISOString(),
     };
@@ -602,19 +642,23 @@ function SetForm({ lessonId, set, position, onSaved, onCancel }: {
       delete (updatePayload as Record<string, unknown>).lesson_id;
       delete (updatePayload as Record<string, unknown>).position;
       const { error: err } = await supabase.from('practice_sets').update(updatePayload).eq('id', set.id);
-      if (err) setError(err.message);
+      if (err) saveError = err.message;
 
       // If set was published and target changed making it incomplete, unpublish
-      if (set.is_active && tc !== realCount) {
+      if (!saveError && set.is_active && tc !== realCount) {
         await supabase.from('practice_sets').update({ is_active: false }).eq('id', set.id);
       }
     } else {
       const { error: err } = await supabase.from('practice_sets').insert(payload);
-      if (err) setError(err.message);
+      if (err) saveError = err.message;
     }
 
     setSaving(false);
-    if (!error) onSaved();
+    if (saveError) {
+      setError(saveError);
+    } else {
+      onSaved();
+    }
   };
 
   return (
@@ -647,6 +691,33 @@ function SetForm({ lessonId, set, position, onSaved, onCancel }: {
             />
             Necesită abonament
           </label>
+        </div>
+        <div className="sm:col-span-2 rounded-xl border border-blue-200 bg-blue-50/60 p-4">
+          <label className="flex cursor-pointer items-center gap-3 text-sm font-semibold text-blue-950">
+            <input
+              type="checkbox"
+              checked={timedPost}
+              onChange={(event) => setTimedPost(event.target.checked)}
+              className="h-4 w-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500"
+            />
+            <CalendarClock size={18} /> Timed Post
+          </label>
+          <p className="mt-1 text-xs leading-relaxed text-blue-700">
+            Setul publicat va apărea în capitol, dar va putea fi început doar după momentul ales.
+          </p>
+          {timedPost && (
+            <div className="mt-3 max-w-sm">
+              <label className="label">Ziua și ora deblocării</label>
+              <input
+                type="datetime-local"
+                className="input"
+                value={availableAt}
+                min={toDateTimeLocal(new Date().toISOString())}
+                onChange={(event) => setAvailableAt(event.target.value)}
+              />
+              <p className="mt-1 text-[11px] text-blue-700">Ora este interpretată în fusul orar al dispozitivului administratorului.</p>
+            </div>
+          )}
         </div>
       </div>
       {error && <div className="mt-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">{error}</div>}
@@ -813,58 +884,39 @@ function BankPickerDialog({
   onCancel: () => void;
 }) {
   const [bankQuestions, setBankQuestions] = useState<BankQuestion[]>([]);
-  const [memberships, setMemberships] = useState<QuestionSetMemberships>(new Map());
   const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | 'CS' | 'CG'>('all');
-  const [usageFilter, setUsageFilter] = useState<'all' | 'unused' | 'used' | 'current'>('all');
-  const [page, setPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [applying, setApplying] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const existingSet = new Set(existingQuestionIds);
-  const isInCurrentSet = (questionId: string) =>
-    existingSet.has(questionId) || (memberships.get(questionId) || []).some((set) => set.id === setId);
 
   useEffect(() => {
-    let cancelled = false;
     (async () => {
-      try {
-        const questions = await loadBankQuestions(lesson.id);
-        const questionMemberships = await loadQuestionSetMemberships(questions.map((q) => q.id));
-        if (cancelled) return;
-        setBankQuestions(questions);
-        setMemberships(questionMemberships);
-      } catch (err) {
-        if (!cancelled) setLoadError(err instanceof Error ? err.message : 'Nu s-au putut încărca grilele din bancă.');
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
+      const { data } = await supabase
+        .from('practice_bank_questions')
+        .select('*')
+        .eq('lesson_id', lesson.id)
+        .eq('is_archived', false)
+        .order('created_at', { ascending: false });
+      setBankQuestions((data || []) as BankQuestion[]);
+      setLoading(false);
     })();
-    return () => { cancelled = true; };
   }, [lesson.id]);
 
   const filtered = bankQuestions.filter((q) => {
+    if (existingSet.has(q.id)) return false;
     if (typeFilter !== 'all' && q.type !== typeFilter) return false;
-    const sets = memberships.get(q.id) || [];
-    if (usageFilter === 'unused' && sets.length > 0) return false;
-    if (usageFilter === 'used' && sets.length === 0) return false;
-    if (usageFilter === 'current' && !isInCurrentSet(q.id)) return false;
     if (search.trim()) {
       const s = search.toLowerCase();
       if (!q.question_text.toLowerCase().includes(s)) return false;
     }
     return true;
   });
-  const pageSize = 30;
-  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
-  const currentPage = Math.min(page, pageCount);
-  const visibleQuestions = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const toggleSelect = (id: string) => {
-    if (isInCurrentSet(id)) return;
     const next = new Set(selectedIds);
     if (next.has(id)) next.delete(id);
     else next.add(id);
@@ -902,69 +954,39 @@ function BankPickerDialog({
           <div className="mb-4 flex flex-wrap gap-2">
             <div className="relative flex-1 min-w-[180px]">
               <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
-              <input className="input pl-10" placeholder="Caută în enunț..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
+              <input className="input pl-10" placeholder="Caută..." value={search} onChange={(e) => setSearch(e.target.value)} />
             </div>
-            <select className="input max-w-[120px]" value={typeFilter} onChange={(e) => { setTypeFilter(e.target.value as 'all' | 'CS' | 'CG'); setPage(1); }}>
+            <select className="input max-w-[120px]" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as 'all' | 'CS' | 'CG')}>
               <option value="all">Toate</option>
               <option value="CS">CS</option>
               <option value="CG">CG</option>
-            </select>
-            <select className="input max-w-[190px]" value={usageFilter} onChange={(e) => { setUsageFilter(e.target.value as typeof usageFilter); setPage(1); }}>
-              <option value="all">Toate grilele</option>
-              <option value="unused">Nealocate</option>
-              <option value="used">În cel puțin un set</option>
-              <option value="current">În setul curent</option>
             </select>
           </div>
 
           {loading ? (
             <p className="text-sm text-stone-500">Se încarcă...</p>
-          ) : loadError ? (
-            <p className="text-sm text-red-700">Nu s-a putut încărca banca: {loadError}</p>
           ) : filtered.length === 0 ? (
             <p className="text-sm text-stone-500 py-4">
-              Nu există grile pentru filtrele alese.
+              Nu există grile disponibile. Grilele deja în set sunt ascunse. Adaugă grile noi în banca de grile a lecției.
             </p>
           ) : (
             <div className="space-y-2">
-              <p className="text-xs text-stone-500">{filtered.length} grile găsite · pag. {currentPage} din {pageCount}. Grilele din setul curent rămân vizibile, dar nu pot fi adăugate din nou.</p>
-              {visibleQuestions.map((q) => (
+              {filtered.map((q) => (
                 <button
                   key={q.id}
                   onClick={() => toggleSelect(q.id)}
-                  disabled={isInCurrentSet(q.id)}
-                  className={`w-full flex items-start gap-3 rounded-xl border px-4 py-3 text-left transition-all ${
-                    isInCurrentSet(q.id) ? 'border-stone-200 bg-stone-50 cursor-not-allowed' : selectedIds.has(q.id) ? 'border-brand-500 bg-brand-50 ring-1 ring-brand-400' : 'border-stone-200 hover:bg-stone-50'
+                  className={`w-full flex items-center gap-3 rounded-xl border px-4 py-3 text-left transition-all ${
+                    selectedIds.has(q.id) ? 'border-brand-500 bg-brand-50 ring-1 ring-brand-400' : 'border-stone-200 hover:bg-stone-50'
                   }`}
                 >
                   {selectedIds.has(q.id)
                     ? <CheckSquare size={18} className="text-brand-600 flex-shrink-0" />
                     : <Square size={18} className="text-stone-400 flex-shrink-0" />}
                   <span className="badge bg-stone-100 text-stone-600 flex-shrink-0">{q.type}</span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-sm text-stone-700 break-words">{q.question_text}</span>
-                    <span className="mt-2 flex flex-wrap items-center gap-1">
-                      {(memberships.get(q.id) || []).length === 0 ? (
-                        <span className="badge bg-stone-100 text-stone-600">Nealocată</span>
-                      ) : (
-                        (memberships.get(q.id) || []).map((set) => (
-                          <span key={set.id} className={`badge ${set.id === setId ? 'bg-amber-100 text-amber-800' : 'bg-brand-50 text-brand-700'}`}>
-                            {set.id === setId ? 'Deja în acest set: ' : 'În setul: '}{set.title}
-                          </span>
-                        ))
-                      )}
-                    </span>
-                  </span>
-                  <span className="text-xs font-bold text-brand-600 flex-shrink-0">Corect: {q.correct_answer}</span>
+                  <span className="text-sm text-stone-700 truncate flex-1">{q.question_text}</span>
+                  <span className="text-xs font-bold text-brand-600 flex-shrink-0">{q.correct_answer}</span>
                 </button>
               ))}
-              {pageCount > 1 && (
-                <div className="flex items-center justify-center gap-3 pt-3">
-                  <button className="btn-secondary text-xs" disabled={currentPage === 1} onClick={() => setPage(currentPage - 1)}>Înapoi</button>
-                  <span className="text-xs text-stone-500">Pagina {currentPage} din {pageCount}</span>
-                  <button className="btn-secondary text-xs" disabled={currentPage === pageCount} onClick={() => setPage(currentPage + 1)}>Înainte</button>
-                </div>
-              )}
             </div>
           )}
 
@@ -975,7 +997,7 @@ function BankPickerDialog({
           <span className="text-xs text-stone-500">{selectedIds.size} grile selectate</span>
           <div className="flex gap-3">
             <button onClick={onCancel} disabled={applying} className="btn-secondary">Renunță</button>
-            <button onClick={handleAdd} disabled={applying || loading || !!loadError || selectedIds.size === 0} className="btn-primary">
+            <button onClick={handleAdd} disabled={applying || selectedIds.size === 0} className="btn-primary">
               {applying && <Loader2 size={16} className="animate-spin" />}
               <Plus size={16} /> Adaugă {selectedIds.size > 0 ? `(${selectedIds.size})` : ''}
             </button>
