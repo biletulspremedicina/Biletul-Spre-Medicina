@@ -4,6 +4,7 @@ import { useAuth } from '@/context/AuthContext';
 import {
   LayoutDashboard, Users, Plus, Edit2, Trash2, Eye, EyeOff,
   ChevronLeft, Save, X, Loader2, Trophy, CreditCard, BookOpen, Clock, Settings, CheckCircle2, AlertTriangle, GraduationCap,
+  CalendarClock,
 } from 'lucide-react';
 import Logo from '@/components/Logo';
 import Loading from '@/components/Loading';
@@ -12,6 +13,20 @@ import ContentTools from '@/components/admin/ContentTools';
 type Props = {
   onExit: () => void;
 };
+
+function toDateTimeLocal(value: string | null | undefined) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  const offset = date.getTimezoneOffset() * 60_000;
+  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+}
+
+function formatReleaseDate(value: string) {
+  return new Date(value).toLocaleString('ro-RO', {
+    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+  });
+}
 
 import PracticeAdmin from '@/pages/PracticeAdmin';
 import QuestionBankAdmin from '@/components/admin/QuestionBankAdmin';
@@ -204,6 +219,7 @@ function SimAdminCard({ sim, onReload, onEdit }: { sim: Simulation; onReload: ()
   const [showQuestions, setShowQuestions] = useState(false);
   const [questionCount, setQuestionCount] = useState(0);
   const [publishError, setPublishError] = useState<string | null>(null);
+  const isScheduled = !!sim.available_at && new Date(sim.available_at).getTime() > Date.now();
 
   useEffect(() => {
     (async () => {
@@ -245,9 +261,13 @@ function SimAdminCard({ sim, onReload, onEdit }: { sim: Simulation; onReload: ()
       }
     }
 
+    const nextActive = !sim.is_active;
     const { error: updateError } = await supabase
       .from('simulations')
-      .update({ is_active: !sim.is_active })
+      .update({
+        is_active: nextActive,
+        ...(!nextActive && isScheduled ? { available_at: null } : {}),
+      })
       .eq('id', sim.id);
     if (updateError) {
       setPublishError(updateError.message);
@@ -268,7 +288,11 @@ function SimAdminCard({ sim, onReload, onEdit }: { sim: Simulation; onReload: ()
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1.5 flex-wrap">
             <h3 className="font-display text-base font-semibold text-stone-900">{sim.title}</h3>
-            {sim.is_active ? (
+            {sim.is_active && isScheduled ? (
+              <span className="badge bg-blue-100 text-blue-700">
+                <CalendarClock size={12} /> Programată
+              </span>
+            ) : sim.is_active ? (
               <span className="badge bg-green-100 text-green-700">
                 <Eye size={12} /> Publicată
               </span>
@@ -288,6 +312,11 @@ function SimAdminCard({ sim, onReload, onEdit }: { sim: Simulation; onReload: ()
             <span className="flex items-center gap-1">
               {new Date(sim.created_at).toLocaleDateString('ro-RO', { day: 'numeric', month: 'short', year: 'numeric' })}
             </span>
+            {isScheduled && sim.available_at && (
+              <span className="flex items-center gap-1 font-semibold text-blue-700">
+                <CalendarClock size={13} /> {formatReleaseDate(sim.available_at)}
+              </span>
+            )}
           </div>
           {publishError && (
             <div className="mt-2 flex items-center gap-2 text-xs text-red-600">
@@ -300,7 +329,7 @@ function SimAdminCard({ sim, onReload, onEdit }: { sim: Simulation; onReload: ()
           <button onClick={onEdit} className="btn-ghost"><Edit2 size={15} /> Editează</button>
           <button onClick={toggleActive} className="btn-ghost">
             {sim.is_active ? <EyeOff size={15} /> : <Eye size={15} />}
-            {sim.is_active ? 'Ascunde' : 'Publică'}
+            {sim.is_active ? (isScheduled ? 'Anulează programarea' : 'Ascunde') : (isScheduled ? 'Programează' : 'Publică')}
           </button>
           <button onClick={handleDelete} className="btn-ghost text-red-600 hover:bg-red-50">
             <Trash2 size={15} /> Șterge
@@ -325,6 +354,9 @@ function SimForm({ sim, studentSection, onSaved, onCancel }: { sim?: Simulation;
   const [description, setDescription] = useState(sim?.description || '');
   const [duration, setDuration] = useState(sim?.duration_minutes?.toString() || '120');
   const [requiresSub, setRequiresSub] = useState(sim ? sim.requires_subscription : false);
+  const existingFutureRelease = !!sim?.available_at && new Date(sim.available_at).getTime() > Date.now();
+  const [timedPost, setTimedPost] = useState(existingFutureRelease);
+  const [availableAt, setAvailableAt] = useState(existingFutureRelease ? toDateTimeLocal(sim?.available_at) : '');
   const [isActive] = useState(sim ? sim.is_active : false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -336,6 +368,12 @@ function SimForm({ sim, studentSection, onSaved, onCancel }: { sim?: Simulation;
     if (!title.trim()) { setError('Titlul este obligatoriu.'); return; }
     const dur = parseInt(duration) || 0;
     if (dur <= 0) { setError('Durata trebuie să fie un număr valid de minute.'); return; }
+    if (timedPost && !availableAt) { setError('Alege ziua și ora publicării programate.'); return; }
+    const releaseDate = timedPost ? new Date(availableAt) : null;
+    if (timedPost && (!releaseDate || Number.isNaN(releaseDate.getTime()) || releaseDate.getTime() <= Date.now())) {
+      setError('Data pentru Timed Post trebuie să fie în viitor.');
+      return;
+    }
 
     setSaving(true);
     const existingSection = sim?.student_section || studentSection;
@@ -344,6 +382,9 @@ function SimForm({ sim, studentSection, onSaved, onCancel }: { sim?: Simulation;
       description: description.trim(),
       duration_minutes: dur,
       requires_subscription: requiresSub,
+      available_at: timedPost
+        ? releaseDate!.toISOString()
+        : (sim?.available_at && new Date(sim.available_at).getTime() <= Date.now() ? sim.available_at : null),
       is_active: isActive,
       student_section: existingSection,
     };
@@ -424,6 +465,33 @@ function SimForm({ sim, studentSection, onSaved, onCancel }: { sim?: Simulation;
           ) : (
             <div className="mt-2 rounded-lg bg-brand-50 border border-brand-100 px-3 py-2 text-xs text-brand-700">
               Această simulare este accesibilă fără abonament — orice elev o poate susține.
+            </div>
+          )}
+        </div>
+        <div className="sm:col-span-2 rounded-xl border border-blue-200 bg-blue-50/60 p-4">
+          <label className="flex cursor-pointer items-center gap-3 text-sm font-semibold text-blue-950">
+            <input
+              type="checkbox"
+              checked={timedPost}
+              onChange={(event) => setTimedPost(event.target.checked)}
+              className="h-4 w-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500"
+            />
+            <CalendarClock size={18} /> Timed Post
+          </label>
+          <p className="mt-1 text-xs leading-relaxed text-blue-700">
+            Materialul publicat va fi vizibil elevilor, dar va putea fi început doar după momentul ales.
+          </p>
+          {timedPost && (
+            <div className="mt-3 max-w-sm">
+              <label className="label">Ziua și ora deblocării</label>
+              <input
+                type="datetime-local"
+                className="input"
+                value={availableAt}
+                min={toDateTimeLocal(new Date().toISOString())}
+                onChange={(event) => setAvailableAt(event.target.value)}
+              />
+              <p className="mt-1 text-[11px] text-blue-700">Ora este interpretată în fusul orar al dispozitivului administratorului.</p>
             </div>
           )}
         </div>
