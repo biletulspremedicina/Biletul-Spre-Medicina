@@ -204,3 +204,26 @@ html.student-dark .stat-icon-blue { background-color: #6e91b1; color: #173d5b; }
 html.student-dark .stat-icon-yellow { background-color: #bd9b6f; color: #66471d; }
 html.student-dark .stat-icon-green { background-color: #7fae98; color: #124a38; }
 html.student-dark .stat-icon-red { background-color: #ae7779; color: #53272a; }
+
+/* Slow, decorative confetti inside the release card; never a full-screen effect. */
+@keyframes release-confetti-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(-7deg); }
+  50% { transform: translate3d(11px, -15px, 0) rotate(9deg); }
+}
+
+.release-confetti-float { animation: release-confetti-drift 11s ease-in-out infinite; }
+.release-confetti-float-alt { animation: release-confetti-drift 14s ease-in-out -5s infinite reverse; }
+
+.release-access-button,
+html.student-dark .release-access-button {
+  background-color: #fff;
+  color: #034638;
+}
+
+.release-access-button:hover,
+html.student-dark .release-access-button:hover { background-color: #eaf9f2; }
+
+@media (prefers-reduced-motion: reduce) {
+  .release-confetti-float,
+  .release-confetti-float-alt { animation: none; }
+}

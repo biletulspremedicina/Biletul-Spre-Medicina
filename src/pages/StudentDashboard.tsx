@@ -877,11 +877,12 @@ export default function StudentDashboard({
                   {materialRelease?.out_phase === 'celebrating' ? (
                     <>
                       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-                        <PartyPopper size={25} className="release-confetti-float absolute left-[7%] top-[17%] text-[#ffd75a]/45" />
-                        <PartyPopper size={19} className="release-confetti-float-alt absolute right-[8%] top-[13%] text-[#76dfbd]/40" />
-                        <PartyPopper size={20} className="release-confetti-float-alt absolute left-[6%] top-[55%] text-[#9ac9ff]/35" />
-                        <PartyPopper size={24} className="release-confetti-float absolute right-[6%] top-[62%] text-[#ffd75a]/40" />
-                        <PartyPopper size={16} className="release-confetti-float absolute left-[17%] bottom-[11%] text-[#ffae96]/35" />
+                        <PartyPopper size={24} className="release-confetti-stream text-[#ffd75a]" style={{ animationDelay: '-1s' }} />
+                        <PartyPopper size={18} className="release-confetti-stream text-[#76dfbd]" style={{ animationDelay: '-3.5s' }} />
+                        <PartyPopper size={21} className="release-confetti-stream text-[#9ac9ff]" style={{ animationDelay: '-6s' }} />
+                        <PartyPopper size={25} className="release-confetti-stream text-[#ffd75a]" style={{ animationDelay: '-8.5s' }} />
+                        <PartyPopper size={17} className="release-confetti-stream text-[#ffae96]" style={{ animationDelay: '-11s' }} />
+                        <PartyPopper size={20} className="release-confetti-stream text-[#a3ecd2]" style={{ animationDelay: '-13.5s' }} />
                       </div>
                       <h2 className="relative z-10 mx-auto max-w-[320px] text-center text-[clamp(21px,1.7vw,26px)] font-bold leading-snug" style={serif}>
                         Materialele sunt acum accesibile
@@ -889,10 +890,12 @@ export default function StudentDashboard({
                       <div className="relative z-10 mt-6">
                         <ReleaseDestination release={materialRelease} />
                       </div>
-                      <button type="button" onClick={() => void openReleasedMaterial()}
-                        className="release-access-button relative z-10 mx-auto mt-5 flex items-center justify-center gap-2 rounded-xl px-7 py-2.5 text-[18px] font-bold shadow-[0_8px_24px_rgba(0,0,0,0.13)] transition-transform duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#034638] motion-reduce:transition-none motion-reduce:hover:translate-y-0">
-                        Accesează <ChevronRight size={20} aria-hidden="true" />
-                      </button>
+                      <div className="relative z-10 flex min-h-[76px] flex-1 items-center justify-center py-3">
+                        <button type="button" onClick={() => void openReleasedMaterial()}
+                          className="release-access-button flex items-center justify-center gap-2 rounded-xl px-7 py-2.5 text-[18px] font-bold shadow-[0_8px_24px_rgba(0,0,0,0.13)] transition-transform duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#034638] motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+                          Accesează <ChevronRight size={20} aria-hidden="true" />
+                        </button>
+                      </div>
                       <CelebrationExpiry
                         releasedAt={materialRelease.out_available_at}
                         onComplete={() => void loadMaterialRelease()}
