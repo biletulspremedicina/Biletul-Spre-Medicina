@@ -44,7 +44,7 @@ type PageId = 'home' | 'all' | 'practice' | 'umfcd' | 'review' | 'settings';
 type Props = {
   onStartSimulation: (simulationId: string) => void;
   onViewResults: (simulationId: string, attemptId?: string) => void;
-  onOpenPracticeLesson: (lessonId: string, lessonTitle: string) => void;
+  onOpenPracticeLesson: (lessonId: string, lessonTitle: string, focusSetId?: string) => void;
   initialTab?: IncomingTab;
   theme: 'light' | 'dark' | 'system';
   onThemeChange: (theme: 'light' | 'dark' | 'system') => void;
@@ -254,6 +254,7 @@ export default function StudentDashboard({
   const [reviewError, setReviewError] = useState<string | null>(null);
   const [removingReviewId, setRemovingReviewId] = useState<string | null>(null);
   const [materialRelease, setMaterialRelease] = useState<MaterialReleaseRPC | null>(null);
+  const [focusedSimulationId, setFocusedSimulationId] = useState<string | null>(null);
 
   const confirmSignOut = async () => {
     setSigningOut(true);
@@ -376,6 +377,16 @@ export default function StudentDashboard({
     };
   }, [loadMaterialRelease]);
 
+  useEffect(() => {
+    if (loading || !focusedSimulationId || (page !== 'all' && page !== 'umfcd')) return;
+    const frame = window.requestAnimationFrame(() => {
+      document.getElementById(`released-simulation-${focusedSimulationId}`)?.scrollIntoView({
+        behavior: 'smooth', block: 'center',
+      });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [focusedSimulationId, loading, page]);
+
   const loadReviewQuestions = useCallback(async () => {
     if (!userId) return;
     setReviewLoading(true);
@@ -428,10 +439,37 @@ export default function StudentDashboard({
   };
 
   const goTo = (destination: PageId) => {
+    setFocusedSimulationId(null);
     setPage(destination);
     setMobileMenuOpen(false);
     setSelectedStat(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const openReleasedMaterial = async () => {
+    if (!materialRelease) return;
+    if (materialRelease.out_source_type === 'practice') {
+      const set = practiceSets.find((item) => item.id === materialRelease.out_source_id);
+      let lessonId = set?.lesson_id;
+      if (!lessonId) {
+        const { data, error } = await supabase.from('practice_sets')
+          .select('lesson_id').eq('id', materialRelease.out_source_id).maybeSingle();
+        if (error) console.error('Released practice set lookup error:', error);
+        lessonId = data?.lesson_id;
+      }
+      if (!lessonId) {
+        goTo('practice');
+        return;
+      }
+      const lessonTitle = practiceLessons.find((lesson) => lesson.out_id === lessonId)?.out_title
+        || materialRelease.out_chapter_title || 'Antrenament pe capitole';
+      onOpenPracticeLesson(lessonId, lessonTitle, materialRelease.out_source_id);
+      return;
+    }
+    setFocusedSimulationId(materialRelease.out_source_id);
+    setPage(materialRelease.out_section_label === 'Examene UMFCD' ? 'umfcd' : 'all');
+    setMobileMenuOpen(false);
+    setSelectedStat(null);
   };
 
   const openSupport = () => {
@@ -838,16 +876,23 @@ export default function StudentDashboard({
                   </svg>
                   {materialRelease?.out_phase === 'celebrating' ? (
                     <>
-                      <div className="relative grid grid-cols-[30px_minmax(0,1fr)_30px] items-center gap-2">
-                        <PartyPopper size={29} className="text-[#ffd75a]" strokeWidth={1.8} aria-hidden="true" />
-                        <h2 className="mx-auto max-w-[260px] text-center text-[clamp(18px,1.5vw,22px)] font-bold leading-snug" style={serif}>
-                          Materialele sunt acum accesibile
-                        </h2>
-                        <PartyPopper size={29} className="-scale-x-100 text-[#ffd75a]" strokeWidth={1.8} aria-hidden="true" />
+                      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+                        <PartyPopper size={25} className="release-confetti-float absolute left-[7%] top-[17%] text-[#ffd75a]/45" />
+                        <PartyPopper size={19} className="release-confetti-float-alt absolute right-[8%] top-[13%] text-[#76dfbd]/40" />
+                        <PartyPopper size={20} className="release-confetti-float-alt absolute left-[6%] top-[55%] text-[#9ac9ff]/35" />
+                        <PartyPopper size={24} className="release-confetti-float absolute right-[6%] top-[62%] text-[#ffd75a]/40" />
+                        <PartyPopper size={16} className="release-confetti-float absolute left-[17%] bottom-[11%] text-[#ffae96]/35" />
                       </div>
-                      <div className="relative mt-6">
+                      <h2 className="relative z-10 mx-auto max-w-[320px] text-center text-[clamp(21px,1.7vw,26px)] font-bold leading-snug" style={serif}>
+                        Materialele sunt acum accesibile
+                      </h2>
+                      <div className="relative z-10 mt-6">
                         <ReleaseDestination release={materialRelease} />
                       </div>
+                      <button type="button" onClick={() => void openReleasedMaterial()}
+                        className="release-access-button relative z-10 mx-auto mt-5 flex items-center justify-center gap-2 rounded-xl px-7 py-2.5 text-[18px] font-bold shadow-[0_8px_24px_rgba(0,0,0,0.13)] transition-transform duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#034638] motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+                        Accesează <ChevronRight size={20} aria-hidden="true" />
+                      </button>
                       <CelebrationExpiry
                         releasedAt={materialRelease.out_available_at}
                         onComplete={() => void loadMaterialRelease()}
@@ -951,7 +996,7 @@ export default function StudentDashboard({
               ) : (
                 <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
                   {filteredSims.map((sim) => (
-                    <ArchiveSimCard key={sim.id} sim={sim} hasActiveSub={hasActiveSub}
+                    <ArchiveSimCard key={sim.id} sim={sim} focused={sim.id === focusedSimulationId} hasActiveSub={hasActiveSub}
                       onStart={() => onStartSimulation(sim.id)}
                       onViewResults={(attemptId) => onViewResults(sim.id, attemptId)}
                       onBuySubscription={handleBuySubscription} buyingSub={buyingSub}
@@ -1411,9 +1456,10 @@ function PracticeLessonCard({ lesson, onOpen }: { lesson: PracticeLessonRPC; onO
 }
 
 function ArchiveSimCard({
-  sim, hasActiveSub, onStart, onViewResults, onBuySubscription, buyingSub, onReleaseReached,
+  sim, focused, hasActiveSub, onStart, onViewResults, onBuySubscription, buyingSub, onReleaseReached,
 }: {
   sim: SimWithStatus;
+  focused: boolean;
   hasActiveSub: boolean;
   onStart: () => void;
   onViewResults: (attemptId?: string) => void;
@@ -1430,7 +1476,8 @@ function ArchiveSimCard({
   const isScheduled = !!sim.available_at && new Date(sim.available_at).getTime() > Date.now();
 
   return (
-    <div className="group flex flex-col rounded-2xl border border-[#dfe8e3] bg-white p-5 shadow-sm transition-all duration-200 hover:border-[#abd2be] hover:shadow-md motion-reduce:transition-none">
+    <div id={`released-simulation-${sim.id}`}
+      className={`group flex scroll-mt-24 flex-col rounded-2xl border border-[#dfe8e3] bg-white p-5 shadow-sm transition-all duration-200 hover:border-[#abd2be] hover:shadow-md motion-reduce:transition-none ${focused ? 'ring-2 ring-emerald-500 ring-offset-2' : ''}`}>
       <div className="mb-3 flex flex-wrap items-start gap-2">
         <h3 className="line-clamp-2 min-w-0 flex-1 font-display text-base font-semibold leading-snug text-stone-900">
           {sim.title}
