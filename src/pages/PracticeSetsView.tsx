@@ -11,6 +11,7 @@ import Loading from '@/components/Loading';
 type Props = {
   lessonId: string;
   lessonTitle: string;
+  focusSetId?: string;
   onStartSet: (setId: string) => void;
   onViewResults: (setId: string, attemptId?: string) => void;
   onBack: () => void;
@@ -19,7 +20,7 @@ type Props = {
 };
 
 export default function PracticeSetsView({
-  lessonId, lessonTitle, onStartSet, onViewResults, onBack, onBuySubscription, buyingSub,
+  lessonId, lessonTitle, focusSetId, onStartSet, onViewResults, onBack, onBuySubscription, buyingSub,
 }: Props) {
   const { profile, signOut } = useAuth();
   const [sets, setSets] = useState<PracticeSetRPC[]>([]);
@@ -53,6 +54,14 @@ export default function PracticeSetsView({
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    if (loading || !focusSetId || !sets.some((set) => set.out_id === focusSetId)) return;
+    const frame = window.requestAnimationFrame(() => {
+      document.getElementById(`practice-set-${focusSetId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [focusSetId, loading, sets]);
 
   const hasActiveSub = !!subscription;
 
@@ -104,6 +113,7 @@ export default function PracticeSetsView({
               <PracticeSetCard
                 key={set.out_id}
                 set={set}
+                focused={set.out_id === focusSetId}
                 hasActiveSub={hasActiveSub}
                 onStart={() => onStartSet(set.out_id)}
                 onViewResults={(attemptId) => onViewResults(set.out_id, attemptId)}
@@ -120,9 +130,10 @@ export default function PracticeSetsView({
 }
 
 function PracticeSetCard({
-  set, hasActiveSub, onStart, onViewResults, onBuySubscription, buyingSub, onReleaseReached,
+  set, focused, hasActiveSub, onStart, onViewResults, onBuySubscription, buyingSub, onReleaseReached,
 }: {
   set: PracticeSetRPC;
+  focused: boolean;
   hasActiveSub: boolean;
   onStart: () => void;
   onViewResults: (attemptId?: string) => void;
@@ -136,7 +147,7 @@ function PracticeSetCard({
   const isScheduled = !!set.out_available_at && new Date(set.out_available_at).getTime() > Date.now();
 
   return (
-    <div className="card p-5 flex flex-col">
+    <div id={`practice-set-${set.out_id}`} className={`card scroll-mt-24 p-5 flex flex-col ${focused ? 'ring-2 ring-emerald-500 ring-offset-2' : ''}`}>
       {/* Content */}
       <div className="flex flex-col gap-3 mb-4">
         <div className="flex items-center gap-2 flex-wrap">
