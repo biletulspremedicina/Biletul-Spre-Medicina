@@ -216,8 +216,11 @@ function formatSeconds(seconds: number) {
   return remainder ? `${minutes} min ${remainder} sec` : `${minutes} min`;
 }
 
+let releaseConfettiActive = false;
+
 function launchReleaseConfetti() {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (releaseConfettiActive || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  releaseConfettiActive = true;
   const canvas = document.createElement('canvas');
   canvas.setAttribute('aria-hidden', 'true');
   Object.assign(canvas.style, {
@@ -226,41 +229,56 @@ function launchReleaseConfetti() {
   });
   document.body.appendChild(canvas);
   const context = canvas.getContext('2d');
-  if (!context) { canvas.remove(); return; }
+  if (!context) { canvas.remove(); releaseConfettiActive = false; return; }
   const ratio = Math.min(window.devicePixelRatio || 1, 2);
   canvas.width = window.innerWidth * ratio;
   canvas.height = window.innerHeight * ratio;
   context.scale(ratio, ratio);
-  const colors = ['#0f7a5c', '#54c7a0', '#f4b51e', '#f47b4b', '#6ea8e5', '#ffffff'];
-  const pieces = Array.from({ length: 150 }, (_, index) => ({
-    x: window.innerWidth * (index % 2 === 0 ? 0.18 : 0.82) + (Math.random() - 0.5) * 90,
-    y: window.innerHeight * 0.28 + Math.random() * 40,
-    vx: (index % 2 === 0 ? 1 : -1) * (2.5 + Math.random() * 5.5),
+  const colors = ['#42cfa4', '#a3ecd2', '#f7c94f', '#ff8870', '#76b8f4', '#f7f9ed'];
+  const pieces = Array.from({ length: 300 }, (_, index) => ({
+    x: window.innerWidth * (index % 2 === 0 ? 0.12 : 0.88) + (Math.random() - 0.5) * 48,
+    y: window.innerHeight * (0.34 + Math.floor(index / 100) * 0.045),
+    vx: (index % 2 === 0 ? 1 : -1) * (2.8 + Math.random() * 6),
     vy: -7 - Math.random() * 8,
-    gravity: 0.22 + Math.random() * 0.12,
+    gravity: 0.14 + Math.random() * 0.12,
+    drift: (Math.random() - 0.5) * 0.12,
     rotation: Math.random() * Math.PI,
-    rotationSpeed: (Math.random() - 0.5) * 0.3,
-    width: 5 + Math.random() * 7,
-    height: 3 + Math.random() * 5,
+    rotationSpeed: (Math.random() - 0.5) * 0.22,
+    width: 4 + Math.random() * 6,
+    height: 4 + Math.random() * 9,
+    shape: index % 7 === 0 ? 'circle' : 'ribbon',
+    delay: Math.floor(index / 100) * 140,
     color: colors[index % colors.length],
   }));
   const startedAt = performance.now();
+  let lastFrame = startedAt;
   const draw = (time: number) => {
+    const elapsed = time - startedAt;
+    const step = Math.min((time - lastFrame) / 16.67, 2);
+    lastFrame = time;
     context.clearRect(0, 0, window.innerWidth, window.innerHeight);
     pieces.forEach((piece) => {
-      piece.x += piece.vx;
-      piece.vy += piece.gravity;
-      piece.y += piece.vy;
-      piece.rotation += piece.rotationSpeed;
+      if (elapsed < piece.delay) return;
+      piece.x += (piece.vx + piece.drift) * step;
+      piece.vy += piece.gravity * step;
+      piece.y += piece.vy * step;
+      piece.rotation += piece.rotationSpeed * step;
       context.save();
       context.translate(piece.x, piece.y);
       context.rotate(piece.rotation);
       context.fillStyle = piece.color;
-      context.fillRect(-piece.width / 2, -piece.height / 2, piece.width, piece.height);
+      context.globalAlpha = Math.min(1, Math.max(0, (4600 - elapsed) / 950));
+      if (piece.shape === 'circle') {
+        context.beginPath();
+        context.arc(0, 0, piece.width / 2, 0, Math.PI * 2);
+        context.fill();
+      } else {
+        context.fillRect(-piece.width / 2, -piece.height / 2, piece.width, piece.height);
+      }
       context.restore();
     });
-    if (time - startedAt < 3600) requestAnimationFrame(draw);
-    else canvas.remove();
+    if (elapsed < 4600) requestAnimationFrame(draw);
+    else { canvas.remove(); releaseConfettiActive = false; }
   };
   requestAnimationFrame(draw);
 }
@@ -403,13 +421,18 @@ export default function StudentDashboard({
 
   const loadMaterialRelease = useCallback(async () => {
     if (!userId) return;
-    const { data, error } = await supabase.rpc('get_material_release_state');
+    const [{ data, error }, { data: confettiClaimed, error: claimError }] = await Promise.all([
+      supabase.rpc('get_material_release_state'),
+      supabase.rpc('claim_latest_material_release'),
+    ]);
     if (error) {
       console.error('Material release load error:', error);
-      return;
+    } else {
+      const nextRelease = ((data || []) as unknown as MaterialReleaseRPC[])[0] || null;
+      setMaterialRelease(nextRelease);
     }
-    const nextRelease = ((data || []) as unknown as MaterialReleaseRPC[])[0] || null;
-    setMaterialRelease(nextRelease);
+    if (claimError) console.error('Material release confetti claim error:', claimError);
+    else if (confettiClaimed === true) launchReleaseConfetti();
   }, [userId]);
 
   useEffect(() => {
@@ -424,16 +447,6 @@ export default function StudentDashboard({
       document.removeEventListener('visibilitychange', refreshWhenVisible);
     };
   }, [loadMaterialRelease]);
-
-  useEffect(() => {
-    if (!materialRelease || materialRelease.out_phase !== 'celebrating' || materialRelease.out_confetti_seen) return;
-    launchReleaseConfetti();
-    void supabase.rpc('mark_material_release_seen', {
-      p_source_type: materialRelease.out_source_type,
-      p_source_id: materialRelease.out_source_id,
-    });
-    setMaterialRelease((current) => current ? { ...current, out_confetti_seen: true } : current);
-  }, [materialRelease]);
 
   const loadReviewQuestions = useCallback(async () => {
     if (!userId) return;
@@ -897,18 +910,15 @@ export default function StudentDashboard({
                   </svg>
                   {materialRelease?.out_phase === 'celebrating' ? (
                     <>
-                      <div className="relative flex items-start gap-4">
-                        <PartyPopper size={36} className="shrink-0 text-[#ffd75a]" strokeWidth={1.8} />
-                        <h2 className="pt-1 text-[21px] font-bold leading-snug" style={serif}>
+                      <div className="relative grid grid-cols-[30px_minmax(0,1fr)_30px] items-center gap-2">
+                        <PartyPopper size={29} className="text-[#ffd75a]" strokeWidth={1.8} aria-hidden="true" />
+                        <h2 className="mx-auto max-w-[260px] text-center text-[clamp(18px,1.5vw,22px)] font-bold leading-snug" style={serif}>
                           Materialele sunt acum accesibile
                         </h2>
+                        <PartyPopper size={29} className="-scale-x-100 text-[#ffd75a]" strokeWidth={1.8} aria-hidden="true" />
                       </div>
-                      <div className="relative my-auto rounded-2xl border border-white/15 bg-white/10 px-5 py-6 text-center">
-                        <p className="text-sm font-bold text-white">{materialRelease.out_title}</p>
-                        <p className="mt-2 text-xs text-[#bcebdc]">{materialRelease.out_section_label}</p>
-                        {materialRelease.out_chapter_title && (
-                          <p className="mt-1 text-xs text-white/80">Capitol: {materialRelease.out_chapter_title}</p>
-                        )}
+                      <div className="relative mt-6">
+                        <ReleaseDestination release={materialRelease} />
                       </div>
                       <CelebrationExpiry
                         releasedAt={materialRelease.out_available_at}
@@ -928,20 +938,12 @@ export default function StudentDashboard({
                         target={materialRelease.out_available_at}
                         onComplete={() => void loadMaterialRelease()}
                       />
-                      <div className="relative mt-auto rounded-[14px] border border-white/15 bg-white/[0.08] px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-                        <div className="flex min-w-0 items-center justify-center gap-3">
-                          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/10">
-                            <ReleaseSectionVisual label={materialRelease.out_section_label} />
-                          </span>
-                          <p className="min-w-0 text-[15px] font-semibold leading-tight text-white sm:text-[17px]">
-                            {materialRelease.out_section_label}
-                          </p>
-                        </div>
-                        <div className="mx-auto my-2.5 h-px w-4/5 bg-white/15" />
-                        <p className="break-words text-center text-[clamp(17px,1.4vw,22px)] font-bold leading-tight text-white" style={serif}>
-                          {materialRelease.out_title}
-                        </p>
+                      <div className="relative mt-1">
+                        <ReleaseDestination release={materialRelease} />
                       </div>
+                      <p className="relative mt-auto border-t border-white/15 pt-3 text-center text-[11px] leading-relaxed text-white/65">
+                        Fii mereu pe fază și lucrează cele mai noi postări.
+                      </p>
                     </>
                   ) : (
                     <div className="relative flex h-full flex-col items-center justify-center text-center">
@@ -1173,6 +1175,25 @@ function ReleaseSectionVisual({ label }: { label: string }) {
   return <BookOpen size={28} className="text-[#70e0b8]" strokeWidth={1.8} />;
 }
 
+function ReleaseDestination({ release }: { release: MaterialReleaseRPC }) {
+  return (
+    <div className="rounded-[14px] border border-white/15 bg-white/[0.08] px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+      <div className="flex min-w-0 items-center justify-center gap-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/10">
+          <ReleaseSectionVisual label={release.out_section_label} />
+        </span>
+        <p className="min-w-0 text-[15px] font-semibold leading-tight text-white sm:text-[17px]">
+          {release.out_section_label}
+        </p>
+      </div>
+      <div className="mx-auto my-2.5 h-px w-4/5 bg-white/15" />
+      <p className="break-words text-center text-[clamp(17px,1.4vw,22px)] font-bold leading-tight text-white" style={serif}>
+        {release.out_title}
+      </p>
+    </div>
+  );
+}
+
 function CompactCountdown({ target, onComplete }: { target: string; onComplete: () => void }) {
   const [now, setNow] = useState(() => new Date());
   const completedRef = useRef(false);
@@ -1245,8 +1266,8 @@ function CelebrationExpiry({ releasedAt, onComplete }: { releasedAt: string; onC
     return () => window.clearTimeout(timeout);
   }, [releasedAt, onComplete]);
   return (
-    <p className="relative mt-auto text-center text-[11px] text-white/55">
-      Următoarea lansare va apărea automat după această perioadă.
+    <p className="relative mt-auto border-t border-white/15 pt-3 text-center text-[11px] leading-relaxed text-white/65">
+      Spor la lucru! Cele mai noi materiale sunt acum gata de accesat.
     </p>
   );
 }
