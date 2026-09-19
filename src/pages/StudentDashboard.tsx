@@ -54,12 +54,6 @@ type SimWithStatus = Simulation & {
 };
 
 type PracticeSetRow = { id: string; lesson_id: string };
-type Stat = {
-  label: string;
-  value: string;
-  detail: string;
-};
-
 const UMFCD_IMAGE_SRC = '/UMFCD.png'; // Imaginea pentru Examene UMFCD
 
 // Completează adresele dintre ghilimele pentru imaginile din meniul din stânga.
@@ -77,8 +71,6 @@ const validAnswer = (value: unknown) =>
   typeof value === 'string' && /^[A-E]$/.test(value.toUpperCase());
 const answerCount = (answers: Record<string, string> | null | undefined) =>
   Object.values(answers || {}).filter(validAnswer).length;
-const toPercent = (score: number, maximum: number) =>
-  maximum > 0 ? Math.round((score / maximum) * 100) : null;
 const dateKey = (date: Date) =>
   new Intl.DateTimeFormat('sv-SE', {
     timeZone: 'Europe/Bucharest',
@@ -188,14 +180,6 @@ function dailyMotivationMessage(date: Date) {
   return DAILY_MOTIVATION_MESSAGES[dayNumber % DAILY_MOTIVATION_MESSAGES.length];
 }
 
-function formatSeconds(seconds: number) {
-  if (!Number.isFinite(seconds) || seconds <= 0) return '—';
-  if (seconds < 60) return `${Math.round(seconds)} sec`;
-  const minutes = Math.floor(seconds / 60);
-  const remainder = Math.round(seconds % 60);
-  return remainder ? `${minutes} min ${remainder} sec` : `${minutes} min`;
-}
-
 function initialPage(tab: IncomingTab): PageId {
   if (tab === 'practice' || tab === 'umfcd') return tab;
   return 'home';
@@ -214,7 +198,6 @@ export default function StudentDashboard({
   const [page, setPage] = useState<PageId>(() => initialPage(initialTab));
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [selectedStat, setSelectedStat] = useState<Stat | null>(null);
   const [logoutConfirmationOpen, setLogoutConfirmationOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [simulations, setSimulations] = useState<SimWithStatus[]>([]);
@@ -422,7 +405,6 @@ export default function StudentDashboard({
     setFocusedSimulationId(null);
     setPage(destination);
     setMobileMenuOpen(false);
-    setSelectedStat(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -449,7 +431,6 @@ export default function StudentDashboard({
     setFocusedSimulationId(materialRelease.out_source_id);
     setPage(materialRelease.out_section_label === 'Examene UMFCD' ? 'umfcd' : 'all');
     setMobileMenuOpen(false);
-    setSelectedStat(null);
   };
 
   const openSupport = () => {
@@ -479,67 +460,7 @@ export default function StudentDashboard({
     : 0;
 
   const gradedAttempts = [...submittedSimAttempts, ...submittedPracticeAttempts];
-  const gradedAnswers = gradedAttempts.reduce((sum, attempt) => sum + answerCount(attempt.answers), 0);
-  const correctAnswers = gradedAttempts.reduce((sum, attempt) => sum + Number(attempt.score || 0), 0);
-  const accuracy = gradedAnswers > 0 ? toPercent(correctAnswers, gradedAnswers) : null;
-  const simulationResults = submittedSimAttempts
-    .filter((attempt) => Number(attempt.max_score) > 0)
-    .map((attempt) => ({
-      percent: toPercent(Number(attempt.score), Number(attempt.max_score)) || 0,
-      submittedAt: attempt.submitted_at || '',
-    }));
-  const bestResult = simulationResults.length
-    ? Math.max(...simulationResults.map((result) => result.percent)) : null;
-  const latestResult = [...simulationResults].sort((a, b) =>
-    new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime())[0]?.percent ?? null;
-  const averageResult = simulationResults.length
-    ? Math.round(simulationResults.reduce((sum, result) => sum + result.percent, 0) / simulationResults.length)
-    : null;
-
-  const activeDays = new Set<string>();
-  [...allAttempts, ...practiceAttempts].forEach((attempt) => {
-    if (answerCount(attempt.answers) === 0) return;
-    const stamp = new Date(attempt.submitted_at || attempt.started_at);
-    if (Number.isNaN(stamp.getTime())) return;
-    activeDays.add(dateKey(stamp));
-  });
-  const today = new Date();
-  const todayKey = dateKey(today);
-  const yesterdayKey = dateKey(new Date(today.getTime() - 86_400_000));
-  let streak = 0;
-  if (activeDays.has(todayKey) || activeDays.has(yesterdayKey)) {
-    const cursor = new Date(today);
-    if (!activeDays.has(todayKey)) cursor.setDate(cursor.getDate() - 1);
-    while (activeDays.has(dateKey(cursor)) && streak < 3650) {
-      streak += 1;
-      cursor.setDate(cursor.getDate() - 1);
-    }
-  }
-
-  const timedSimAttempts = submittedSimAttempts.filter(
-    (attempt) => answerCount(attempt.answers) > 0 &&
-      Number.isFinite(new Date(attempt.submitted_at!).getTime() - new Date(attempt.started_at).getTime())
-  );
-  const timePerQuestion = timedSimAttempts.length
-    ? timedSimAttempts.reduce((sum, attempt) => {
-        const elapsed = Math.max(0, (new Date(attempt.submitted_at!).getTime() -
-          new Date(attempt.started_at).getTime()) / 1000);
-        const sim = simulations.find((item) => item.id === attempt.simulation_id);
-        const bounded = sim ? Math.min(elapsed, sim.duration_minutes * 60) : elapsed;
-        return sum + bounded;
-      }, 0) / timedSimAttempts.reduce((sum, attempt) => sum + answerCount(attempt.answers), 0)
-    : 0;
-  const finishedInTime = submittedSimAttempts.filter((attempt) => {
-    const sim = simulations.find((item) => item.id === attempt.simulation_id);
-    if (!sim || attempt.expired) return false;
-    const elapsed = new Date(attempt.submitted_at!).getTime() - new Date(attempt.started_at).getTime();
-    return elapsed >= 0 && elapsed <= sim.duration_minutes * 60_000;
-  }).length;
-  const setToLesson = new Map(practiceSets.map((set) => [set.id, set.lesson_id]));
-  const startedLessons = new Set(practiceAttempts
-    .filter((attempt) => answerCount(attempt.answers) > 0)
-    .map((attempt) => setToLesson.get(attempt.set_id))
-    .filter((id): id is string => !!id));
+  const todayKey = dateKey(new Date());
   const finishedGridsByDay = new Map<string, number>();
   gradedAttempts.forEach((attempt) => {
     if (!attempt.submitted_at) return;
@@ -557,49 +478,6 @@ export default function StudentDashboard({
       count: finishedGridsByDay.get(key) || 0,
     };
   });
-
-  const stats: Stat[] = [
-    {
-      label: 'Rata răspunsurilor corecte',
-      value: accuracy === null ? '—' : `${accuracy}%`,
-      detail: 'Procentul răspunsurilor corecte din întrebările la care ai răspuns în activitățile finalizate.',
-    },
-    {
-      label: 'Cel mai bun rezultat la o simulare',
-      value: bestResult === null ? '—' : `${bestResult}%`,
-      detail: 'Cel mai mare procent obținut la o simulare finalizată.',
-    },
-    {
-      label: 'Rezultatul ultimei simulări',
-      value: latestResult === null ? '—' : `${latestResult}%`,
-      detail: 'Procentul obținut la ultima simulare pe care ai finalizat-o.',
-    },
-    {
-      label: 'Media rezultatelor la simulări',
-      value: averageResult === null ? '—' : `${averageResult}%`,
-      detail: 'Media aritmetică a procentelor obținute la simulările finalizate.',
-    },
-    {
-      label: 'Seria actuală de zile active',
-      value: `${streak} ${streak === 1 ? 'zi' : 'zile'}`,
-      detail: 'Zile consecutive în care ai răspuns la întrebări. Ziua curentă nu rupe seria înainte să începi să lucrezi.',
-    },
-    {
-      label: 'Timp mediu pe întrebare',
-      value: formatSeconds(timePerQuestion),
-      detail: 'Durata simulărilor finalizate, împărțită la numărul întrebărilor la care ai răspuns.',
-    },
-    {
-      label: 'Simulări terminate în timpul alocat',
-      value: String(finishedInTime),
-      detail: 'Numărul simulărilor trimise înainte de expirarea duratei alocate.',
-    },
-    {
-      label: 'Capitole începute',
-      value: String(startedLessons.size),
-      detail: 'Un capitol este început când răspunzi la prima întrebare dintr-un set al său.',
-    },
-  ];
 
   const navItems: { id: PageId; label: string; icon: ReactNode; imageSrc: string }[] = [
     { id: 'home', label: 'Acasă', icon: <Home size={19} />, imageSrc: NAV_IMAGE_SOURCES.home },
@@ -900,10 +778,6 @@ export default function StudentDashboard({
               <div className="mt-8">
                 <StudentPerformance simulations={simulations} practiceAttempts={practiceAttempts}
                   practiceLessons={practiceLessons} practiceSets={practiceSets}
-                  onOpenStat={(index, value, periodLabel) => setSelectedStat({
-                    ...stats[index], value,
-                    detail: `${stats[index].detail} ${periodLabel === 'Seria curentă' ? '' : `Interval: ${periodLabel.toLowerCase()}.`}`.trim(),
-                  })}
                   onViewSimulations={() => goTo('all')} onViewChapters={() => goTo('practice')} />
               </div>
             </>
@@ -1017,25 +891,6 @@ export default function StudentDashboard({
           )}
         </main>
       </div>
-
-      {selectedStat && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-[#071f19]/45 p-4"
-          onMouseDown={() => setSelectedStat(null)}>
-          <div role="dialog" aria-modal="true" aria-labelledby="stat-dialog-title"
-            className="w-full max-w-md rounded-[24px] border border-[#d8e9e0] bg-white p-6 shadow-2xl"
-            onMouseDown={(event) => event.stopPropagation()}>
-            <div className="flex items-start justify-end gap-3">
-              <button type="button" onClick={() => setSelectedStat(null)} aria-label="Închide detaliile"
-                className="rounded-lg p-2 text-[#65788b] hover:bg-[#f2f7f4]">
-                <X size={18} />
-              </button>
-            </div>
-            <h2 id="stat-dialog-title" className="mt-5 text-[24px] font-bold" style={serif}>{selectedStat.label}</h2>
-            <p className="mt-3 text-[32px] font-bold text-[#084d3a]">{selectedStat.value}</p>
-            <p className="mt-3 text-sm leading-relaxed text-[#607485]">{selectedStat.detail}</p>
-          </div>
-        </div>
-      )}
 
       {logoutConfirmationOpen && (
         <div
