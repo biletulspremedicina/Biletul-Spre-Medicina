@@ -1224,7 +1224,7 @@ function InlineReleaseCountdown({ target, onComplete }: { target: string; onComp
 
 function CelebrationExpiry({ releasedAt, onComplete }: { releasedAt: string; onComplete: () => void }) {
   useEffect(() => {
-    const remaining = Math.max(0, new Date(releasedAt).getTime() + 4 * 3_600_000 - Date.now());
+    const remaining = Math.max(0, new Date(releasedAt).getTime() + 60_000 - Date.now());
     const timeout = window.setTimeout(onComplete, remaining);
     return () => window.clearTimeout(timeout);
   }, [releasedAt, onComplete]);
