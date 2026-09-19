@@ -4,12 +4,10 @@ import {
   Bell,
   BookOpen,
   Bookmark,
-  Check,
   CheckCircle2,
   ChevronRight,
   Clock3,
   Crown,
-  Flame,
   GraduationCap,
   Home,
   Layers,
@@ -23,13 +21,10 @@ import {
   RotateCcw,
   Sparkles,
   Sun,
-  Target,
   Timer,
   Trash2,
-  Trophy,
   X,
   FileText,
-  ChartNoAxesCombined,
   CalendarClock,
   PartyPopper,
 } from 'lucide-react';
@@ -37,6 +32,7 @@ import { supabase, type Attempt, type MaterialReleaseRPC, type PracticeAttempt, 
 import { useAuth } from '@/context/AuthContext';
 import Loading from '@/components/Loading';
 import StudentSettings from '@/pages/StudentSettings';
+import StudentPerformance from '@/components/StudentPerformance';
 
 type IncomingTab = 'all' | 'practice' | 'umfcd' | 'dashboard';
 type PageId = 'home' | 'all' | 'practice' | 'umfcd' | 'review' | 'settings';
@@ -61,24 +57,8 @@ type PracticeSetRow = { id: string; lesson_id: string };
 type Stat = {
   label: string;
   value: string;
-  note: string;
   detail: string;
-  icon: ReactNode;
-  imageSrc: string;
-  tone: 'blue' | 'yellow' | 'green' | 'red';
 };
-
-// Completează doar adresele dintre ghilimele. Până atunci rămân pictogramele actuale.
-const STAT_IMAGE_SOURCES = [
-  '/1.png', // Aici vine sursa imaginea 1 – Rata răspunsurilor corecte
-  '/2.png', // Aici vine sursa imaginea 2 – Cel mai bun rezultat la o simulare
-  '/3.png', // Aici vine sursa imaginea 3 – Rezultatul ultimei simulări
-  '/4.png', // Aici vine sursa imaginea 4 – Media rezultatelor la simulări
-  '/5.png', // Aici vine sursa imaginea 5 – Seria actuală de zile active
-  '/6.png', // Aici vine sursa imaginea 6 – Timp mediu pe întrebare
-  '/7.png', // Aici vine sursa imaginea 7 – Simulări terminate în timpul alocat
-  '/8.png', // Aici vine sursa imaginea 8 – Capitole începute
-];
 
 const UMFCD_IMAGE_SRC = '/UMFCD.png'; // Imaginea pentru Examene UMFCD
 
@@ -582,58 +562,42 @@ export default function StudentDashboard({
     {
       label: 'Rata răspunsurilor corecte',
       value: accuracy === null ? '—' : `${accuracy}%`,
-      note: 'Din răspunsurile trimise',
       detail: 'Procentul răspunsurilor corecte din întrebările la care ai răspuns în activitățile finalizate.',
-      icon: <Target size={26} strokeWidth={2.2} />, imageSrc: STAT_IMAGE_SOURCES[0], tone: 'blue',
     },
     {
       label: 'Cel mai bun rezultat la o simulare',
       value: bestResult === null ? '—' : `${bestResult}%`,
-      note: 'Din simulările finalizate',
       detail: 'Cel mai mare procent obținut la o simulare finalizată.',
-      icon: <Trophy size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[1], tone: 'yellow',
     },
     {
       label: 'Rezultatul ultimei simulări',
       value: latestResult === null ? '—' : `${latestResult}%`,
-      note: 'Cea mai recentă simulare',
       detail: 'Procentul obținut la ultima simulare pe care ai finalizat-o.',
-      icon: <FileText size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[2], tone: 'green',
     },
     {
       label: 'Media rezultatelor la simulări',
       value: averageResult === null ? '—' : `${averageResult}%`,
-      note: 'Media tuturor simulărilor',
       detail: 'Media aritmetică a procentelor obținute la simulările finalizate.',
-      icon: <ChartNoAxesCombined size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[3], tone: 'red',
     },
     {
       label: 'Seria actuală de zile active',
       value: `${streak} ${streak === 1 ? 'zi' : 'zile'}`,
-      note: 'Zile consecutive cu activitate',
       detail: 'Zile consecutive în care ai răspuns la întrebări. Ziua curentă nu rupe seria înainte să începi să lucrezi.',
-      icon: <Flame size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[4], tone: 'yellow',
     },
     {
       label: 'Timp mediu pe întrebare',
       value: formatSeconds(timePerQuestion),
-      note: 'Din simulările finalizate',
       detail: 'Durata simulărilor finalizate, împărțită la numărul întrebărilor la care ai răspuns.',
-      icon: <Clock3 size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[5], tone: 'blue',
     },
     {
       label: 'Simulări terminate în timpul alocat',
       value: String(finishedInTime),
-      note: 'Din simulările finalizate',
       detail: 'Numărul simulărilor trimise înainte de expirarea duratei alocate.',
-      icon: <Check size={26} strokeWidth={2.5} />, imageSrc: STAT_IMAGE_SOURCES[6], tone: 'red',
     },
     {
       label: 'Capitole începute',
       value: String(startedLessons.size),
-      note: 'Ai răspuns la cel puțin o grilă',
       detail: 'Un capitol este început când răspunzi la prima întrebare dintr-un set al său.',
-      icon: <BookOpen size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[7], tone: 'green',
     },
   ];
 
@@ -933,18 +897,14 @@ export default function StudentDashboard({
                 </section>
               </div>
 
-              <div className="mb-4 mt-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
-                <h2 className="text-[29px] font-bold leading-tight sm:text-[32px]" style={serif}>
-                  Statistici și performanță
-                </h2>
-                <p className="pb-1 text-[12px] text-[#66798d]">
-                  O privire de ansamblu asupra parcursului tău.
-                </p>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                {stats.map((stat) => (
-                  <StatCard key={stat.label} stat={stat} onClick={() => setSelectedStat(stat)} />
-                ))}
+              <div className="mt-8">
+                <StudentPerformance simulations={simulations} practiceAttempts={practiceAttempts}
+                  practiceLessons={practiceLessons} practiceSets={practiceSets}
+                  onOpenStat={(index, value, periodLabel) => setSelectedStat({
+                    ...stats[index], value,
+                    detail: `${stats[index].detail} ${periodLabel === 'Seria curentă' ? '' : `Interval: ${periodLabel.toLowerCase()}.`}`.trim(),
+                  })}
+                  onViewSimulations={() => goTo('all')} onViewChapters={() => goTo('practice')} />
               </div>
             </>
           ) : page === 'settings' ? (
@@ -1064,10 +1024,7 @@ export default function StudentDashboard({
           <div role="dialog" aria-modal="true" aria-labelledby="stat-dialog-title"
             className="w-full max-w-md rounded-[24px] border border-[#d8e9e0] bg-white p-6 shadow-2xl"
             onMouseDown={(event) => event.stopPropagation()}>
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#e1f6ed] text-[#0d6a50]">
-                <StatVisual stat={selectedStat} />
-              </div>
+            <div className="flex items-start justify-end gap-3">
               <button type="button" onClick={() => setSelectedStat(null)} aria-label="Închide detaliile"
                 className="rounded-lg p-2 text-[#65788b] hover:bg-[#f2f7f4]">
                 <X size={18} />
@@ -1246,33 +1203,6 @@ function CelebrationExpiry({ releasedAt, onComplete }: { releasedAt: string; onC
       Spor la lucru! Cele mai noi materiale sunt acum gata de accesat.
     </p>
   );
-}
-
-function StatCard({ stat, onClick }: { stat: Stat; onClick: () => void }) {
-  return (
-    <button type="button" onClick={onClick}
-      className="group flex min-h-[176px] w-full flex-col rounded-[11px] border border-[#e0e7ed] bg-white p-[18px] text-left shadow-[0_3px_13px_rgba(33,55,69,0.025)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#b8d9cb] hover:shadow-[0_12px_30px_rgba(24,74,58,0.09)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3a9b78] motion-reduce:transition-none">
-      <div className="flex w-full items-start gap-4">
-        <span className={`stat-icon-${stat.tone} flex h-[58px] w-[58px] shrink-0 items-center justify-center rounded-full`}>
-          <StatVisual stat={stat} />
-        </span>
-        <span className="flex min-w-0 flex-1 items-start justify-between gap-2">
-          <span className="min-w-0 pt-2 text-[17px] font-bold leading-[1.22]" style={serif}>{stat.label}</span>
-        </span>
-      </div>
-      <div className="mt-auto flex w-full items-center justify-between gap-2 pl-[74px]">
-        <span className="text-[31px] font-extrabold leading-none text-[#14283a]">{stat.value}</span>
-        <ChevronRight size={17} className="shrink-0 text-[#183044] transition-transform group-hover:translate-x-0.5" />
-      </div>
-      <span className="mt-2 block pl-[74px] text-[11px] leading-snug text-[#657b93]">{stat.note}</span>
-    </button>
-  );
-}
-
-function StatVisual({ stat }: { stat: Stat }) {
-  return stat.imageSrc ? (
-    <img src={stat.imageSrc} alt="" className="h-9 w-9 object-contain" loading="lazy" draggable={false} />
-  ) : stat.icon;
 }
 
 function UmfcdIcon({ size, imageSize }: { size: number; imageSize: number }) {
