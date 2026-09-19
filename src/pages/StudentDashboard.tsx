@@ -917,27 +917,30 @@ export default function StudentDashboard({
                     </>
                   ) : materialRelease ? (
                     <>
-                      <div className="relative flex items-start gap-4">
-                        <Timer size={34} className="shrink-0 text-[#65dbb7]" strokeWidth={1.7} />
-                        <h2 className="pt-1 text-[19px] font-bold leading-snug" style={serif}>
+                      <div className="relative grid grid-cols-[20px_minmax(0,1fr)_20px] items-center gap-1.5">
+                        <Timer size={20} className="text-[#65dbb7]" strokeWidth={1.7} aria-hidden="true" />
+                        <h2 className="min-w-0 whitespace-nowrap text-center text-[clamp(11px,1.1vw,20px)] font-bold leading-tight" style={serif}>
                           Materiale noi pe platformă în:
                         </h2>
+                        <Timer size={20} className="text-[#65dbb7]" strokeWidth={1.7} aria-hidden="true" />
                       </div>
                       <CompactCountdown
                         target={materialRelease.out_available_at}
                         onComplete={() => void loadMaterialRelease()}
                       />
-                      <div className="relative mt-auto border-t border-white/25 pt-4">
-                        <div className="flex items-start gap-4">
-                          <BookOpen size={25} className="shrink-0 text-[#70e0b8]" strokeWidth={1.8} />
-                          <div className="min-w-0 text-[12px] leading-relaxed text-[#f1fbf7]">
-                            <p className="font-bold text-white">{materialRelease.out_title}</p>
-                            <p className="mt-1 text-[#bcebdc]">{materialRelease.out_section_label}</p>
-                            {materialRelease.out_chapter_title && (
-                              <p className="mt-0.5 text-white/75">Capitol: {materialRelease.out_chapter_title}</p>
-                            )}
-                          </div>
+                      <div className="relative mt-auto rounded-[14px] border border-white/15 bg-white/[0.08] px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+                        <div className="flex min-w-0 items-center justify-center gap-3">
+                          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/10">
+                            <ReleaseSectionVisual label={materialRelease.out_section_label} />
+                          </span>
+                          <p className="min-w-0 text-[15px] font-semibold leading-tight text-white sm:text-[17px]">
+                            {materialRelease.out_section_label}
+                          </p>
                         </div>
+                        <div className="mx-auto my-2.5 h-px w-4/5 bg-white/15" />
+                        <p className="break-words text-center text-[clamp(17px,1.4vw,22px)] font-bold leading-tight text-white" style={serif}>
+                          {materialRelease.out_title}
+                        </p>
                       </div>
                     </>
                   ) : (
@@ -1157,6 +1160,19 @@ function SidebarNavIcon({ src, fallback, size = 24 }: { src: string; fallback: R
   );
 }
 
+function ReleaseSectionVisual({ label }: { label: string }) {
+  if (label === 'Antrenament pe capitole') {
+    return <SidebarNavIcon src={NAV_IMAGE_SOURCES.practice} fallback={<GraduationCap size={28} />} size={32} />;
+  }
+  if (label === 'Simulări biologie') {
+    return <SidebarNavIcon src={NAV_IMAGE_SOURCES.all} fallback={<FileText size={28} />} size={32} />;
+  }
+  if (label === 'Examene UMFCD') {
+    return <SidebarNavIcon src={NAV_IMAGE_SOURCES.umfcd || UMFCD_IMAGE_SRC} fallback={<Crown size={28} />} size={36} />;
+  }
+  return <BookOpen size={28} className="text-[#70e0b8]" strokeWidth={1.8} />;
+}
+
 function CompactCountdown({ target, onComplete }: { target: string; onComplete: () => void }) {
   const [now, setNow] = useState(() => new Date());
   const completedRef = useRef(false);
@@ -1178,7 +1194,7 @@ function CompactCountdown({ target, onComplete }: { target: string; onComplete: 
     { value: Math.floor((diff % 60_000) / 1000), label: 'SEC' },
   ];
   return (
-    <div className="relative my-8 flex items-start justify-between gap-1 sm:gap-2" aria-label="Timp până la materialele noi">
+    <div className="relative my-5 flex items-start justify-between gap-1 sm:gap-2" aria-label="Timp până la materialele noi">
       {units.map((unit, index) => (
         <div key={unit.label} className="flex min-w-0 flex-1 items-start">
           <div className="min-w-0 flex-1 text-center">
