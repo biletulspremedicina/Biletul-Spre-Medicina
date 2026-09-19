@@ -27,6 +27,7 @@ export type Simulation = {
   duration_minutes: number;
   fee_ron: number;
   requires_subscription: boolean;
+  available_at: string | null;
   is_active: boolean;
   created_at: string;
   student_section: 'all' | 'umfcd';
@@ -145,6 +146,7 @@ export type PracticeSet = {
   description: string;
   target_question_count: number;
   requires_subscription: boolean;
+  available_at: string | null;
   position: number;
   is_active: boolean;
   created_at: string;
@@ -230,6 +232,7 @@ export type PracticeSetRPC = {
   out_description: string;
   out_target_question_count: number;
   out_requires_subscription: boolean;
+  out_available_at: string | null;
   out_position: number;
   out_question_count: number;
   out_attempt_count: number;
@@ -323,6 +326,17 @@ export type ReviewQuestionRPC = {
   out_correct_answer: 'A' | 'B' | 'C' | 'D' | 'E';
   out_explanation: string;
   out_saved_at: string;
+};
+
+export type MaterialReleaseRPC = {
+  out_source_type: 'simulation' | 'practice';
+  out_source_id: string;
+  out_title: string;
+  out_section_label: string;
+  out_chapter_title: string | null;
+  out_available_at: string;
+  out_phase: 'countdown' | 'celebrating';
+  out_confetti_seen: boolean;
 };
 
 export type Payment = {
