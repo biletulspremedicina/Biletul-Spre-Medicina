@@ -2,8 +2,8 @@ import { useEffect, useState, useCallback } from 'react';
 import { supabase, type PracticeSetRPC, type Subscription } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import {
-  ChevronLeft, ChevronRight, FileText, Crown, Lock, PlayCircle, RotateCcw,
-  BookOpen, Trophy, Loader2, Sparkles, History,
+  ChevronLeft, FileText, Crown, PlayCircle, RotateCcw,
+  BookOpen, Trophy, Loader2, Sparkles, History, CalendarClock,
 } from 'lucide-react';
 import Logo from '@/components/Logo';
 import Loading from '@/components/Loading';
@@ -109,6 +109,7 @@ export default function PracticeSetsView({
                 onViewResults={(attemptId) => onViewResults(set.out_id, attemptId)}
                 onBuySubscription={onBuySubscription}
                 buyingSub={buyingSub}
+                onReleaseReached={() => void load()}
               />
             ))}
           </div>
@@ -119,7 +120,7 @@ export default function PracticeSetsView({
 }
 
 function PracticeSetCard({
-  set, hasActiveSub, onStart, onViewResults, onBuySubscription, buyingSub,
+  set, hasActiveSub, onStart, onViewResults, onBuySubscription, buyingSub, onReleaseReached,
 }: {
   set: PracticeSetRPC;
   hasActiveSub: boolean;
@@ -127,10 +128,12 @@ function PracticeSetCard({
   onViewResults: (attemptId?: string) => void;
   onBuySubscription: () => void;
   buyingSub: boolean;
+  onReleaseReached: () => void;
 }) {
   const isPremium = set.out_requires_subscription;
   const isLocked = isPremium && !hasActiveSub;
   const hasAttempts = set.out_attempt_count > 0;
+  const isScheduled = !!set.out_available_at && new Date(set.out_available_at).getTime() > Date.now();
 
   return (
     <div className="card p-5 flex flex-col">
@@ -175,7 +178,14 @@ function PracticeSetCard({
 
       {/* Actions */}
       <div className="mt-auto pt-3 border-t border-stone-100 flex flex-col gap-2">
-        {isLocked ? (
+        {isScheduled && set.out_available_at ? (
+          <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-center text-sm font-semibold text-blue-800">
+            <span className="flex items-center justify-center gap-2">
+              <CalendarClock size={16} /> Accesibil în
+            </span>
+            <ReleaseCountdown target={set.out_available_at} onComplete={onReleaseReached} />
+          </div>
+        ) : isLocked ? (
           <>
             <button
               onClick={onBuySubscription}
@@ -207,5 +217,35 @@ function PracticeSetCard({
         )}
       </div>
     </div>
+  );
+}
+
+function ReleaseCountdown({ target, onComplete }: { target: string; onComplete: () => void }) {
+  const [remaining, setRemaining] = useState(() => Math.max(0, new Date(target).getTime() - Date.now()));
+
+  useEffect(() => {
+    let completed = false;
+    const tick = () => {
+      const next = Math.max(0, new Date(target).getTime() - Date.now());
+      setRemaining(next);
+      if (next === 0 && !completed) {
+        completed = true;
+        onComplete();
+      }
+    };
+    tick();
+    const interval = window.setInterval(tick, 1000);
+    return () => window.clearInterval(interval);
+  }, [target, onComplete]);
+
+  const totalSeconds = Math.ceil(remaining / 1000);
+  const days = Math.floor(totalSeconds / 86_400);
+  const hours = Math.floor((totalSeconds % 86_400) / 3_600);
+  const minutes = Math.floor((totalSeconds % 3_600) / 60);
+  const seconds = totalSeconds % 60;
+  return (
+    <span className="mt-1 block font-bold tabular-nums">
+      {days > 0 ? `${days}z ` : ''}{String(hours).padStart(2, '0')}:{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+    </span>
   );
 }
