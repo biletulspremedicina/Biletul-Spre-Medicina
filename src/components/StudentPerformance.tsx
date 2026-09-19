@@ -9,13 +9,11 @@ type Props = {
   practiceAttempts: PracticeAttempt[];
   practiceLessons: PracticeLessonRPC[];
   practiceSets: { id: string; lesson_id: string }[];
-  onOpenStat: (index: number, value: string, periodLabel: string) => void;
   onViewSimulations: () => void;
   onViewChapters: () => void;
 };
 
 const DAY = 86_400_000;
-const periodLabels: Record<Period, string> = { '7': 'Ultimele 7 zile', '30': 'Ultimele 30 de zile', all: 'Tot timpul' };
 const answerCount = (answers: Record<string, string> | null | undefined) =>
   Object.values(answers || {}).filter((value) => typeof value === 'string' && /^[A-E]$/i.test(value)).length;
 const dayKey = (date: Date) => new Intl.DateTimeFormat('sv-SE', {
@@ -83,7 +81,7 @@ function TrendChart({ points, max, ticks, id, className = '' }: {
 }
 
 export default function StudentPerformance({ simulations, practiceAttempts, practiceLessons, practiceSets,
-  onOpenStat, onViewSimulations, onViewChapters }: Props) {
+  onViewSimulations, onViewChapters }: Props) {
   const [period, setPeriod] = useState<Period>('30');
   const [todayMs, setTodayMs] = useState(() => localDay(new Date()));
   useEffect(() => {
@@ -189,9 +187,9 @@ export default function StudentPerformance({ simulations, practiceAttempts, prac
   const dateText = period === 'all' ? 'Toate datele disponibile'
     : `${shortDate(dayKey(new Date(todayMs - (Number(period) - 1) * DAY)))} – ${shortDate(dayKey(new Date(todayMs)))}`;
   const simRows = [
-    { label: 'Cel mai bun rezultat', note: 'Din simulările finalizate', value: data.best, index: 1 },
-    { label: 'Ultima simulare', note: 'Cea mai recentă simulare', value: data.latest, index: 2 },
-    { label: 'Media simulărilor', note: 'Media în perioada selectată', value: data.average, index: 3 },
+    { label: 'Cel mai bun rezultat', value: data.best },
+    { label: 'Ultima simulare', value: data.latest },
+    { label: 'Media simulărilor', value: data.average },
   ];
   const timeMax = Math.max(60, ...data.timePoints.map((point) => point.value));
   const timeTickMax = Math.ceil(timeMax / 30) * 30;
@@ -200,26 +198,22 @@ export default function StudentPerformance({ simulations, practiceAttempts, prac
 
   return <section className="performance" aria-labelledby="performance-title">
     <div className="performance-heading">
-      <div><p className="performance-eyebrow">PROGRESUL TĂU <span /></p>
-        <h2 id="performance-title">Statistici și performanță</h2>
-        <p>O privire de ansamblu asupra pregătirii tale pentru admiterea la medicină.</p></div>
+      <h2 id="performance-title">Statistici și performanță</h2>
       <div className="performance-controls">
         <div className="performance-period" role="group" aria-label="Interval statistici">
           {(['7', '30', 'all'] as Period[]).map((item) => <button key={item} type="button"
             className={period === item ? 'is-active' : ''} aria-pressed={period === item}
             onClick={() => setPeriod(item)}>{item === 'all' ? 'Tot timpul' : `${item} zile`}</button>)}
         </div>
-        <div className="performance-date"><span>Perioada selectată</span><strong>{dateText}</strong></div>
+        <div className="performance-date"><strong>{dateText}</strong></div>
       </div>
     </div>
 
     <div className="performance-top">
       <div className="performance-accuracy performance-panel">
-        <div className="performance-panel-head"><div><h3>Rata răspunsurilor corecte</h3><p>Din răspunsurile trimise</p></div>
-          <span className="performance-range">{periodLabels[period]}</span></div>
+        <div className="performance-panel-head"><div><h3>Rata răspunsurilor corecte</h3><p>Din răspunsurile trimise</p></div></div>
         <div className="performance-accuracy-content">
-          <div className="performance-accuracy-summary"><button type="button" className="performance-big-number" onClick={() => onOpenStat(0, percentLabel(data.accuracy), periodLabels[period])}
-            aria-label={`Detalii rata răspunsurilor corecte: ${percentLabel(data.accuracy)}`}>{percentLabel(data.accuracy)}</button>
+          <div className="performance-accuracy-summary"><strong className="performance-big-number">{percentLabel(data.accuracy)}</strong>
             {data.accuracyDelta !== null && <span className={`performance-delta ${data.accuracyDelta < 0 ? 'is-negative' : ''}`}>
               {data.accuracyDelta > 0 ? '+' : ''}{data.accuracyDelta} pp</span>}
             <small>{data.accuracyDelta !== null ? 'față de perioada anterioară' : `${data.totalAnswers} răspunsuri în această perioadă`}</small></div>
@@ -227,40 +221,34 @@ export default function StudentPerformance({ simulations, practiceAttempts, prac
         </div>
       </div>
       <div className="performance-sim performance-panel">
-        <div className="performance-sim-head"><div><h3>Simulări</h3><p>Rezultatele tale la simulări</p></div>
+        <div className="performance-sim-head"><h3>Simulări</h3>
           <button type="button" onClick={onViewSimulations}>Vezi toate simulările <span aria-hidden="true">→</span></button></div>
-        <div className="performance-sim-list">{simRows.map((row) => <button key={row.index} type="button" className="performance-sim-row"
-          onClick={() => onOpenStat(row.index, percentLabel(row.value), periodLabels[period])}>
-          <span className="performance-sim-copy"><strong>{row.label}</strong><small>{row.note}</small></span>
+        <div className="performance-sim-list">{simRows.map((row) => <div key={row.label} className="performance-sim-row">
+          <span className="performance-sim-copy"><strong>{row.label}</strong></span>
           <span className="performance-sim-measure"><strong>{percentLabel(row.value)}</strong>
             <span className="performance-bar"><i style={{ width: `${row.value ?? 0}%` }} /></span></span>
-        </button>)}</div>
+        </div>)}</div>
       </div>
     </div>
 
     <div className="performance-bottom">
       <div className="performance-activity performance-panel">
-        <h3>Ritmul de studiu</h3><p>Zile consecutive cu activitate</p>
-        <div className="performance-activity-body"><button type="button" className="performance-streak"
-          aria-label={`Detalii seria actuală de zile active: ${data.streak} ${data.streak === 1 ? 'zi' : 'zile'}`}
-          onClick={() => onOpenStat(4, `${data.streak} ${data.streak === 1 ? 'zi' : 'zile'}`, 'Seria curentă')}>
-          <strong>{data.streak} {data.streak === 1 ? 'zi' : 'zile'}</strong><span>Seria actuală de zile active</span></button>
+        <h3>Ritmul de studiu</h3>
+        <div className="performance-activity-body"><div className="performance-streak">
+          <strong>{data.streak} {data.streak === 1 ? 'zi' : 'zile'}</strong><span>Seria actuală de zile active</span></div>
           <div className="performance-calendar"><div className="performance-weekdays">{Array.from({ length: 7 }, (_, index) => <span key={index}>{heatmapLabels[(heatmapFirstDay + index) % 7]}</span>)}</div>
             <div className="performance-heatmap">{data.heatDays.map((day) => <span key={day.key} className={day.active ? 'is-active' : ''}
               title={`${shortDate(day.key)}: ${day.active ? 'zi cu activitate' : 'fără activitate'}`} />)}</div>
             <small>Ultimele 4 săptămâni</small><div className="performance-legend"><i /> Zi cu activitate <i /> Fără activitate</div></div></div>
       </div>
       <div className="performance-time performance-panel"><h3>Timp mediu pe întrebare</h3><p>Din simulările finalizate</p>
-        <button type="button" className="performance-mid-number" aria-label={`Detalii timp mediu pe întrebare: ${secondsLabel(data.avgSeconds)}`}
-          onClick={() => onOpenStat(5, secondsLabel(data.avgSeconds), periodLabels[period])}>{secondsLabel(data.avgSeconds)}</button>
+        <strong className="performance-mid-number">{secondsLabel(data.avgSeconds)}</strong>
         {data.timeDelta !== null && <small className={`performance-time-delta ${data.timeDelta > 0 ? 'is-negative' : ''}`}>
           {data.timeDelta > 0 ? '+' : ''}{data.timeDelta} sec față de perioada anterioară</small>}
         <TrendChart points={data.timePoints} max={timeTickMax} ticks={[`${timeTickMax}`, `${timeTickMax / 2}`, '0']} id="time" />
       </div>
-      <div className="performance-ontime performance-panel"><h3>În timpul alocat</h3><p>Simulări terminate în timpul alocat</p>
-        <div className="performance-ontime-content"><button type="button" className="performance-mid-number"
-          aria-label={`Detalii simulări terminate în timpul alocat: ${data.onTime} din ${data.totalSim}`}
-          onClick={() => onOpenStat(6, String(data.onTime), periodLabels[period])}>{data.onTime} din {data.totalSim}</button>
+      <div className="performance-ontime performance-panel"><h3>În timpul alocat</h3>
+        <div className="performance-ontime-content"><strong className="performance-mid-number">{data.onTime} din {data.totalSim}</strong>
           <div className="performance-ring" style={{ '--progress': `${data.totalSim ? (data.onTime / data.totalSim) * 100 : 0}%` } as CSSProperties}>
             <strong>{data.totalSim ? `${Math.round((data.onTime / data.totalSim) * 100)}%` : '—'}</strong></div></div>
         <div className="performance-ontime-bar" aria-label={`${data.onTime} din ${data.totalSim} simulări finalizate în timp`}>
@@ -271,9 +259,7 @@ export default function StudentPerformance({ simulations, practiceAttempts, prac
       </div>
     </div>
     <div className="performance-chapters performance-panel"><div className="performance-chapters-copy"><h3>Capitole începute</h3>
-      <p>Ai răspuns la cel puțin o grilă</p></div><button type="button" className="performance-chapters-number"
-        aria-label={`Detalii capitole începute: ${data.started} din ${data.totalLessons}`}
-        onClick={() => onOpenStat(7, String(data.started), periodLabels[period])}>{data.started} <span>/ {data.totalLessons}</span></button>
+      <p>Ai răspuns la cel puțin o grilă</p></div><strong className="performance-chapters-number">{data.started} <span>/ {data.totalLessons}</span></strong>
       <div className="performance-chapter-bar" aria-label={`${data.started} din ${data.totalLessons} capitole începute`}>
         {data.totalLessons ? Array.from({ length: Math.min(data.totalLessons, 20) }, (_, index) => <span key={index}
           className={index / Math.min(data.totalLessons, 20) < data.started / data.totalLessons ? 'is-active' : ''} />) : <span className="is-empty" />}</div>
