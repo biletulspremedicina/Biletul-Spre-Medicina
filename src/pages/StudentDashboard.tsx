@@ -216,73 +216,6 @@ function formatSeconds(seconds: number) {
   return remainder ? `${minutes} min ${remainder} sec` : `${minutes} min`;
 }
 
-let releaseConfettiActive = false;
-
-function launchReleaseConfetti() {
-  if (releaseConfettiActive || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  releaseConfettiActive = true;
-  const canvas = document.createElement('canvas');
-  canvas.setAttribute('aria-hidden', 'true');
-  Object.assign(canvas.style, {
-    position: 'fixed', inset: '0', width: '100%', height: '100%',
-    pointerEvents: 'none', zIndex: '100',
-  });
-  document.body.appendChild(canvas);
-  const context = canvas.getContext('2d');
-  if (!context) { canvas.remove(); releaseConfettiActive = false; return; }
-  const ratio = Math.min(window.devicePixelRatio || 1, 2);
-  canvas.width = window.innerWidth * ratio;
-  canvas.height = window.innerHeight * ratio;
-  context.scale(ratio, ratio);
-  const colors = ['#42cfa4', '#a3ecd2', '#f7c94f', '#ff8870', '#76b8f4', '#f7f9ed'];
-  const pieces = Array.from({ length: 300 }, (_, index) => ({
-    x: window.innerWidth * (index % 2 === 0 ? 0.12 : 0.88) + (Math.random() - 0.5) * 48,
-    y: window.innerHeight * (0.34 + Math.floor(index / 100) * 0.045),
-    vx: (index % 2 === 0 ? 1 : -1) * (2.8 + Math.random() * 6),
-    vy: -7 - Math.random() * 8,
-    gravity: 0.14 + Math.random() * 0.12,
-    drift: (Math.random() - 0.5) * 0.12,
-    rotation: Math.random() * Math.PI,
-    rotationSpeed: (Math.random() - 0.5) * 0.22,
-    width: 4 + Math.random() * 6,
-    height: 4 + Math.random() * 9,
-    shape: index % 7 === 0 ? 'circle' : 'ribbon',
-    delay: Math.floor(index / 100) * 140,
-    color: colors[index % colors.length],
-  }));
-  const startedAt = performance.now();
-  let lastFrame = startedAt;
-  const draw = (time: number) => {
-    const elapsed = time - startedAt;
-    const step = Math.min((time - lastFrame) / 16.67, 2);
-    lastFrame = time;
-    context.clearRect(0, 0, window.innerWidth, window.innerHeight);
-    pieces.forEach((piece) => {
-      if (elapsed < piece.delay) return;
-      piece.x += (piece.vx + piece.drift) * step;
-      piece.vy += piece.gravity * step;
-      piece.y += piece.vy * step;
-      piece.rotation += piece.rotationSpeed * step;
-      context.save();
-      context.translate(piece.x, piece.y);
-      context.rotate(piece.rotation);
-      context.fillStyle = piece.color;
-      context.globalAlpha = Math.min(1, Math.max(0, (4600 - elapsed) / 950));
-      if (piece.shape === 'circle') {
-        context.beginPath();
-        context.arc(0, 0, piece.width / 2, 0, Math.PI * 2);
-        context.fill();
-      } else {
-        context.fillRect(-piece.width / 2, -piece.height / 2, piece.width, piece.height);
-      }
-      context.restore();
-    });
-    if (elapsed < 4600) requestAnimationFrame(draw);
-    else { canvas.remove(); releaseConfettiActive = false; }
-  };
-  requestAnimationFrame(draw);
-}
-
 function initialPage(tab: IncomingTab): PageId {
   if (tab === 'practice' || tab === 'umfcd') return tab;
   return 'home';
@@ -421,18 +354,13 @@ export default function StudentDashboard({
 
   const loadMaterialRelease = useCallback(async () => {
     if (!userId) return;
-    const [{ data, error }, { data: confettiClaimed, error: claimError }] = await Promise.all([
-      supabase.rpc('get_material_release_state'),
-      supabase.rpc('claim_latest_material_release'),
-    ]);
+    const { data, error } = await supabase.rpc('get_material_release_state');
     if (error) {
       console.error('Material release load error:', error);
     } else {
       const nextRelease = ((data || []) as unknown as MaterialReleaseRPC[])[0] || null;
       setMaterialRelease(nextRelease);
     }
-    if (claimError) console.error('Material release confetti claim error:', claimError);
-    else if (confettiClaimed === true) launchReleaseConfetti();
   }, [userId]);
 
   useEffect(() => {
