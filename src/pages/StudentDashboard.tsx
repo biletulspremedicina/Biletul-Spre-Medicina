@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   Archive,
   Bell,
@@ -30,8 +30,10 @@ import {
   X,
   FileText,
   ChartNoAxesCombined,
+  CalendarClock,
+  PartyPopper,
 } from 'lucide-react';
-import { supabase, type Attempt, type PracticeAttempt, type PracticeLessonRPC, type ReviewQuestionRPC, type Simulation, type Subscription } from '@/lib/supabase';
+import { supabase, type Attempt, type MaterialReleaseRPC, type PracticeAttempt, type PracticeLessonRPC, type ReviewQuestionRPC, type Simulation, type Subscription } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import Loading from '@/components/Loading';
 import StudentSettings from '@/pages/StudentSettings';
@@ -181,13 +183,6 @@ function demoCommunityPercent(now: Date) {
   return communityPlanCache.get(currentDay)!.hourlyPercent[hourInBucharest(now)];
 }
 
-function nextMaterialTime(now: Date) {
-  const target = new Date(now);
-  target.setHours(20, 0, 0, 0);
-  if (now.getTime() >= target.getTime()) target.setDate(target.getDate() + 1);
-  return target;
-}
-
 function getGreeting() {
   const hour = hourInBucharest(new Date());
   if (hour < 11) return 'Bună dimineața,';
@@ -219,6 +214,55 @@ function formatSeconds(seconds: number) {
   const minutes = Math.floor(seconds / 60);
   const remainder = Math.round(seconds % 60);
   return remainder ? `${minutes} min ${remainder} sec` : `${minutes} min`;
+}
+
+function launchReleaseConfetti() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const canvas = document.createElement('canvas');
+  canvas.setAttribute('aria-hidden', 'true');
+  Object.assign(canvas.style, {
+    position: 'fixed', inset: '0', width: '100%', height: '100%',
+    pointerEvents: 'none', zIndex: '100',
+  });
+  document.body.appendChild(canvas);
+  const context = canvas.getContext('2d');
+  if (!context) { canvas.remove(); return; }
+  const ratio = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = window.innerWidth * ratio;
+  canvas.height = window.innerHeight * ratio;
+  context.scale(ratio, ratio);
+  const colors = ['#0f7a5c', '#54c7a0', '#f4b51e', '#f47b4b', '#6ea8e5', '#ffffff'];
+  const pieces = Array.from({ length: 150 }, (_, index) => ({
+    x: window.innerWidth * (index % 2 === 0 ? 0.18 : 0.82) + (Math.random() - 0.5) * 90,
+    y: window.innerHeight * 0.28 + Math.random() * 40,
+    vx: (index % 2 === 0 ? 1 : -1) * (2.5 + Math.random() * 5.5),
+    vy: -7 - Math.random() * 8,
+    gravity: 0.22 + Math.random() * 0.12,
+    rotation: Math.random() * Math.PI,
+    rotationSpeed: (Math.random() - 0.5) * 0.3,
+    width: 5 + Math.random() * 7,
+    height: 3 + Math.random() * 5,
+    color: colors[index % colors.length],
+  }));
+  const startedAt = performance.now();
+  const draw = (time: number) => {
+    context.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    pieces.forEach((piece) => {
+      piece.x += piece.vx;
+      piece.vy += piece.gravity;
+      piece.y += piece.vy;
+      piece.rotation += piece.rotationSpeed;
+      context.save();
+      context.translate(piece.x, piece.y);
+      context.rotate(piece.rotation);
+      context.fillStyle = piece.color;
+      context.fillRect(-piece.width / 2, -piece.height / 2, piece.width, piece.height);
+      context.restore();
+    });
+    if (time - startedAt < 3600) requestAnimationFrame(draw);
+    else canvas.remove();
+  };
+  requestAnimationFrame(draw);
 }
 
 function initialPage(tab: IncomingTab): PageId {
@@ -258,6 +302,7 @@ export default function StudentDashboard({
   const [reviewLoading, setReviewLoading] = useState(false);
   const [reviewError, setReviewError] = useState<string | null>(null);
   const [removingReviewId, setRemovingReviewId] = useState<string | null>(null);
+  const [materialRelease, setMaterialRelease] = useState<MaterialReleaseRPC | null>(null);
 
   const confirmSignOut = async () => {
     setSigningOut(true);
@@ -355,6 +400,40 @@ export default function StudentDashboard({
   useEffect(() => {
     void loadDashboard();
   }, [loadDashboard]);
+
+  const loadMaterialRelease = useCallback(async () => {
+    if (!userId) return;
+    const { data, error } = await supabase.rpc('get_material_release_state');
+    if (error) {
+      console.error('Material release load error:', error);
+      return;
+    }
+    const nextRelease = ((data || []) as unknown as MaterialReleaseRPC[])[0] || null;
+    setMaterialRelease(nextRelease);
+  }, [userId]);
+
+  useEffect(() => {
+    void loadMaterialRelease();
+    const interval = window.setInterval(() => void loadMaterialRelease(), 60_000);
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible') void loadMaterialRelease();
+    };
+    document.addEventListener('visibilitychange', refreshWhenVisible);
+    return () => {
+      window.clearInterval(interval);
+      document.removeEventListener('visibilitychange', refreshWhenVisible);
+    };
+  }, [loadMaterialRelease]);
+
+  useEffect(() => {
+    if (!materialRelease || materialRelease.out_phase !== 'celebrating' || materialRelease.out_confetti_seen) return;
+    launchReleaseConfetti();
+    void supabase.rpc('mark_material_release_seen', {
+      p_source_type: materialRelease.out_source_type,
+      p_source_id: materialRelease.out_source_id,
+    });
+    setMaterialRelease((current) => current ? { ...current, out_confetti_seen: true } : current);
+  }, [materialRelease]);
 
   const loadReviewQuestions = useCallback(async () => {
     if (!userId) return;
@@ -816,21 +895,60 @@ export default function StudentDashboard({
                     <path d="M0 38 Q92 85 190 48 T430 40 V70 H0Z" fill="#4ba27f" />
                     <path d="M0 58 Q135 5 265 52 T430 32 V70 H0Z" fill="#277d60" />
                   </svg>
-                  <div className="relative flex items-start gap-4">
-                    <Timer size={34} className="shrink-0 text-[#65dbb7]" strokeWidth={1.7} />
-                    <h2 className="pt-1 text-[19px] font-bold leading-snug" style={serif}>
-                      Materiale noi pe platformă în:
-                    </h2>
-                  </div>
-                  <CompactCountdown />
-                  <div className="relative mt-auto border-t border-white/25 pt-5">
-                    <div className="flex items-start gap-4">
-                      <BookOpen size={25} className="shrink-0 text-[#70e0b8]" strokeWidth={1.8} />
-                      <p className="text-[12px] leading-[1.65] text-[#f1fbf7]">
-                        Alătură-te comunității de viitori medici și fii primul care accesează noile simulări și grile explicate.
+                  {materialRelease?.out_phase === 'celebrating' ? (
+                    <>
+                      <div className="relative flex items-start gap-4">
+                        <PartyPopper size={36} className="shrink-0 text-[#ffd75a]" strokeWidth={1.8} />
+                        <h2 className="pt-1 text-[21px] font-bold leading-snug" style={serif}>
+                          Materialele sunt acum accesibile
+                        </h2>
+                      </div>
+                      <div className="relative my-auto rounded-2xl border border-white/15 bg-white/10 px-5 py-6 text-center">
+                        <p className="text-sm font-bold text-white">{materialRelease.out_title}</p>
+                        <p className="mt-2 text-xs text-[#bcebdc]">{materialRelease.out_section_label}</p>
+                        {materialRelease.out_chapter_title && (
+                          <p className="mt-1 text-xs text-white/80">Capitol: {materialRelease.out_chapter_title}</p>
+                        )}
+                      </div>
+                      <CelebrationExpiry
+                        releasedAt={materialRelease.out_available_at}
+                        onComplete={() => void loadMaterialRelease()}
+                      />
+                    </>
+                  ) : materialRelease ? (
+                    <>
+                      <div className="relative flex items-start gap-4">
+                        <Timer size={34} className="shrink-0 text-[#65dbb7]" strokeWidth={1.7} />
+                        <h2 className="pt-1 text-[19px] font-bold leading-snug" style={serif}>
+                          Materiale noi pe platformă în:
+                        </h2>
+                      </div>
+                      <CompactCountdown
+                        target={materialRelease.out_available_at}
+                        onComplete={() => void loadMaterialRelease()}
+                      />
+                      <div className="relative mt-auto border-t border-white/25 pt-4">
+                        <div className="flex items-start gap-4">
+                          <BookOpen size={25} className="shrink-0 text-[#70e0b8]" strokeWidth={1.8} />
+                          <div className="min-w-0 text-[12px] leading-relaxed text-[#f1fbf7]">
+                            <p className="font-bold text-white">{materialRelease.out_title}</p>
+                            <p className="mt-1 text-[#bcebdc]">{materialRelease.out_section_label}</p>
+                            {materialRelease.out_chapter_title && (
+                              <p className="mt-0.5 text-white/75">Capitol: {materialRelease.out_chapter_title}</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="relative flex h-full flex-col items-center justify-center text-center">
+                      <CalendarClock size={42} className="text-[#65dbb7]" strokeWidth={1.6} />
+                      <h2 className="mt-4 text-[21px] font-bold" style={serif}>Pregătim următoarele materiale</h2>
+                      <p className="mt-2 max-w-xs text-sm leading-relaxed text-white/70">
+                        Următoarea lansare va apărea aici imediat ce este programată.
                       </p>
                     </div>
-                  </div>
+                  )}
                 </section>
               </div>
 
@@ -903,7 +1021,8 @@ export default function StudentDashboard({
                     <ArchiveSimCard key={sim.id} sim={sim} hasActiveSub={hasActiveSub}
                       onStart={() => onStartSimulation(sim.id)}
                       onViewResults={(attemptId) => onViewResults(sim.id, attemptId)}
-                      onBuySubscription={handleBuySubscription} buyingSub={buyingSub} />
+                      onBuySubscription={handleBuySubscription} buyingSub={buyingSub}
+                      onReleaseReached={() => void loadDashboard()} />
                   ))}
                 </div>
               )}
@@ -1038,13 +1157,20 @@ function SidebarNavIcon({ src, fallback, size = 24 }: { src: string; fallback: R
   );
 }
 
-function CompactCountdown() {
+function CompactCountdown({ target, onComplete }: { target: string; onComplete: () => void }) {
   const [now, setNow] = useState(() => new Date());
+  const completedRef = useRef(false);
   useEffect(() => {
     const id = window.setInterval(() => setNow(new Date()), 1000);
     return () => window.clearInterval(id);
   }, []);
-  const diff = Math.max(0, nextMaterialTime(now).getTime() - now.getTime());
+  const diff = Math.max(0, new Date(target).getTime() - now.getTime());
+  useEffect(() => {
+    if (diff === 0 && !completedRef.current) {
+      completedRef.current = true;
+      onComplete();
+    }
+  }, [diff, completedRef, onComplete]);
   const units = [
     { value: Math.floor(diff / 86_400_000), label: 'ZILE' },
     { value: Math.floor((diff % 86_400_000) / 3_600_000), label: 'ORE' },
@@ -1065,6 +1191,47 @@ function CompactCountdown() {
         </div>
       ))}
     </div>
+  );
+}
+
+function InlineReleaseCountdown({ target, onComplete }: { target: string; onComplete: () => void }) {
+  const [remaining, setRemaining] = useState(() => Math.max(0, new Date(target).getTime() - Date.now()));
+  const completedRef = useRef(false);
+  useEffect(() => {
+    const tick = () => {
+      const next = Math.max(0, new Date(target).getTime() - Date.now());
+      setRemaining(next);
+      if (next === 0 && !completedRef.current) {
+        completedRef.current = true;
+        onComplete();
+      }
+    };
+    tick();
+    const interval = window.setInterval(tick, 1000);
+    return () => window.clearInterval(interval);
+  }, [target, completedRef, onComplete]);
+  const totalSeconds = Math.ceil(remaining / 1000);
+  const days = Math.floor(totalSeconds / 86_400);
+  const hours = Math.floor((totalSeconds % 86_400) / 3_600);
+  const minutes = Math.floor((totalSeconds % 3_600) / 60);
+  const seconds = totalSeconds % 60;
+  return (
+    <span className="mt-1 block font-bold tabular-nums">
+      {days > 0 ? `${days}z ` : ''}{String(hours).padStart(2, '0')}:{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+    </span>
+  );
+}
+
+function CelebrationExpiry({ releasedAt, onComplete }: { releasedAt: string; onComplete: () => void }) {
+  useEffect(() => {
+    const remaining = Math.max(0, new Date(releasedAt).getTime() + 4 * 3_600_000 - Date.now());
+    const timeout = window.setTimeout(onComplete, remaining);
+    return () => window.clearTimeout(timeout);
+  }, [releasedAt, onComplete]);
+  return (
+    <p className="relative mt-auto text-center text-[11px] text-white/55">
+      Următoarea lansare va apărea automat după această perioadă.
+    </p>
   );
 }
 
@@ -1279,7 +1446,7 @@ function PracticeLessonCard({ lesson, onOpen }: { lesson: PracticeLessonRPC; onO
 }
 
 function ArchiveSimCard({
-  sim, hasActiveSub, onStart, onViewResults, onBuySubscription, buyingSub,
+  sim, hasActiveSub, onStart, onViewResults, onBuySubscription, buyingSub, onReleaseReached,
 }: {
   sim: SimWithStatus;
   hasActiveSub: boolean;
@@ -1287,6 +1454,7 @@ function ArchiveSimCard({
   onViewResults: (attemptId?: string) => void;
   onBuySubscription: () => void;
   buyingSub: boolean;
+  onReleaseReached: () => void;
 }) {
   const isFree = !sim.requires_subscription;
   const submitted = sim.attempts
@@ -1294,6 +1462,7 @@ function ArchiveSimCard({
     .sort((a, b) => new Date(b.submitted_at!).getTime() - new Date(a.submitted_at!).getTime());
   const hasSubmitted = submitted.length > 0;
   const latestAttempt = submitted[0];
+  const isScheduled = !!sim.available_at && new Date(sim.available_at).getTime() > Date.now();
 
   return (
     <div className="group flex flex-col rounded-2xl border border-[#dfe8e3] bg-white p-5 shadow-sm transition-all duration-200 hover:border-[#abd2be] hover:shadow-md motion-reduce:transition-none">
@@ -1328,7 +1497,14 @@ function ArchiveSimCard({
         )}
       </div>
       <div className="mt-auto flex flex-col gap-2 border-t border-stone-100 pt-4">
-        {isFree && (
+        {isScheduled && sim.available_at ? (
+          <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-center text-sm font-semibold text-blue-800">
+            <span className="flex items-center justify-center gap-2">
+              <CalendarClock size={16} /> Accesibil în
+            </span>
+            <InlineReleaseCountdown target={sim.available_at} onComplete={onReleaseReached} />
+          </div>
+        ) : isFree ? (
           <>
             <button type="button" onClick={onStart} className="btn-primary w-full">
               {sim.hasInProgress ? <><PlayCircle size={16} /> Continuă simularea</>
@@ -1348,21 +1524,18 @@ function ArchiveSimCard({
               <Sparkles size={11} /> Antrenament nelimitat
             </span>
           </>
-        )}
-        {!isFree && hasSubmitted && (
+        ) : hasSubmitted ? (
           <>
             <button type="button" onClick={() => onViewResults(latestAttempt?.id)} className="btn-secondary w-full">
               <BookOpen size={16} /> Detalii simulare
             </button>
             <span className="text-center text-xs font-medium text-stone-500">Susținut — o singură încercare</span>
           </>
-        )}
-        {!isFree && hasActiveSub && !hasSubmitted && (
+        ) : hasActiveSub ? (
           <button type="button" onClick={onStart} className="btn-primary w-full">
             <PlayCircle size={16} /> {sim.hasInProgress ? 'Continuă simularea' : 'Rezolvă simularea'}
           </button>
-        )}
-        {!isFree && !hasActiveSub && !hasSubmitted && (
+        ) : (
           <>
             <button type="button" onClick={onBuySubscription} disabled={buyingSub} className="btn-accent w-full">
               {buyingSub && <Loader2 size={16} className="animate-spin" />}
