@@ -5,6 +5,7 @@ import {
   Layers, AlertTriangle, Copy, ArrowUp, ArrowDown, CheckSquare, Square, Search,
   CalendarClock,
 } from 'lucide-react';
+import { BankQuestionForm } from '@/components/admin/QuestionBankAdmin';
 
 function toDateTimeLocal(value: string | null | undefined) {
   if (!value) return '';
@@ -738,6 +739,7 @@ function QuestionsManagerAdmin({ set, lesson, onBack }: { set: PracticeSet; less
   const [questions, setQuestions] = useState<(BankQuestion & { position: number })[]>([]);
   const [loading, setLoading] = useState(true);
   const [showBankPicker, setShowBankPicker] = useState(false);
+  const [editingQuestion, setEditingQuestion] = useState<BankQuestion | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -848,6 +850,14 @@ function QuestionsManagerAdmin({ set, lesson, onBack }: { set: PracticeSet; less
               <span className="text-sm text-stone-700 truncate flex-1">{q.question_text}</span>
               <span className="text-xs font-bold text-brand-600">Corect: {q.correct_answer}</span>
               <button
+                onClick={() => setEditingQuestion(q)}
+                className="btn-ghost text-xs px-2 py-1"
+                title="Editează grila în bancă și în toate seturile"
+                aria-label={`Editează grila ${idx + 1}`}
+              >
+                <Edit2 size={13} />
+              </button>
+              <button
                 onClick={() => handleRemove(q.id)}
                 className="btn-ghost text-xs px-2 py-1 text-red-600 hover:bg-red-50"
                 title="Elimină din set"
@@ -867,6 +877,21 @@ function QuestionsManagerAdmin({ set, lesson, onBack }: { set: PracticeSet; less
           onDone={() => { setShowBankPicker(false); load(); }}
           onCancel={() => setShowBankPicker(false)}
         />
+      )}
+      {editingQuestion && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-stone-900/50 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Editează grila din set">
+          <div className="my-8 max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white shadow-2xl">
+            <p className="px-6 pt-5 text-sm text-stone-600">
+              Modificările se salvează în banca de grile și apar în toate seturile care folosesc această grilă.
+            </p>
+            <BankQuestionForm
+              lessonId={editingQuestion.lesson_id}
+              question={editingQuestion}
+              onSaved={() => { setEditingQuestion(null); load(); }}
+              onCancel={() => setEditingQuestion(null)}
+            />
+          </div>
+        </div>
       )}
     </div>
   );
