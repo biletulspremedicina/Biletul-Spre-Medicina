@@ -575,7 +575,7 @@ function BankQuestionRow({
 
 // ── Bank Question Form (create/edit) ────────────────────────────────────
 
-function BankQuestionForm({
+export function BankQuestionForm({
   lessonId, question, onSaved, onCancel,
 }: {
   lessonId: string;
@@ -631,18 +631,23 @@ function BankQuestionForm({
       updated_at: new Date().toISOString(),
     };
 
+    let saveError: string | null = null;
     if (question) {
       const updatePayload = { ...payload };
       delete (updatePayload as Record<string, unknown>).lesson_id;
       const { error: err } = await supabase.from('practice_bank_questions').update(updatePayload).eq('id', question.id);
-      if (err) setError(err.message);
+      if (err) saveError = err.message;
     } else {
       const { error: err } = await supabase.from('practice_bank_questions').insert(payload);
-      if (err) setError(err.message);
+      if (err) saveError = err.message;
     }
 
     setSaving(false);
-    if (!error) onSaved();
+    if (saveError) {
+      setError(saveError);
+      return;
+    }
+    onSaved();
   };
 
   return (
