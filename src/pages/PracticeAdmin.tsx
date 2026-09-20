@@ -6,6 +6,7 @@ import {
   CalendarClock, GripVertical,
 } from 'lucide-react';
 import { BankQuestionForm } from '@/components/admin/QuestionBankAdmin';
+import { loadBankQuestions, loadQuestionSetMemberships, type QuestionSetMemberships } from '@/lib/questionBankAdmin';
 
 function toDateTimeLocal(value: string | null | undefined) {
   if (!value) return '';
@@ -1140,6 +1141,7 @@ function BankPickerDialog({
   onCancel: () => void;
 }) {
   const [bankQuestions, setBankQuestions] = useState<BankQuestion[]>([]);
+  const [memberships, setMemberships] = useState<QuestionSetMemberships>(new Map());
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | 'CS' | 'CG'>('all');
@@ -1150,16 +1152,21 @@ function BankPickerDialog({
   const existingSet = new Set(existingQuestionIds);
 
   useEffect(() => {
+    let active = true;
     (async () => {
-      const { data } = await supabase
-        .from('practice_bank_questions')
-        .select('*')
-        .eq('lesson_id', lesson.id)
-        .eq('is_archived', false)
-        .order('created_at', { ascending: false });
-      setBankQuestions((data || []) as BankQuestion[]);
-      setLoading(false);
+      try {
+        const questions = await loadBankQuestions(lesson.id);
+        const questionMemberships = await loadQuestionSetMemberships(questions.map((q) => q.id));
+        if (!active) return;
+        setBankQuestions(questions);
+        setMemberships(questionMemberships);
+      } catch (err) {
+        if (active) setError(err instanceof Error ? err.message : 'Nu s-au putut încărca grilele din bancă.');
+      } finally {
+        if (active) setLoading(false);
+      }
     })();
+    return () => { active = false; };
   }, [lesson.id]);
 
   const filtered = bankQuestions.filter((q) => {
@@ -1221,28 +1228,41 @@ function BankPickerDialog({
 
           {loading ? (
             <p className="text-sm text-stone-500">Se încarcă...</p>
-          ) : filtered.length === 0 ? (
+          ) : error && bankQuestions.length === 0 ? null : filtered.length === 0 ? (
             <p className="text-sm text-stone-500 py-4">
               Nu există grile disponibile. Grilele deja în set sunt ascunse. Adaugă grile noi în banca de grile a lecției.
             </p>
           ) : (
             <div className="space-y-2">
-              {filtered.map((q) => (
-                <button
-                  key={q.id}
-                  onClick={() => toggleSelect(q.id)}
-                  className={`w-full flex items-center gap-3 rounded-xl border px-4 py-3 text-left transition-all ${
-                    selectedIds.has(q.id) ? 'border-brand-500 bg-brand-50 ring-1 ring-brand-400' : 'border-stone-200 hover:bg-stone-50'
-                  }`}
-                >
-                  {selectedIds.has(q.id)
-                    ? <CheckSquare size={18} className="text-brand-600 flex-shrink-0" />
-                    : <Square size={18} className="text-stone-400 flex-shrink-0" />}
-                  <span className="badge bg-stone-100 text-stone-600 flex-shrink-0">{q.type}</span>
-                  <span className="text-sm text-stone-700 truncate flex-1">{q.question_text}</span>
-                  <span className="text-xs font-bold text-brand-600 flex-shrink-0">{q.correct_answer}</span>
-                </button>
-              ))}
+              {filtered.map((q) => {
+                const otherSets = (memberships.get(q.id) || []).filter((set) => set.id !== setId);
+                return (
+                  <button
+                    key={q.id}
+                    onClick={() => toggleSelect(q.id)}
+                    className={`w-full rounded-xl border px-4 py-3 text-left transition-all ${
+                      selectedIds.has(q.id) ? 'border-brand-500 bg-brand-50 ring-1 ring-brand-400' : 'border-stone-200 hover:bg-stone-50'
+                    }`}
+                  >
+                    <span className="flex items-center gap-3">
+                      {selectedIds.has(q.id)
+                        ? <CheckSquare size={18} className="text-brand-600 flex-shrink-0" />
+                        : <Square size={18} className="text-stone-400 flex-shrink-0" />}
+                      <span className="badge bg-stone-100 text-stone-600 flex-shrink-0">{q.type}</span>
+                      <span className="text-sm text-stone-700 truncate flex-1">{q.question_text}</span>
+                      <span className="text-xs font-bold text-brand-600 flex-shrink-0">{q.correct_answer}</span>
+                    </span>
+                    {otherSets.length > 0 && (
+                      <span className="mt-2 ml-8 flex flex-wrap items-center gap-1.5 text-xs font-semibold text-amber-800">
+                        <Layers size={13} /> Deja în {otherSets.length === 1 ? 'setul' : 'seturile'}:
+                        {otherSets.map((set) => (
+                          <span key={set.id} className="rounded-full bg-amber-100 px-2 py-0.5 text-amber-900">{set.title}</span>
+                        ))}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           )}
 
