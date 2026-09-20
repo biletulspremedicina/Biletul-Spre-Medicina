@@ -79,13 +79,19 @@ export default function PracticeAdmin() {
   const [editingLesson, setEditingLesson] = useState<PracticeLesson | null>(null);
   const [creatingLesson, setCreatingLesson] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState<PracticeLesson | null>(null);
+  const [savingLessonOrder, setSavingLessonOrder] = useState(false);
+  const [lessonOrderError, setLessonOrderError] = useState<string | null>(null);
+  const [draggingLessonId, setDraggingLessonId] = useState<string | null>(null);
+  const [dragOverLessonId, setDragOverLessonId] = useState<string | null>(null);
 
   const loadLessons = useCallback(async () => {
     setLoading(true);
     const { data } = await supabase
       .from('practice_lessons')
       .select('*')
-      .order('position', { ascending: true });
+      .order('position', { ascending: true })
+      .order('created_at', { ascending: true })
+      .order('id', { ascending: true });
     setLessons((data || []) as PracticeLesson[]);
     setLoading(false);
   }, []);
@@ -94,8 +100,31 @@ export default function PracticeAdmin() {
     loadLessons();
   }, [loadLessons]);
 
+  const reorderLessons = async (from: number, to: number) => {
+    if (savingLessonOrder || from === to || from < 0 || to < 0 || from >= lessons.length || to >= lessons.length) return;
+    const reordered = moveItem(lessons, from, to);
+    setLessons(reordered.map((lesson, index) => ({ ...lesson, position: index })));
+    setSavingLessonOrder(true);
+    setLessonOrderError(null);
+
+    try {
+      const results = await Promise.all(reordered.map((lesson, index) =>
+        supabase.from('practice_lessons')
+          .update({ position: index, updated_at: new Date().toISOString() })
+          .eq('id', lesson.id),
+      ));
+      const failed = results.find((result) => result.error);
+      if (failed?.error) throw failed.error;
+    } catch (error) {
+      setLessonOrderError(`Ordinea lecțiilor nu a putut fi salvată: ${error instanceof Error ? error.message : 'Încearcă din nou.'}`);
+      await loadLessons();
+    } finally {
+      setSavingLessonOrder(false);
+    }
+  };
+
   if (creatingLesson) {
-    return <LessonForm onSaved={() => { setCreatingLesson(false); loadLessons(); }} onCancel={() => setCreatingLesson(false)} />;
+    return <LessonForm position={Math.max(-1, ...lessons.map((lesson) => lesson.position)) + 1} onSaved={() => { setCreatingLesson(false); loadLessons(); }} onCancel={() => setCreatingLesson(false)} />;
   }
 
   if (editingLesson) {
@@ -130,6 +159,9 @@ export default function PracticeAdmin() {
         </button>
       </div>
 
+      {lessons.length > 1 && <p className="mb-3 text-xs text-stone-500">Trage lecțiile de mâner, folosește săgețile sau introdu direct poziția dorită.</p>}
+      {lessonOrderError && <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{lessonOrderError}</div>}
+
       {loading ? (
         <p className="text-sm text-stone-500">Se încarcă...</p>
       ) : lessons.length === 0 ? (
@@ -141,16 +173,43 @@ export default function PracticeAdmin() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {lessons.map((lesson, idx) => (
-            <LessonAdminCard
+            <div
               key={lesson.id}
-              lesson={lesson}
-              canMoveUp={idx > 0}
-              canMoveDown={idx < lessons.length - 1}
-              onEdit={() => setEditingLesson(lesson)}
-              onReload={loadLessons}
-              onOpen={() => setSelectedLesson(lesson)}
-              onMove={(dir) => moveLesson(lesson, dir, lessons, loadLessons)}
-            />
+              className={dragOverLessonId === lesson.id ? 'rounded-2xl ring-2 ring-brand-500' : ''}
+              onDragOver={(event) => {
+                if (!draggingLessonId || draggingLessonId === lesson.id) return;
+                event.preventDefault();
+                event.dataTransfer.dropEffect = 'move';
+                setDragOverLessonId(lesson.id);
+              }}
+              onDrop={(event) => {
+                event.preventDefault();
+                const from = lessons.findIndex((item) => item.id === draggingLessonId);
+                setDraggingLessonId(null);
+                setDragOverLessonId(null);
+                if (from >= 0) reorderLessons(from, idx);
+              }}
+            >
+              <LessonAdminCard
+                lesson={lesson}
+                order={idx + 1}
+                total={lessons.length}
+                savingOrder={savingLessonOrder}
+                canMoveUp={idx > 0}
+                canMoveDown={idx < lessons.length - 1}
+                onEdit={() => setEditingLesson(lesson)}
+                onReload={loadLessons}
+                onOpen={() => setSelectedLesson(lesson)}
+                onMove={(dir) => reorderLessons(idx, idx + (dir === 'up' ? -1 : 1))}
+                onMoveTo={(target) => reorderLessons(idx, target)}
+                onDragStart={(event) => {
+                  event.dataTransfer.effectAllowed = 'move';
+                  event.dataTransfer.setData('text/plain', lesson.id);
+                  setDraggingLessonId(lesson.id);
+                }}
+                onDragEnd={() => { setDraggingLessonId(null); setDragOverLessonId(null); }}
+              />
+            </div>
           ))}
         </div>
       )}
@@ -158,30 +217,24 @@ export default function PracticeAdmin() {
   );
 }
 
-async function moveLesson(lesson: PracticeLesson, dir: 'up' | 'down', all: PracticeLesson[], reload: () => void) {
-  const idx = all.findIndex((l) => l.id === lesson.id);
-  const swapIdx = dir === 'up' ? idx - 1 : idx + 1;
-  if (swapIdx < 0 || swapIdx >= all.length) return;
-  const other = all[swapIdx];
-  await Promise.all([
-    supabase.from('practice_lessons').update({ position: other.position, updated_at: new Date().toISOString() }).eq('id', lesson.id),
-    supabase.from('practice_lessons').update({ position: lesson.position, updated_at: new Date().toISOString() }).eq('id', other.id),
-  ]);
-  reload();
-}
-
 // ── Lesson Card ─────────────────────────────────────────────────────────
 
 function LessonAdminCard({
-  lesson, canMoveUp, canMoveDown, onEdit, onReload, onOpen, onMove,
+  lesson, order, total, savingOrder, canMoveUp, canMoveDown, onEdit, onReload, onOpen, onMove, onMoveTo, onDragStart, onDragEnd,
 }: {
   lesson: PracticeLesson;
+  order: number;
+  total: number;
+  savingOrder: boolean;
   canMoveUp: boolean;
   canMoveDown: boolean;
   onEdit: () => void;
   onReload: () => void;
   onOpen: () => void;
   onMove: (dir: 'up' | 'down') => void;
+  onMoveTo: (index: number) => void;
+  onDragStart: (event: DragEvent<HTMLButtonElement>) => void;
+  onDragEnd: () => void;
 }) {
   const [setCount, setSetCount] = useState(0);
   const [publishError, setPublishError] = useState<string | null>(null);
@@ -219,22 +272,37 @@ function LessonAdminCard({
     <div className="card p-5">
       <div className="flex flex-col gap-3">
         <div className="flex items-start gap-2 flex-wrap">
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col items-center gap-1">
+            <button
+              type="button"
+              draggable={!savingOrder}
+              onDragStart={onDragStart}
+              onDragEnd={onDragEnd}
+              disabled={savingOrder}
+              className="cursor-grab text-stone-400 hover:text-brand-600 active:cursor-grabbing disabled:opacity-30"
+              title="Trage pentru a schimba ordinea lecției"
+              aria-label={`Trage lecția ${lesson.title}`}
+            >
+              <GripVertical size={17} />
+            </button>
             <button
               onClick={() => onMove('up')}
-              disabled={!canMoveUp}
+              disabled={savingOrder || !canMoveUp}
               className="text-stone-400 hover:text-stone-700 disabled:opacity-30"
+              aria-label={`Mută lecția ${lesson.title} mai sus`}
             >
               <ArrowUp size={14} />
             </button>
             <button
               onClick={() => onMove('down')}
-              disabled={!canMoveDown}
+              disabled={savingOrder || !canMoveDown}
               className="text-stone-400 hover:text-stone-700 disabled:opacity-30"
+              aria-label={`Mută lecția ${lesson.title} mai jos`}
             >
               <ArrowDown size={14} />
             </button>
           </div>
+          <PositionInput position={order} total={total} onMove={onMoveTo} label={`Poziția lecției ${lesson.title}`} disabled={savingOrder} />
           <div className="flex-1 min-w-0">
             <span className="badge bg-stone-100 text-stone-500 mb-1">{lesson.subject}</span>
             <h3 className="font-display text-base font-semibold text-stone-900">{lesson.title}</h3>
@@ -278,7 +346,7 @@ function LessonAdminCard({
 
 // ── Lesson Form ─────────────────────────────────────────────────────────
 
-function LessonForm({ lesson, onSaved, onCancel }: { lesson?: PracticeLesson; onSaved: () => void; onCancel: () => void }) {
+function LessonForm({ lesson, position = 0, onSaved, onCancel }: { lesson?: PracticeLesson; position?: number; onSaved: () => void; onCancel: () => void }) {
   const [title, setTitle] = useState(lesson?.title || '');
   const [description, setDescription] = useState(lesson?.description || '');
   const [subject, setSubject] = useState(lesson?.subject || 'Biologie');
@@ -295,15 +363,17 @@ function LessonForm({ lesson, onSaved, onCancel }: { lesson?: PracticeLesson; on
       subject: subject.trim() || 'Biologie',
       updated_at: new Date().toISOString(),
     };
+    let saveError: string | null = null;
     if (lesson) {
       const { error: err } = await supabase.from('practice_lessons').update(payload).eq('id', lesson.id);
-      if (err) setError(err.message);
+      if (err) saveError = err.message;
     } else {
-      const { error: err } = await supabase.from('practice_lessons').insert({ ...payload, position: 0 });
-      if (err) setError(err.message);
+      const { error: err } = await supabase.from('practice_lessons').insert({ ...payload, position });
+      if (err) saveError = err.message;
     }
     setSaving(false);
-    if (!error) onSaved();
+    if (saveError) setError(saveError);
+    else onSaved();
   };
 
   return (
