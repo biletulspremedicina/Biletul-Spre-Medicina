@@ -1,9 +1,9 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, type DragEvent } from 'react';
 import { supabase, type PracticeLesson, type PracticeSet, type BankQuestion } from '@/lib/supabase';
 import {
   Plus, Edit2, Trash2, Eye, EyeOff, ChevronLeft, Save, X, Loader2, BookOpen,
   Layers, AlertTriangle, Copy, ArrowUp, ArrowDown, CheckSquare, Square, Search,
-  CalendarClock,
+  CalendarClock, GripVertical,
 } from 'lucide-react';
 import { BankQuestionForm } from '@/components/admin/QuestionBankAdmin';
 
@@ -19,6 +19,56 @@ function formatReleaseDate(value: string) {
   return new Date(value).toLocaleString('ro-RO', {
     day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
   });
+}
+
+function moveItem<T>(items: T[], from: number, to: number): T[] {
+  const reordered = [...items];
+  reordered.splice(to, 0, ...reordered.splice(from, 1));
+  return reordered;
+}
+
+function PositionInput({ position, total, onMove, label, disabled }: {
+  position: number;
+  total: number;
+  onMove: (index: number) => void;
+  label: string;
+  disabled: boolean;
+}) {
+  const [draft, setDraft] = useState(String(position));
+
+  useEffect(() => setDraft(String(position)), [position]);
+
+  const commit = (value: string) => {
+    const next = Number(value);
+    if (Number.isInteger(next) && next >= 1 && next <= total && next !== position) {
+      onMove(next - 1);
+    } else {
+      setDraft(String(position));
+    }
+  };
+
+  return (
+    <input
+      type="number"
+      min={1}
+      max={total}
+      value={draft}
+      disabled={disabled}
+      aria-label={label}
+      title="Introdu poziția dorită și apasă Enter"
+      onChange={(event) => setDraft(event.target.value)}
+      onBlur={(event) => commit(event.currentTarget.value)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter') event.currentTarget.blur();
+        if (event.key === 'Escape') {
+          event.currentTarget.value = String(position);
+          setDraft(String(position));
+          event.currentTarget.blur();
+        }
+      }}
+      className="h-9 w-12 rounded-lg border border-stone-200 bg-stone-50 text-center text-xs font-bold text-stone-700 focus:border-brand-500 focus:outline-none disabled:opacity-50"
+    />
+  );
 }
 
 // ── Main component ──────────────────────────────────────────────────────
@@ -295,6 +345,10 @@ function SetsManager({ lesson, onBack }: { lesson: PracticeLesson; onBack: () =>
   const [creatingSet, setCreatingSet] = useState(false);
   const [editingSet, setEditingSet] = useState<PracticeSet | null>(null);
   const [selectedSet, setSelectedSet] = useState<PracticeSet | null>(null);
+  const [savingOrder, setSavingOrder] = useState(false);
+  const [orderError, setOrderError] = useState<string | null>(null);
+  const [draggingSetId, setDraggingSetId] = useState<string | null>(null);
+  const [dragOverSetId, setDragOverSetId] = useState<string | null>(null);
 
   const loadSets = useCallback(async () => {
     setLoading(true);
@@ -302,7 +356,9 @@ function SetsManager({ lesson, onBack }: { lesson: PracticeLesson; onBack: () =>
       .from('practice_sets')
       .select('*')
       .eq('lesson_id', lesson.id)
-      .order('position', { ascending: true });
+      .order('position', { ascending: true })
+      .order('created_at', { ascending: true })
+      .order('id', { ascending: true });
     setSets((data || []) as PracticeSet[]);
     setLoading(false);
   }, [lesson.id]);
@@ -310,6 +366,29 @@ function SetsManager({ lesson, onBack }: { lesson: PracticeLesson; onBack: () =>
   useEffect(() => {
     loadSets();
   }, [loadSets]);
+
+  const reorderSets = async (from: number, to: number) => {
+    if (savingOrder || from === to || from < 0 || to < 0 || from >= sets.length || to >= sets.length) return;
+    const reordered = moveItem(sets, from, to);
+    setSets(reordered.map((item, index) => ({ ...item, position: index })));
+    setSavingOrder(true);
+    setOrderError(null);
+
+    try {
+      const results = await Promise.all(reordered.map((item, index) =>
+        supabase.from('practice_sets')
+          .update({ position: index, updated_at: new Date().toISOString() })
+          .eq('id', item.id),
+      ));
+      const failed = results.find((result) => result.error);
+      if (failed?.error) throw failed.error;
+    } catch (error) {
+      setOrderError(`Ordinea seturilor nu a putut fi salvată: ${error instanceof Error ? error.message : 'Încearcă din nou.'}`);
+      await loadSets();
+    } finally {
+      setSavingOrder(false);
+    }
+  };
 
   if (creatingSet) {
     return (
@@ -365,6 +444,9 @@ function SetsManager({ lesson, onBack }: { lesson: PracticeLesson; onBack: () =>
         </button>
       </div>
 
+      {sets.length > 1 && <p className="mb-3 text-xs text-stone-500">Trage seturile de mâner, folosește săgețile sau introdu direct poziția dorită.</p>}
+      {orderError && <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{orderError}</div>}
+
       {loading ? (
         <p className="text-sm text-stone-500">Se încarcă...</p>
       ) : sets.length === 0 ? (
@@ -375,16 +457,43 @@ function SetsManager({ lesson, onBack }: { lesson: PracticeLesson; onBack: () =>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {sets.map((set, idx) => (
-            <SetAdminCard
+            <div
               key={set.id}
-              set={set}
-              canMoveUp={idx > 0}
-              canMoveDown={idx < sets.length - 1}
-              onEdit={() => setEditingSet(set)}
-              onReload={loadSets}
-              onOpen={() => setSelectedSet(set)}
-              onMove={(dir) => moveSet(set, dir, sets, loadSets)}
-            />
+              className={dragOverSetId === set.id ? 'rounded-2xl ring-2 ring-brand-500' : ''}
+              onDragOver={(event) => {
+                if (!draggingSetId || draggingSetId === set.id) return;
+                event.preventDefault();
+                event.dataTransfer.dropEffect = 'move';
+                setDragOverSetId(set.id);
+              }}
+              onDrop={(event) => {
+                event.preventDefault();
+                const from = sets.findIndex((item) => item.id === draggingSetId);
+                setDraggingSetId(null);
+                setDragOverSetId(null);
+                if (from >= 0) reorderSets(from, idx);
+              }}
+            >
+              <SetAdminCard
+                set={set}
+                order={idx + 1}
+                total={sets.length}
+                savingOrder={savingOrder}
+                canMoveUp={idx > 0}
+                canMoveDown={idx < sets.length - 1}
+                onEdit={() => setEditingSet(set)}
+                onReload={loadSets}
+                onOpen={() => setSelectedSet(set)}
+                onMove={(dir) => reorderSets(idx, idx + (dir === 'up' ? -1 : 1))}
+                onMoveTo={(target) => reorderSets(idx, target)}
+                onDragStart={(event) => {
+                  event.dataTransfer.effectAllowed = 'move';
+                  event.dataTransfer.setData('text/plain', set.id);
+                  setDraggingSetId(set.id);
+                }}
+                onDragEnd={() => { setDraggingSetId(null); setDragOverSetId(null); }}
+              />
+            </div>
           ))}
         </div>
       )}
@@ -392,30 +501,24 @@ function SetsManager({ lesson, onBack }: { lesson: PracticeLesson; onBack: () =>
   );
 }
 
-async function moveSet(set: PracticeSet, dir: 'up' | 'down', all: PracticeSet[], reload: () => void) {
-  const idx = all.findIndex((s) => s.id === set.id);
-  const swapIdx = dir === 'up' ? idx - 1 : idx + 1;
-  if (swapIdx < 0 || swapIdx >= all.length) return;
-  const other = all[swapIdx];
-  await Promise.all([
-    supabase.from('practice_sets').update({ position: other.position, updated_at: new Date().toISOString() }).eq('id', set.id),
-    supabase.from('practice_sets').update({ position: set.position, updated_at: new Date().toISOString() }).eq('id', other.id),
-  ]);
-  reload();
-}
-
 // ── Set Card ────────────────────────────────────────────────────────────
 
 function SetAdminCard({
-  set, canMoveUp, canMoveDown, onEdit, onReload, onOpen, onMove,
+  set, order, total, savingOrder, canMoveUp, canMoveDown, onEdit, onReload, onOpen, onMove, onMoveTo, onDragStart, onDragEnd,
 }: {
   set: PracticeSet;
+  order: number;
+  total: number;
+  savingOrder: boolean;
   canMoveUp: boolean;
   canMoveDown: boolean;
   onEdit: () => void;
   onReload: () => void;
   onOpen: () => void;
   onMove: (dir: 'up' | 'down') => void;
+  onMoveTo: (index: number) => void;
+  onDragStart: (event: DragEvent<HTMLButtonElement>) => void;
+  onDragEnd: () => void;
 }) {
   const [questionCount, setQuestionCount] = useState(0);
   const [publishError, setPublishError] = useState<string | null>(null);
@@ -514,14 +617,27 @@ function SetAdminCard({
     <div className="card p-5">
       <div className="flex flex-col gap-3">
         <div className="flex items-start gap-2 flex-wrap">
-          <div className="flex flex-col gap-1">
-            <button onClick={() => onMove('up')} disabled={!canMoveUp} className="text-stone-400 hover:text-stone-700 disabled:opacity-30">
+          <div className="flex flex-col items-center gap-1">
+            <button
+              type="button"
+              draggable={!savingOrder}
+              onDragStart={onDragStart}
+              onDragEnd={onDragEnd}
+              disabled={savingOrder}
+              className="cursor-grab text-stone-400 hover:text-brand-600 active:cursor-grabbing disabled:opacity-30"
+              title="Trage pentru a schimba ordinea setului"
+              aria-label={`Trage setul ${set.title}`}
+            >
+              <GripVertical size={17} />
+            </button>
+            <button onClick={() => onMove('up')} disabled={savingOrder || !canMoveUp} className="text-stone-400 hover:text-stone-700 disabled:opacity-30" aria-label={`Mută setul ${set.title} mai sus`}>
               <ArrowUp size={14} />
             </button>
-            <button onClick={() => onMove('down')} disabled={!canMoveDown} className="text-stone-400 hover:text-stone-700 disabled:opacity-30">
+            <button onClick={() => onMove('down')} disabled={savingOrder || !canMoveDown} className="text-stone-400 hover:text-stone-700 disabled:opacity-30" aria-label={`Mută setul ${set.title} mai jos`}>
               <ArrowDown size={14} />
             </button>
           </div>
+          <PositionInput position={order} total={total} onMove={onMoveTo} label={`Poziția setului ${set.title}`} disabled={savingOrder} />
           <div className="flex-1 min-w-0">
             <h3 className="font-display text-base font-semibold text-stone-900">{set.title}</h3>
           </div>
@@ -740,6 +856,10 @@ function QuestionsManagerAdmin({ set, lesson, onBack }: { set: PracticeSet; less
   const [loading, setLoading] = useState(true);
   const [showBankPicker, setShowBankPicker] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<BankQuestion | null>(null);
+  const [savingOrder, setSavingOrder] = useState(false);
+  const [orderError, setOrderError] = useState<string | null>(null);
+  const [draggingQuestionId, setDraggingQuestionId] = useState<string | null>(null);
+  const [dragOverQuestionId, setDragOverQuestionId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -791,18 +911,24 @@ function QuestionsManagerAdmin({ set, lesson, onBack }: { set: PracticeSet; less
     load();
   };
 
-  const handleMove = async (idx: number, dir: 'up' | 'down') => {
-    if (dir === 'up' && idx === 0) return;
-    if (dir === 'down' && idx === questions.length - 1) return;
-    const reordered = [...questions];
-    const swapIdx = dir === 'up' ? idx - 1 : idx + 1;
-    [reordered[idx], reordered[swapIdx]] = [reordered[swapIdx], reordered[idx]];
-    const orderedIds = reordered.map((q) => q.id);
-    await supabase.rpc('admin_reorder_set_questions', {
-      p_set_id: set.id,
-      p_ordered_ids: orderedIds,
-    });
-    load();
+  const reorderQuestions = async (from: number, to: number) => {
+    if (savingOrder || from === to || from < 0 || to < 0 || from >= questions.length || to >= questions.length) return;
+    const reordered = moveItem(questions, from, to).map((question, index) => ({ ...question, position: index }));
+    setQuestions(reordered);
+    setSavingOrder(true);
+    setOrderError(null);
+    try {
+      const { error } = await supabase.rpc('admin_reorder_set_questions', {
+        p_set_id: set.id,
+        p_ordered_ids: reordered.map((question) => question.id),
+      });
+      if (error) throw error;
+    } catch (error) {
+      setQuestions(questions);
+      setOrderError(`Ordinea grilelor nu a putut fi salvată: ${error instanceof Error ? error.message : 'Încearcă din nou.'}`);
+    } finally {
+      setSavingOrder(false);
+    }
   };
 
   return (
@@ -829,6 +955,9 @@ function QuestionsManagerAdmin({ set, lesson, onBack }: { set: PracticeSet; less
         </button>
       </div>
 
+      {questions.length > 1 && <p className="mb-3 text-xs text-stone-500">Trage grilele de mâner, folosește săgețile sau introdu direct poziția dorită.</p>}
+      {orderError && <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{orderError}</div>}
+
       {loading ? (
         <p className="text-sm text-stone-500">Se încarcă...</p>
       ) : questions.length === 0 ? (
@@ -836,16 +965,48 @@ function QuestionsManagerAdmin({ set, lesson, onBack }: { set: PracticeSet; less
       ) : (
         <div className="space-y-2">
           {questions.map((q, idx) => (
-            <div key={q.id} className="flex items-center gap-3 rounded-xl border border-stone-200 bg-white px-4 py-3">
-              <div className="flex flex-col gap-0.5">
-                <button onClick={() => handleMove(idx, 'up')} disabled={idx === 0} className="text-stone-400 hover:text-stone-700 disabled:opacity-30">
+            <div
+              key={q.id}
+              className={`flex items-center gap-3 rounded-xl border bg-white px-4 py-3 ${dragOverQuestionId === q.id ? 'border-brand-500 ring-2 ring-brand-300' : 'border-stone-200'}`}
+              onDragOver={(event) => {
+                if (!draggingQuestionId || draggingQuestionId === q.id) return;
+                event.preventDefault();
+                event.dataTransfer.dropEffect = 'move';
+                setDragOverQuestionId(q.id);
+              }}
+              onDrop={(event) => {
+                event.preventDefault();
+                const from = questions.findIndex((question) => question.id === draggingQuestionId);
+                setDraggingQuestionId(null);
+                setDragOverQuestionId(null);
+                if (from >= 0) reorderQuestions(from, idx);
+              }}
+            >
+              <div className="flex flex-col items-center gap-0.5">
+                <button
+                  type="button"
+                  draggable={!savingOrder}
+                  disabled={savingOrder}
+                  onDragStart={(event) => {
+                    event.dataTransfer.effectAllowed = 'move';
+                    event.dataTransfer.setData('text/plain', q.id);
+                    setDraggingQuestionId(q.id);
+                  }}
+                  onDragEnd={() => { setDraggingQuestionId(null); setDragOverQuestionId(null); }}
+                  className="cursor-grab text-stone-400 hover:text-brand-600 active:cursor-grabbing disabled:opacity-30"
+                  title="Trage pentru a schimba ordinea grilei"
+                  aria-label={`Trage grila ${idx + 1}`}
+                >
+                  <GripVertical size={16} />
+                </button>
+                <button onClick={() => reorderQuestions(idx, idx - 1)} disabled={savingOrder || idx === 0} className="text-stone-400 hover:text-stone-700 disabled:opacity-30" aria-label={`Mută grila ${idx + 1} mai sus`}>
                   <ArrowUp size={13} />
                 </button>
-                <button onClick={() => handleMove(idx, 'down')} disabled={idx === questions.length - 1} className="text-stone-400 hover:text-stone-700 disabled:opacity-30">
+                <button onClick={() => reorderQuestions(idx, idx + 1)} disabled={savingOrder || idx === questions.length - 1} className="text-stone-400 hover:text-stone-700 disabled:opacity-30" aria-label={`Mută grila ${idx + 1} mai jos`}>
                   <ArrowDown size={13} />
                 </button>
               </div>
-              <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-stone-100 text-xs font-bold text-stone-600">{idx + 1}</span>
+              <PositionInput position={idx + 1} total={questions.length} onMove={(target) => reorderQuestions(idx, target)} label={`Poziția grilei ${idx + 1}`} disabled={savingOrder} />
               <span className="badge bg-stone-100 text-stone-600">{q.type}</span>
               <span className="text-sm text-stone-700 truncate flex-1">{q.question_text}</span>
               <span className="text-xs font-bold text-brand-600">Corect: {q.correct_answer}</span>
