@@ -257,54 +257,62 @@ html.student-dark .release-access-button:hover { background-color: #eaf9f2; }
   position: relative;
   display: flex;
   align-items: center;
-  min-height: 265px;
+  min-height: 218px;
   overflow: hidden;
   border-bottom: 1px solid #dbe3dd;
-  background: #f9f8f3;
+  background: #123b31;
 }
 
 .simulation-library__hero-copy {
   position: relative;
   z-index: 1;
-  width: 63%;
-  padding: 40px clamp(24px, 4vw, 64px);
+  width: 70%;
+  padding: 36px 24px;
 }
 
 .simulation-library__eyebrow {
-  margin-bottom: 17px;
-  color: #436859;
-  font-size: 10px;
+  margin-bottom: 12px;
+  color: #c4ddd0;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: .34em;
+  letter-spacing: .25em;
   text-transform: uppercase;
 }
 
 .simulation-library__hero h1 {
   font-family: Georgia, Cambria, "Times New Roman", serif;
-  font-size: clamp(40px, 5vw, 72px);
-  line-height: 1.03;
+  font-size: clamp(32px, 3.7vw, 54px);
+  line-height: 1.08;
   font-weight: 700;
-  letter-spacing: -.05em;
-  white-space: nowrap;
+  letter-spacing: -.035em;
+  color: #fffefa;
 }
 
 .simulation-library__subtitle {
-  margin-top: 13px;
-  color: #344f4d;
-  font-family: Georgia, Cambria, "Times New Roman", serif;
-  font-size: clamp(16px, 1.8vw, 24px);
-  line-height: 1.35;
+  margin-top: 12px;
+  color: #d9e9df;
+  font-size: 16px;
+  line-height: 1.5;
 }
 
 .simulation-library__hero-photo {
   position: absolute;
-  inset: 0 0 0 43%;
+  inset: 0 0 0 39%;
   background-image:
-    linear-gradient(90deg, #f9f8f3 0%, rgba(249,248,243,.86) 14%, rgba(249,248,243,.08) 45%),
+    linear-gradient(90deg, #123b31 0%, rgba(18,59,49,.76) 24%, rgba(18,59,49,.36) 61%, rgba(18,59,49,.64) 100%),
     url('https://upload.wikimedia.org/wikipedia/commons/2/24/Test-986769_640.jpg');
   background-size: cover;
   background-position: center 43%;
-  filter: saturate(.38);
+  filter: saturate(.55);
+}
+
+@media (min-width: 640px) {
+  .simulation-library__hero-copy { padding-right: 36px; padding-left: 36px; }
+  .simulation-library__subtitle { font-size: 18px; }
+}
+
+@media (min-width: 1024px) {
+  .simulation-library__hero { min-height: 238px; }
 }
 
 .simulation-library__section-heading {
@@ -473,14 +481,12 @@ html.student-dark .simulation-library__card .btn-primary:hover { background: #23
 .simulation-library__card .btn-primary:active { transform: none; }
 
 html.student-dark .simulation-library { background: #172923; color: #e8f1e9; border-color: #3b5949; }
-html.student-dark .simulation-library__hero { background: #192b25; border-color: #3b5949; }
+html.student-dark .simulation-library__hero { background: #123b31; border-color: #3b5949; }
 html.student-dark .simulation-library__hero-photo {
-  opacity: .32;
-  background-image: linear-gradient(90deg, #192b25 0%, rgba(25,43,37,.7) 22%, transparent 55%),
+  background-image: linear-gradient(90deg, #123b31 0%, rgba(18,59,49,.76) 24%, rgba(18,59,49,.36) 61%, rgba(18,59,49,.64) 100%),
     url('https://upload.wikimedia.org/wikipedia/commons/2/24/Test-986769_640.jpg');
 }
 html.student-dark .simulation-library__eyebrow { color: #a1d7b9; }
-html.student-dark .simulation-library__subtitle,
 html.student-dark .simulation-library__progress { color: #c0d2c7; }
 html.student-dark .simulation-library__card { background: #1d332a; border-color: #45604f; }
 html.student-dark .simulation-library__grid { background: #1a2f26; border-color: #3b5949; }
@@ -493,10 +499,8 @@ html.student-dark .simulation-library__card-meta { color: #c1d1c5; border-color:
 }
 
 @media (max-width: 700px) {
-  .simulation-library__hero { min-height: 246px; }
-  .simulation-library__hero-copy { width: 100%; padding: 34px 24px; }
-  .simulation-library__hero h1 { white-space: normal; font-size: clamp(38px, 10vw, 56px); }
-  .simulation-library__hero-photo { inset: 0; opacity: .2; }
+  .simulation-library__hero-copy { width: 100%; }
+  .simulation-library__hero-photo { inset: 0; opacity: .34; }
   .simulation-library__section-heading { align-items: start; flex-direction: column; gap: 12px; }
   .simulation-library__grid { grid-template-columns: 1fr; }
 }
