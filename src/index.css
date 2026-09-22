@@ -244,3 +244,265 @@ html.student-dark .release-access-button:hover { background-color: #eaf9f2; }
 @media (prefers-reduced-motion: reduce) {
   .release-confetti-stream { animation: none; opacity: 0; }
 }
+
+/* Biology simulations: an exam-paper catalogue, distinct from the chapter library. */
+.simulation-library {
+  color: #142b27;
+  background: #fffefa;
+  border: 1px solid #e1e7e2;
+  overflow: hidden;
+}
+
+.simulation-library__hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 265px;
+  overflow: hidden;
+  border-bottom: 1px solid #dbe3dd;
+  background: #f9f8f3;
+}
+
+.simulation-library__hero-copy {
+  position: relative;
+  z-index: 1;
+  width: 63%;
+  padding: 40px clamp(24px, 4vw, 64px);
+}
+
+.simulation-library__eyebrow {
+  margin-bottom: 17px;
+  color: #436859;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .34em;
+  text-transform: uppercase;
+}
+
+.simulation-library__hero h1 {
+  font-family: Georgia, Cambria, "Times New Roman", serif;
+  font-size: clamp(40px, 5vw, 72px);
+  line-height: 1.03;
+  font-weight: 700;
+  letter-spacing: -.05em;
+  white-space: nowrap;
+}
+
+.simulation-library__subtitle {
+  margin-top: 13px;
+  color: #344f4d;
+  font-family: Georgia, Cambria, "Times New Roman", serif;
+  font-size: clamp(16px, 1.8vw, 24px);
+  line-height: 1.35;
+}
+
+.simulation-library__hero-photo {
+  position: absolute;
+  inset: 0 0 0 43%;
+  background-image:
+    linear-gradient(90deg, #f9f8f3 0%, rgba(249,248,243,.86) 14%, rgba(249,248,243,.08) 45%),
+    url('https://upload.wikimedia.org/wikipedia/commons/2/24/Test-986769_640.jpg');
+  background-size: cover;
+  background-position: center 43%;
+  filter: saturate(.38);
+}
+
+.simulation-library__section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 28px clamp(20px, 3vw, 42px) 19px;
+}
+
+.simulation-library__section-heading h2 {
+  font-family: Georgia, Cambria, "Times New Roman", serif;
+  font-size: clamp(27px, 2.6vw, 38px);
+  font-weight: 700;
+  letter-spacing: -.035em;
+  line-height: 1.1;
+}
+
+.simulation-library__progress {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 4px;
+  color: #42534f;
+  font-family: Georgia, Cambria, "Times New Roman", serif;
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.simulation-library__progress-track {
+  width: clamp(70px, 12vw, 180px);
+  height: 7px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: #dfe5df;
+}
+
+.simulation-library__progress-track div {
+  height: 100%;
+  border-radius: inherit;
+  background: #20644a;
+  transition: width .5s ease;
+}
+
+.simulation-library__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin: 0 clamp(14px, 2vw, 26px) 28px;
+  padding: clamp(14px, 1.7vw, 24px);
+  border: 1px solid #eff1ec;
+  border-radius: 28px;
+  background: #fff;
+  box-shadow: 0 10px 30px rgba(34, 66, 45, .035);
+}
+
+.simulation-library__card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  scroll-margin-top: 100px;
+  padding: 16px;
+  border: 1px solid #dbe3dc;
+  border-radius: 14px;
+  background: #fff;
+  transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+
+.simulation-library__card:hover {
+  border-color: #4a8a69;
+  box-shadow: 0 12px 30px rgba(27, 73, 51, .08);
+  transform: translateY(-2px);
+}
+
+.simulation-library__card:focus-within { border-color: #2d7554; }
+
+.simulation-library__card-image {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 66px;
+  gap: 12px;
+  height: 128px;
+  margin-bottom: 18px;
+}
+
+.simulation-library__card-image img {
+  width: 100%;
+  height: 100%;
+  border-radius: 5px;
+  background: #e9ebe6;
+  object-fit: cover;
+  object-position: center;
+  filter: grayscale(100%) sepia(11%) saturate(40%);
+}
+
+.simulation-library__card:nth-child(3n + 2) .simulation-library__card-image img { object-position: 50% 70%; }
+.simulation-library__card:nth-child(3n + 3) .simulation-library__card-image img { object-position: 75% 35%; }
+
+.simulation-library__card-index {
+  align-self: center;
+  color: #28543f;
+  text-align: center;
+}
+
+.simulation-library__card-index span {
+  display: block;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #668b77;
+  font-family: Georgia, Cambria, "Times New Roman", serif;
+  font-size: 39px;
+  line-height: 1;
+}
+
+.simulation-library__card-index small {
+  display: block;
+  padding-top: 7px;
+  font-family: Georgia, Cambria, "Times New Roman", serif;
+  font-size: 10px;
+  line-height: 1.1;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+
+.simulation-library__card h3 {
+  flex-basis: 100%;
+  font-family: Georgia, Cambria, "Times New Roman", serif;
+  font-size: 23px;
+  font-weight: 700;
+  letter-spacing: -.025em;
+  line-height: 1.18;
+}
+
+.simulation-library__card-meta {
+  margin-top: auto;
+  margin-bottom: 0;
+  padding: 17px 0;
+  border-bottom: 1px solid #e1e8e2;
+  color: #425952;
+  font-size: 12px;
+}
+
+.simulation-library__card-actions {
+  margin-top: 0;
+  padding-top: 15px;
+  border-top: 0;
+}
+
+.simulation-library__card .badge {
+  border: 1px solid #d9e6dd;
+  background: #f4f8f4;
+  color: #415d4e;
+  font-weight: 500;
+}
+
+.simulation-library__card .btn-primary,
+html.student-dark .simulation-library__card .btn-primary {
+  border-radius: 6px;
+  background: #153f31;
+  box-shadow: none;
+  font-family: Georgia, Cambria, "Times New Roman", serif;
+  font-size: 15px;
+}
+
+.simulation-library__card .btn-primary:hover,
+html.student-dark .simulation-library__card .btn-primary:hover { background: #235d45; }
+
+.simulation-library__card .btn-primary:active { transform: none; }
+
+html.student-dark .simulation-library { background: #172923; color: #e8f1e9; border-color: #3b5949; }
+html.student-dark .simulation-library__hero { background: #192b25; border-color: #3b5949; }
+html.student-dark .simulation-library__hero-photo {
+  opacity: .32;
+  background-image: linear-gradient(90deg, #192b25 0%, rgba(25,43,37,.7) 22%, transparent 55%),
+    url('https://upload.wikimedia.org/wikipedia/commons/2/24/Test-986769_640.jpg');
+}
+html.student-dark .simulation-library__eyebrow { color: #a1d7b9; }
+html.student-dark .simulation-library__subtitle,
+html.student-dark .simulation-library__progress { color: #c0d2c7; }
+html.student-dark .simulation-library__card { background: #1d332a; border-color: #45604f; }
+html.student-dark .simulation-library__grid { background: #1a2f26; border-color: #3b5949; }
+html.student-dark .simulation-library__card-index { color: #c1ddc7; }
+html.student-dark .simulation-library__card .badge { background: #294737; color: #d5e8d8; border-color: #53765f; }
+html.student-dark .simulation-library__card-meta { color: #c1d1c5; border-color: #45604f; }
+
+@media (max-width: 1200px) {
+  .simulation-library__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 700px) {
+  .simulation-library__hero { min-height: 246px; }
+  .simulation-library__hero-copy { width: 100%; padding: 34px 24px; }
+  .simulation-library__hero h1 { white-space: normal; font-size: clamp(38px, 10vw, 56px); }
+  .simulation-library__hero-photo { inset: 0; opacity: .2; }
+  .simulation-library__section-heading { align-items: start; flex-direction: column; gap: 12px; }
+  .simulation-library__grid { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .simulation-library__card { transition: none; }
+  .simulation-library__card:hover { transform: none; }
+  .simulation-library__progress-track div { transition: none; }
+}
