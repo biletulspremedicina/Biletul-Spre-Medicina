@@ -105,7 +105,7 @@ export default function WhyChooseUs() {
       <div className="why-editorial-inner">
         <Reveal className="why-editorial-intro">
           <p className="why-editorial-eyebrow">
-            DE CE BILETUL SPRE MEDICINĂ ?<span aria-hidden="true" />
+           ? DE CE BILETUL SPRE MEDICINĂ ?<span aria-hidden="true" />
           </p>
           <h2 id="why-choose-us-title">
             Exersezi ca la examen.<br />Înveți din fiecare răspuns.
