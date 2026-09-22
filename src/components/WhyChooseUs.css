@@ -43,7 +43,8 @@
 .why-editorial-intro {
   position: relative;
   z-index: 1;
-  max-width: 1120px;
+  width: 100%;
+  max-width: none;
 }
 
 .why-editorial-eyebrow {
