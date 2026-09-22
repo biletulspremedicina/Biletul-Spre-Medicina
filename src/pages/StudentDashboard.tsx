@@ -55,6 +55,10 @@ type SimWithStatus = Simulation & {
 
 type PracticeSetRow = { id: string; lesson_id: string };
 const UMFCD_IMAGE_SRC = '/UMFCD.png'; // Imaginea pentru Examene UMFCD
+const SIMULATION_PHOTOS = [
+  'https://upload.wikimedia.org/wikipedia/commons/2/24/Test-986769_640.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Exam_paper.jpg/960px-Exam_paper.jpg',
+];
 
 // Completează adresele dintre ghilimele pentru imaginile din meniul din stânga.
 // Până atunci rămân iconițele actuale (inclusiv sigla UMFCD).
@@ -569,6 +573,9 @@ export default function StudentDashboard({
 
   const filteredSims = simulations.filter((sim) => sim.student_section === page);
   const completedInCategory = filteredSims.filter((sim) => sim.hasSubmitted).length;
+  const simulationProgress = filteredSims.length
+    ? Math.round((completedInCategory / filteredSims.length) * 100)
+    : 0;
 
   return (
     <div className="min-h-screen bg-white font-sans text-[#14283a] lg:grid lg:grid-cols-[236px_minmax(0,1fr)]">
@@ -794,33 +801,51 @@ export default function StudentDashboard({
             <PracticeLibrary lessons={practiceLessons}
               onOpen={(lesson) => onOpenPracticeLesson(lesson.out_id, lesson.out_title)} />
           ) : page === 'all' || page === 'umfcd' ? (
-            <section>
-              <PageHeading icon={page === 'all'
-                ? <SidebarNavIcon src={NAV_IMAGE_SOURCES.all} fallback={<FileText size={27} />} size={34} />
-                : <SidebarNavIcon src={NAV_IMAGE_SOURCES.umfcd} fallback={<UmfcdIcon size={27} imageSize={38} />} size={38} />}
-                title={page === 'all' ? 'Simulări biologie' : 'Examene UMFCD'}
-                subtitle={page === 'all'
-                  ? 'Testează-ți pregătirea prin simulările disponibile.'
-                  : 'Rezolvă subiecte din examenele și simulările UMFCD.'} />
-              <div className="mb-6 rounded-2xl border border-[#dcece5] bg-[#f7fcf9] px-5 py-4">
-                <div className="flex items-baseline justify-between gap-3">
-                  <p className="font-semibold text-[#153f34]">
-                    {completedInCategory} din {filteredSims.length} simulări rezolvate
-                  </p>
-                  <span className="text-xs text-[#71827b]">{filteredSims.length} disponibile</span>
-                </div>
-                <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#dbe9e2]">
-                  <div className="h-full rounded-full bg-[#167d5f] transition-[width] duration-500"
-                    style={{ width: `${filteredSims.length ? Math.round((completedInCategory / filteredSims.length) * 100) : 0}%` }} />
-                </div>
-              </div>
+            <section className={page === 'all' ? 'simulation-library' : undefined}>
+              {page === 'all' ? (
+                <>
+                  <div className="simulation-library__hero">
+                    <div className="simulation-library__hero-copy">
+                      <p className="simulation-library__eyebrow">Pregătire pentru admitere</p>
+                      <h1>Simulări biologie</h1>
+                      <p className="simulation-library__subtitle">Testează-ți pregătirea pe întreaga materie.</p>
+                    </div>
+                    <div className="simulation-library__hero-photo" role="img" aria-label="Foaie de răspunsuri la examen și creion" />
+                  </div>
+                  <div className="simulation-library__section-heading">
+                    <h2>Simulări disponibile</h2>
+                    <div className="simulation-library__progress" aria-label={`${completedInCategory} din ${filteredSims.length} simulări rezolvate`}>
+                      <span>{completedInCategory} din {filteredSims.length} rezolvate</span>
+                      <div className="simulation-library__progress-track" role="progressbar"
+                        aria-valuenow={completedInCategory} aria-valuemin={0} aria-valuemax={filteredSims.length || 1}>
+                        <div style={{ width: `${simulationProgress}%` }} />
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <PageHeading icon={<SidebarNavIcon src={NAV_IMAGE_SOURCES.umfcd} fallback={<UmfcdIcon size={27} imageSize={38} />} size={38} />}
+                    title="Examene UMFCD" subtitle="Rezolvă subiecte din examenele și simulările UMFCD." />
+                  <div className="mb-6 rounded-2xl border border-[#dcece5] bg-[#f7fcf9] px-5 py-4">
+                    <div className="flex items-baseline justify-between gap-3">
+                      <p className="font-semibold text-[#153f34]">{completedInCategory} din {filteredSims.length} simulări rezolvate</p>
+                      <span className="text-xs text-[#71827b]">{filteredSims.length} disponibile</span>
+                    </div>
+                    <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#dbe9e2]">
+                      <div className="h-full rounded-full bg-[#167d5f] transition-[width] duration-500"
+                        style={{ width: `${simulationProgress}%` }} />
+                    </div>
+                  </div>
+                </>
+              )}
               {filteredSims.length === 0 ? (
                 <EmptyState icon={<Archive size={36} />} title="Nu există simulări în această categorie."
                   text="Revino mai târziu pentru simulări noi." />
               ) : (
-                <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-                  {filteredSims.map((sim) => (
-                    <ArchiveSimCard key={sim.id} sim={sim} focused={sim.id === focusedSimulationId} hasActiveSub={hasActiveSub}
+                <div className={page === 'all' ? 'simulation-library__grid' : 'grid gap-5 sm:grid-cols-2 xl:grid-cols-3'}>
+                  {filteredSims.map((sim, index) => (
+                    <ArchiveSimCard key={sim.id} sim={sim} index={index} editorial={page === 'all'} focused={sim.id === focusedSimulationId} hasActiveSub={hasActiveSub}
                       onStart={() => onStartSimulation(sim.id)}
                       onViewResults={(attemptId) => onViewResults(sim.id, attemptId)}
                       onBuySubscription={handleBuySubscription} buyingSub={buyingSub}
@@ -1205,9 +1230,11 @@ function EmptyState({ icon, title, text }: { icon: ReactNode; title: string; tex
 }
 
 function ArchiveSimCard({
-  sim, focused, hasActiveSub, onStart, onViewResults, onBuySubscription, buyingSub, onReleaseReached,
+  sim, index = 0, editorial = false, focused, hasActiveSub, onStart, onViewResults, onBuySubscription, buyingSub, onReleaseReached,
 }: {
   sim: SimWithStatus;
+  index?: number;
+  editorial?: boolean;
   focused: boolean;
   hasActiveSub: boolean;
   onStart: () => void;
@@ -1226,7 +1253,19 @@ function ArchiveSimCard({
 
   return (
     <div id={`released-simulation-${sim.id}`}
-      className={`group flex scroll-mt-24 flex-col rounded-2xl border border-[#dfe8e3] bg-white p-5 shadow-sm transition-all duration-200 hover:border-[#abd2be] hover:shadow-md motion-reduce:transition-none ${focused ? 'ring-2 ring-emerald-500 ring-offset-2' : ''}`}>
+      className={`${editorial ? 'simulation-library__card' : 'group flex scroll-mt-24 flex-col rounded-2xl border border-[#dfe8e3] bg-white p-5 shadow-sm transition-all duration-200 hover:border-[#abd2be] hover:shadow-md motion-reduce:transition-none'} ${focused ? 'ring-2 ring-emerald-500 ring-offset-2' : ''}`}>
+      {editorial && (
+        <div className="simulation-library__card-image">
+          <img src={SIMULATION_PHOTOS[index % SIMULATION_PHOTOS.length]} alt="" loading="lazy"
+            onError={(event) => {
+              if (event.currentTarget.src !== SIMULATION_PHOTOS[0]) event.currentTarget.src = SIMULATION_PHOTOS[0];
+            }} />
+          <div className="simulation-library__card-index" aria-hidden="true">
+            <span>{String(index + 1).padStart(2, '0')}</span>
+            <small>Toată<br />materia</small>
+          </div>
+        </div>
+      )}
       <div className="mb-3 flex flex-wrap items-start gap-2">
         <h3 className="line-clamp-2 min-w-0 flex-1 font-display text-base font-semibold leading-snug text-stone-900">
           {sim.title}
@@ -1235,6 +1274,12 @@ function ArchiveSimCard({
           <span className="badge shrink-0 bg-brand-100 text-brand-700">
             <CheckCircle2 size={12} /> Susținut{isFree ? ` (${submitted.length}x)` : ''}
           </span>
+        ) : editorial && sim.hasInProgress ? (
+          <span className="badge shrink-0 bg-amber-100 text-amber-700">În curs</span>
+        ) : editorial && isScheduled ? (
+          <span className="badge shrink-0 bg-blue-50 text-blue-700">Programată</span>
+        ) : editorial && (isFree || hasActiveSub) ? (
+          <span className="badge shrink-0 bg-stone-100 text-stone-500">Nesusținută</span>
         ) : isFree ? (
           <span className="badge shrink-0 bg-stone-100 text-stone-500">Nesusținut</span>
         ) : hasActiveSub ? (
@@ -1243,8 +1288,8 @@ function ArchiveSimCard({
           <span className="badge shrink-0 bg-stone-100 text-stone-500"><Lock size={12} /> Abonament necesar</span>
         )}
       </div>
-      {sim.description && <p className="mb-3 line-clamp-2 text-sm text-stone-600">{sim.description}</p>}
-      <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-stone-500">
+      {!editorial && sim.description && <p className="mb-3 line-clamp-2 text-sm text-stone-600">{sim.description}</p>}
+      <div className={`mb-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-stone-500 ${editorial ? 'simulation-library__card-meta' : ''}`}>
         <span className="flex items-center gap-1"><Clock3 size={13} /> {sim.duration_minutes} min</span>
         <span className="flex items-center gap-1"><BookOpen size={13} /> {sim.questionCount} grile</span>
         <span className="flex items-center gap-1">
@@ -1257,7 +1302,7 @@ function ArchiveSimCard({
           </span>
         )}
       </div>
-      <div className="mt-auto flex flex-col gap-2 border-t border-stone-100 pt-4">
+      <div className={`mt-auto flex flex-col gap-2 border-t border-stone-100 pt-4 ${editorial ? 'simulation-library__card-actions' : ''}`}>
         {isScheduled && sim.available_at ? (
           <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-center text-sm font-semibold text-blue-800">
             <span className="flex items-center justify-center gap-2">
@@ -1276,14 +1321,14 @@ function ArchiveSimCard({
               <button type="button" onClick={() => onViewResults(latestAttempt?.id)} className="btn-secondary w-full">
                 <BookOpen size={16} /> Detalii simulare
               </button>
-            ) : (
+            ) : !editorial ? (
               <span className="flex items-center justify-center gap-1 text-xs text-stone-400">
                 <Lock size={11} /> Detaliile sunt disponibile după prima rezolvare
               </span>
-            )}
-            <span className="flex items-center justify-center gap-1 text-xs text-stone-400">
+            ) : null}
+            {!editorial && <span className="flex items-center justify-center gap-1 text-xs text-stone-400">
               <Sparkles size={11} /> Antrenament nelimitat
-            </span>
+            </span>}
           </>
         ) : hasSubmitted ? (
           <>
