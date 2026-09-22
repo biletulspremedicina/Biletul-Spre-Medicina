@@ -82,6 +82,7 @@
 }
 
 .why-editorial-title-right {
+  margin-top: clamp(14px, 1.35vw, 21px);
   text-align: right;
 }
 
@@ -116,7 +117,7 @@
 
 .why-editorial-benefits > .why-media-reveal:nth-child(1) {
   width: 95%;
-  margin-left: 5%;
+  margin-left: 1%;
 }
 
 .why-editorial-benefits > .why-media-reveal:nth-child(2) {
@@ -126,6 +127,7 @@
 
 .why-editorial-benefits > .why-media-reveal:nth-child(3) {
   width: 96%;
+  margin-left: -2%;
 }
 
 .why-editorial-benefit {
