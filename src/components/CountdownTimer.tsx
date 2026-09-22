@@ -25,17 +25,20 @@ function calcTimeLeft(target: string | null, now: number): TimeLeft {
   };
 }
 
-export function CountdownTimer() {
+export function CountdownTimer({ onSignIn }: { onSignIn: () => void }) {
   const [release, setRelease] = useState<MaterialReleaseRPC | null>(null);
   const [now, setNow] = useState(Date.now);
+  const [loaded, setLoaded] = useState(false);
 
   const loadRelease = useCallback(async () => {
     const { data, error } = await supabase.rpc('get_material_release_state');
     if (error) {
       console.error('Landing material release load error:', error);
+      setLoaded(true);
       return;
     }
     setRelease(((data || []) as unknown as MaterialReleaseRPC[])[0] || null);
+    setLoaded(true);
   }, []);
 
   useEffect(() => {
@@ -71,6 +74,7 @@ export function CountdownTimer() {
   }, [release, loadRelease]);
 
   const target = release?.out_phase === 'countdown' ? release.out_available_at : null;
+  const countingDown = Boolean(target && new Date(target).getTime() > now);
   const timeLeft = useMemo(() => calcTimeLeft(target, now), [target, now]);
   const units: { value: number; label: string }[] = [
     { value: timeLeft.days, label: 'ZILE' },
@@ -79,19 +83,51 @@ export function CountdownTimer() {
     { value: timeLeft.seconds, label: 'SEC' },
   ];
 
+  if (!loaded) {
+    return <p className="py-12 text-center text-stone-400">Se verifică următoarea lansare...</p>;
+  }
+
+  if (!countingDown) {
+    const justReleased = release?.out_phase === 'celebrating' || Boolean(target);
+    return (
+      <div className="mx-auto flex max-w-2xl flex-col items-center text-center" aria-live="polite">
+        <span className="mb-5 h-px w-12 bg-emerald-400/70" aria-hidden="true" />
+        <h2 className="font-display text-3xl font-bold tracking-tight text-stone-100 sm:text-4xl">
+          {justReleased ? 'Materialele sunt acum disponibile' : 'Descoperă materialele disponibile'}
+        </h2>
+        {justReleased && release && (
+          <p className="mt-4 text-base text-stone-300 sm:text-lg">
+            <span className="text-emerald-300">{release.out_section_label}</span>
+            {' · '}{release.out_title}
+          </p>
+        )}
+        <button type="button" onClick={onSignIn}
+          className="mt-8 rounded-lg border border-white/30 px-6 py-3 text-sm font-semibold text-white transition-colors hover:border-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
+          Intră în platformă <span className="ml-2" aria-hidden="true">→</span>
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div
-      className="relative mx-auto flex items-center justify-center gap-2 overflow-x-auto sm:gap-3 md:gap-4"
-      aria-label="Timp până la următoarele materiale"
-    >
-      {units.map((unit, i) => (
-        <div key={unit.label} className="flex items-center gap-3 sm:gap-4">
-          <FlipUnit value={unit.value} label={unit.label} />
-          {i < units.length - 1 && (
-            <span className="font-display text-2xl font-extrabold text-white/40 sm:text-3xl md:text-4xl" aria-hidden="true">:</span>
-          )}
-        </div>
-      ))}
+    <div className="text-center">
+      <h2 className="mb-9 font-display text-3xl font-bold tracking-tight text-stone-100 sm:text-4xl">
+        Materiale noi pe platformă în:
+      </h2>
+      <div className="relative mx-auto flex items-center justify-center gap-2 overflow-x-auto sm:gap-3 md:gap-4"
+        aria-label="Timp până la următoarele materiale">
+        {units.map((unit, i) => (
+          <div key={unit.label} className="flex items-center gap-3 sm:gap-4">
+            <FlipUnit value={unit.value} label={unit.label} />
+            {i < units.length - 1 && (
+              <span className="font-display text-2xl font-extrabold text-white/40 sm:text-3xl md:text-4xl" aria-hidden="true">:</span>
+            )}
+          </div>
+        ))}
+      </div>
+      <p className="mx-auto mt-8 max-w-xl text-stone-400">
+        Alătură-te comunității de viitori medici și fii primul care accesează noile simulări și grile explicate.
+      </p>
     </div>
   );
 }
