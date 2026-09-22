@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase, type PracticeLesson, type BankQuestion } from '@/lib/supabase';
 import {
   Plus, Edit2, Trash2, Archive, ArchiveRestore, Search, Loader2, X, Save,
-  BookOpen, Layers, ChevronLeft, CheckSquare, Square,
+  BookOpen, Layers, ChevronLeft, CheckSquare, Square, Copy,
   FileUp, Download, Eye,
 } from 'lucide-react';
 import {
@@ -597,7 +597,37 @@ export function BankQuestionForm({
   const [correct, setCorrect] = useState<'A' | 'B' | 'C' | 'D' | 'E'>(question?.correct_answer || 'A');
   const [explanation, setExplanation] = useState(question?.explanation || '');
   const [saving, setSaving] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleCopy = async () => {
+    const content = type === 'CS'
+      ? [
+          `Tip: ${type}`,
+          `Întrebare: ${questionText.trim()}`,
+          `A. ${optionA.trim()}`,
+          `B. ${optionB.trim()}`,
+          `C. ${optionC.trim()}`,
+          `D. ${optionD.trim()}`,
+          `E. ${optionE.trim()}`,
+        ].join('\n')
+      : [
+          `Tip: ${type}`,
+          `Întrebare: ${questionText.trim()}`,
+          `1. ${s1.trim()}`,
+          `2. ${s2.trim()}`,
+          `3. ${s3.trim()}`,
+          `4. ${s4.trim()}`,
+        ].join('\n');
+
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setError('Grila nu a putut fi copiată. Verifică permisiunea browserului pentru clipboard.');
+    }
+  };
 
   const handleSave = async () => {
     setError(null);
@@ -751,7 +781,12 @@ export function BankQuestionForm({
         {error && <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">{error}</div>}
       </div>
 
-      <div className="mt-6 flex justify-end gap-3">
+      <div className="mt-6 flex flex-wrap justify-end gap-3">
+        {question && (
+          <button type="button" onClick={handleCopy} className="btn-secondary">
+            <Copy size={16} /> {copied ? 'Grilă copiată' : 'Copiază grila'}
+          </button>
+        )}
         <button onClick={onCancel} className="btn-secondary"><X size={16} /> Anulează</button>
         <button onClick={handleSave} disabled={saving} className="btn-primary">
           {saving && <Loader2 size={16} className="animate-spin" />}
