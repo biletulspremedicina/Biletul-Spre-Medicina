@@ -10,7 +10,6 @@ import {
   Crown,
   GraduationCap,
   Home,
-  Layers,
   Loader2,
   Lock,
   LogOut,
@@ -33,6 +32,7 @@ import { useAuth } from '@/context/AuthContext';
 import Loading from '@/components/Loading';
 import StudentSettings from '@/pages/StudentSettings';
 import StudentPerformance from '@/components/StudentPerformance';
+import PracticeLibrary from '@/components/PracticeLibrary';
 
 type IncomingTab = 'all' | 'practice' | 'umfcd' | 'dashboard';
 type PageId = 'home' | 'all' | 'practice' | 'umfcd' | 'review' | 'settings';
@@ -791,21 +791,8 @@ export default function StudentDashboard({
               onThemeChange={onThemeChange}
             />
           ) : page === 'practice' ? (
-            <section>
-              <PageHeading icon={<SidebarNavIcon src={NAV_IMAGE_SOURCES.practice} fallback={<GraduationCap size={27} />} size={34} />} title="Antrenament pe capitole"
-                subtitle="Alege un capitol și exersează grilele în ritmul tău." />
-              {practiceLessons.length === 0 ? (
-                <EmptyState icon={<BookOpen size={36} />} title="Nu există capitole publicate momentan."
-                  text="Revino mai târziu pentru materiale noi." />
-              ) : (
-                <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-                  {practiceLessons.map((lesson) => (
-                    <PracticeLessonCard key={lesson.out_id} lesson={lesson}
-                      onOpen={() => onOpenPracticeLesson(lesson.out_id, lesson.out_title)} />
-                  ))}
-                </div>
-              )}
-            </section>
+            <PracticeLibrary lessons={practiceLessons}
+              onOpen={(lesson) => onOpenPracticeLesson(lesson.out_id, lesson.out_title)} />
           ) : page === 'all' || page === 'umfcd' ? (
             <section>
               <PageHeading icon={page === 'all'
@@ -1213,32 +1200,6 @@ function EmptyState({ icon, title, text }: { icon: ReactNode; title: string; tex
       <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#edf7f2] text-[#1a775a]">{icon}</div>
       <h2 className="mt-5 text-lg font-bold text-[#183d32]">{title}</h2>
       <p className="mt-2 text-sm text-[#6c7f8b]">{text}</p>
-    </div>
-  );
-}
-
-function PracticeLessonCard({ lesson, onOpen }: { lesson: PracticeLessonRPC; onOpen: () => void }) {
-  return (
-    <div className="group flex flex-col rounded-2xl border border-[#dce9e3] bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-[#9fcdb9] hover:shadow-lg motion-reduce:transition-none">
-      <div className="mb-3 flex items-start gap-3">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#e3f4ea] text-[#176b4f]">
-          <BookOpen size={22} />
-        </div>
-        <div className="min-w-0 flex-1">
-          <span className="badge mb-1 bg-[#f1f6f3] text-[#547364]">{lesson.out_subject}</span>
-          <h3 className="line-clamp-2 font-display text-base font-semibold text-stone-900">{lesson.out_title}</h3>
-        </div>
-      </div>
-      {lesson.out_description && <p className="mb-3 line-clamp-2 text-sm text-stone-600">{lesson.out_description}</p>}
-      <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-stone-500">
-        <span className="flex items-center gap-1"><Layers size={13} /> {lesson.out_set_count} seturi</span>
-        <span className="flex items-center gap-1"><FileText size={13} /> {lesson.out_question_count} grile</span>
-      </div>
-      <div className="mt-auto border-t border-stone-100 pt-3">
-        <button type="button" onClick={onOpen} className="btn-primary w-full">
-          Rezolvă grile <ChevronRight size={16} />
-        </button>
-      </div>
     </div>
   );
 }
