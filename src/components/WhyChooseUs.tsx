@@ -108,7 +108,8 @@ export default function WhyChooseUs() {
             DE CE BILETUL SPRE MEDICINĂ <span aria-hidden="true" />
           </p>
           <h2 id="why-choose-us-title">
-            Exersezi ca la examen.<br />Înveți din fiecare răspuns.
+            <span>Exersezi ca la examen.</span>
+            <span className="why-editorial-title-right">Înveți din fiecare răspuns.</span>
           </h2>
           <p className="why-editorial-lead">
             Simulări realiste, explicații clare și un parcurs care te duce mai
