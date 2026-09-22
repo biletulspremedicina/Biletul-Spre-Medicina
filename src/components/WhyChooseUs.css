@@ -76,13 +76,22 @@
   text-wrap: balance;
 }
 
+.why-editorial-intro h2 > span {
+  display: block;
+}
+
+.why-editorial-title-right {
+  text-align: right;
+}
+
 .why-editorial-lead {
-  max-width: 710px;
-  margin: 22px 0 0;
+  max-width: 760px;
+  margin: 22px auto 0;
   color: #485a64;
   font-family: Inter, sans-serif;
   font-size: clamp(16px, 1.5vw, 21px);
   line-height: 1.55;
+  text-align: center;
 }
 
 .why-editorial-stage {
