@@ -37,7 +37,8 @@ export function CountdownTimer({ onSignIn }: { onSignIn: () => void }) {
       setLoaded(true);
       return;
     }
-    setRelease(((data || []) as unknown as MaterialReleaseRPC[])[0] || null);
+    const releases = (data || []) as unknown as MaterialReleaseRPC[];
+    setRelease(releases.find((item) => item.out_phase === 'countdown') || releases[0] || null);
     setLoaded(true);
   }, []);
 
@@ -74,7 +75,7 @@ export function CountdownTimer({ onSignIn }: { onSignIn: () => void }) {
   }, [release, loadRelease]);
 
   const target = release?.out_phase === 'countdown' ? release.out_available_at : null;
-  const countingDown = Boolean(target && new Date(target).getTime() > now);
+  const countingDown = Boolean(target);
   const timeLeft = useMemo(() => calcTimeLeft(target, now), [target, now]);
   const units: { value: number; label: string }[] = [
     { value: timeLeft.days, label: 'ZILE' },
