@@ -494,6 +494,54 @@ html.student-dark .simulation-library__card-index { color: #c1ddc7; }
 html.student-dark .simulation-library__card .badge { background: #294737; color: #d5e8d8; border-color: #53765f; }
 html.student-dark .simulation-library__card-meta { color: #c1d1c5; border-color: #45604f; }
 
+/* UMFCD shares the simulation layout, with a distinct blue identity. */
+.simulation-library--umfcd {
+  color: #172f42;
+  border-color: #dbe5ec;
+}
+.simulation-library--umfcd .simulation-library__hero { background: #123b58; border-color: #d9e4ec; }
+.simulation-library--umfcd .simulation-library__hero-photo {
+  background-image:
+    linear-gradient(90deg, #123b58 0%, rgba(18,59,88,.78) 24%, rgba(18,59,88,.36) 61%, rgba(18,59,88,.64) 100%),
+    url('https://upload.wikimedia.org/wikipedia/commons/2/24/Test-986769_640.jpg');
+}
+.simulation-library--umfcd .simulation-library__eyebrow { color: #cee2ef; }
+.simulation-library--umfcd .simulation-library__subtitle { color: #e0edf4; }
+.simulation-library--umfcd .simulation-library__progress-track { background: #dce7ee; }
+.simulation-library--umfcd .simulation-library__progress-track div { background: #286b96; }
+.simulation-library--umfcd .simulation-library__grid { border-color: #e8eef2; }
+.simulation-library--umfcd .simulation-library__card { border-color: #d7e3eb; }
+.simulation-library--umfcd .simulation-library__card:hover {
+  border-color: #6b9bb7;
+  box-shadow: 0 12px 30px rgba(24, 70, 103, .09);
+}
+.simulation-library--umfcd .simulation-library__card:focus-within { border-color: #37799f; }
+.simulation-library--umfcd .simulation-library__card-index { color: #285d7d; }
+.simulation-library--umfcd .simulation-library__card-index span { border-color: #86a9bd; }
+.simulation-library--umfcd .simulation-library__card-meta { border-color: #e0e9ef; color: #476273; }
+.simulation-library--umfcd .simulation-library__card .badge { background: #eef5f9; border-color: #d9e7ef; color: #41657c; }
+.simulation-library--umfcd .simulation-library__card .btn-primary,
+html.student-dark .simulation-library--umfcd .simulation-library__card .btn-primary { background: #174d70; }
+.simulation-library--umfcd .simulation-library__card .btn-primary:hover,
+html.student-dark .simulation-library--umfcd .simulation-library__card .btn-primary:hover { background: #256486; }
+.simulation-library--umfcd .border-dashed { border-color: #cfdfeb; }
+.simulation-library--umfcd .border-dashed > div { background: #eaf3f8; color: #286b96; }
+
+html.student-dark .simulation-library--umfcd { background: #162a37; color: #e8f1f7; border-color: #3c596b; }
+html.student-dark .simulation-library--umfcd .simulation-library__hero { background: #123b58; border-color: #3c596b; }
+html.student-dark .simulation-library--umfcd .simulation-library__hero-photo {
+  background-image:
+    linear-gradient(90deg, #123b58 0%, rgba(18,59,88,.78) 24%, rgba(18,59,88,.36) 61%, rgba(18,59,88,.64) 100%),
+    url('https://upload.wikimedia.org/wikipedia/commons/2/24/Test-986769_640.jpg');
+}
+html.student-dark .simulation-library--umfcd .simulation-library__grid { background: #1a303e; border-color: #3c596b; }
+html.student-dark .simulation-library--umfcd .simulation-library__card { background: #1d3645; border-color: #476475; }
+html.student-dark .simulation-library--umfcd .simulation-library__card-index { color: #b9dbee; }
+html.student-dark .simulation-library--umfcd .simulation-library__progress { color: #d2e3ed; }
+html.student-dark .simulation-library--umfcd .simulation-library__card-meta { color: #c3d5e1; border-color: #476475; }
+html.student-dark .simulation-library--umfcd .simulation-library__card .badge { background: #2b4a5c; color: #d9e9f3; border-color: #59788b; }
+html.student-dark .simulation-library--umfcd .border-dashed > div { background: #29485a; color: #b9dbee; }
+
 @media (max-width: 1200px) {
   .simulation-library__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
