@@ -104,7 +104,7 @@ export default function PracticeLibrary({ lessons, onOpen }: Props) {
                 <span className={`practice-library__row-meta col-start-2 text-sm sm:col-auto ${available ? 'text-[#486062]' : 'italic text-[#798c88]'}`}>
                   {available ? `${sets} ${sets === 1 ? 'set' : 'seturi'} · ${questions} ${questions === 1 ? 'grilă' : 'grile'}` : 'În pregătire'}
                 </span>
-                <span className={`col-start-2 flex items-center gap-2 text-sm sm:col-auto sm:justify-end ${available ? 'font-medium text-[#185c4c] group-hover:text-[#0e493b]' : 'italic text-[#8a9a95]'}`}>
+                <span className={`practice-library__row-action col-start-2 flex items-center gap-2 text-sm sm:col-auto sm:justify-end ${available ? 'font-medium text-[#185c4c] group-hover:text-[#0e493b]' : 'italic text-[#8a9a95]'}`}>
                   {available ? 'Începe antrenamentul' : 'Revino curând'}
                   {available && <span aria-hidden="true" className="text-lg leading-none transition-transform group-hover:translate-x-1 motion-reduce:transition-none">→</span>}
                 </span>
