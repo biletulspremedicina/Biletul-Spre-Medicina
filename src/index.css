@@ -558,3 +558,86 @@ html.student-dark .simulation-library--umfcd .border-dashed > div { background: 
   .simulation-library__card:hover { transform: none; }
   .simulation-library__progress-track div { transition: none; }
 }
+
+/* A restrained colour fade when moving between the three study libraries or opening a chapter. */
+@keyframes study-colour-fade {
+  from { opacity: .7; filter: saturate(.25); }
+  to { opacity: 1; filter: saturate(1); }
+}
+
+.practice-library,
+.simulation-library,
+.practice-sets-page { animation: study-colour-fade .42s ease-out; }
+
+/* Chapter training keeps the same editorial layout, in a warm medical burgundy. */
+.practice-library { border-color: #eadbdc; background: #fffdfb; }
+.practice-library .practice-library__hero { background: #692537; border-color: #eadbdd; }
+.practice-library .practice-library__hero-veil {
+  background: linear-gradient(90deg, #692537 0%, #692537 41%, rgba(105,37,55,.93) 54%, rgba(105,37,55,.38) 100%);
+}
+.practice-library .practice-library__eyebrow { color: #f4cdd3; }
+.practice-library .practice-library__hero h1 { color: #fffaf8; }
+.practice-library .practice-library__subtitle { color: #f6e0e1; }
+.practice-library .practice-library__summary { border-color: #ebdfe0; color: #503b3e; }
+.practice-library .practice-library__summary strong { color: #822a3e; }
+.practice-library .practice-library__summary > span:nth-child(even) { color: #d7b9c0; }
+.practice-library label input { border-color: #e7d8dc; }
+.practice-library label input:focus {
+  border-color: #9f4358;
+  box-shadow: 0 0 0 2px rgba(159,67,88,.15);
+}
+.practice-library label svg { color: #9b7880; }
+.practice-library .practice-library__row { border-color: #ebdfe0; }
+.practice-library .practice-library__row:enabled:hover,
+.practice-library .practice-library__row:enabled:focus-visible { background: #fff1f2; }
+.practice-library .practice-library__row:enabled:focus-visible { box-shadow: inset 0 0 0 2px #a44558; }
+.practice-library .practice-library__row:enabled .practice-library__row-action { color: #812b3e; }
+.practice-library .practice-library__row:hover .practice-library__row-action { color: #6c1e31; }
+
+.practice-sets-page .bg-gradient-to-r {
+  background-image: linear-gradient(to right, #fff0f2, #fafaf9);
+  border-color: #ecced6;
+}
+.practice-sets-page .bg-brand-600,
+.practice-sets-page .btn-primary { background-color: #842d42; }
+.practice-sets-page .btn-primary:hover { background-color: #6f2438; }
+.practice-sets-page .bg-brand-100 { background-color: #f9e8ec; }
+.practice-sets-page .text-brand-600,
+.practice-sets-page .text-brand-700 { color: #8c3045; }
+.practice-sets-page .card:focus-within { border-color: #af6575; }
+
+html.student-dark .practice-library { background: #251b20; border-color: #5d3943; }
+html.student-dark .practice-library .practice-library__hero { background: #692537; border-color: #5d3943; }
+html.student-dark .practice-library .practice-library__hero-veil {
+  background: linear-gradient(90deg, #692537 0%, #692537 41%, rgba(105,37,55,.93) 54%, rgba(105,37,55,.38) 100%);
+}
+html.student-dark .practice-library .practice-library__eyebrow { color: #f4cdd3; }
+html.student-dark .practice-library .practice-library__hero h1 { color: #fffaf8; }
+html.student-dark .practice-library .practice-library__subtitle { color: #f6e0e1; }
+html.student-dark .practice-library .practice-library__summary { color: #e0c8cf; border-color: #5d3943; }
+html.student-dark .practice-library .practice-library__summary strong { color: #f0a8b7; }
+html.student-dark .practice-library .practice-library__row { border-color: #5d3943; }
+html.student-dark .practice-library .practice-library__row:enabled:hover,
+html.student-dark .practice-library .practice-library__row:enabled:focus-visible { background: #3d2730; }
+html.student-dark .practice-library .practice-library__row:enabled .practice-library__row-action { color: #f0a8b7; }
+html.student-dark .practice-sets-page .bg-gradient-to-r {
+  background-image: linear-gradient(to right, #402630, #272c29);
+  border-color: #69404d;
+}
+html.student-dark .practice-sets-page .bg-brand-600,
+html.student-dark .practice-sets-page .btn-primary { background-color: #842d42; }
+html.student-dark .practice-sets-page .bg-brand-100 { background-color: #4d2d39; }
+html.student-dark .practice-sets-page .text-brand-600,
+html.student-dark .practice-sets-page .text-brand-700 { color: #f0a8b7; }
+
+@media (max-width: 639px) {
+  .practice-library .practice-library__hero-veil {
+    background: linear-gradient(90deg, #692537 0%, rgba(105,37,55,.96) 67%, rgba(105,37,55,.75) 100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .practice-library,
+  .simulation-library,
+  .practice-sets-page { animation: none; }
+}
