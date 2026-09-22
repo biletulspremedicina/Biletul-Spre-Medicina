@@ -117,7 +117,7 @@
 
 .why-editorial-benefits > .why-media-reveal:nth-child(1) {
   width: 95%;
-  margin-left: 1%;
+  margin-left: -2%;
 }
 
 .why-editorial-benefits > .why-media-reveal:nth-child(2) {
@@ -127,7 +127,7 @@
 
 .why-editorial-benefits > .why-media-reveal:nth-child(3) {
   width: 96%;
-  margin-left: -2%;
+  margin-left: -4%;
 }
 
 .why-editorial-benefit {
