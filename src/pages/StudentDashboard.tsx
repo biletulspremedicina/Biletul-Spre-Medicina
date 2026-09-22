@@ -4,12 +4,10 @@ import {
   Bell,
   BookOpen,
   Bookmark,
-  Check,
   CheckCircle2,
   ChevronRight,
   Clock3,
   Crown,
-  Flame,
   GraduationCap,
   Home,
   Layers,
@@ -23,13 +21,10 @@ import {
   RotateCcw,
   Sparkles,
   Sun,
-  Target,
   Timer,
   Trash2,
-  Trophy,
   X,
   FileText,
-  ChartNoAxesCombined,
   CalendarClock,
   PartyPopper,
 } from 'lucide-react';
@@ -37,6 +32,7 @@ import { supabase, type Attempt, type MaterialReleaseRPC, type PracticeAttempt, 
 import { useAuth } from '@/context/AuthContext';
 import Loading from '@/components/Loading';
 import StudentSettings from '@/pages/StudentSettings';
+import StudentPerformance from '@/components/StudentPerformance';
 
 type IncomingTab = 'all' | 'practice' | 'umfcd' | 'dashboard';
 type PageId = 'home' | 'all' | 'practice' | 'umfcd' | 'review' | 'settings';
@@ -58,28 +54,6 @@ type SimWithStatus = Simulation & {
 };
 
 type PracticeSetRow = { id: string; lesson_id: string };
-type Stat = {
-  label: string;
-  value: string;
-  note: string;
-  detail: string;
-  icon: ReactNode;
-  imageSrc: string;
-  tone: 'blue' | 'yellow' | 'green' | 'red';
-};
-
-// Completează doar adresele dintre ghilimele. Până atunci rămân pictogramele actuale.
-const STAT_IMAGE_SOURCES = [
-  '/1.png', // Aici vine sursa imaginea 1 – Rata răspunsurilor corecte
-  '/2.png', // Aici vine sursa imaginea 2 – Cel mai bun rezultat la o simulare
-  '/3.png', // Aici vine sursa imaginea 3 – Rezultatul ultimei simulări
-  '/4.png', // Aici vine sursa imaginea 4 – Media rezultatelor la simulări
-  '/5.png', // Aici vine sursa imaginea 5 – Seria actuală de zile active
-  '/6.png', // Aici vine sursa imaginea 6 – Timp mediu pe întrebare
-  '/7.png', // Aici vine sursa imaginea 7 – Simulări terminate în timpul alocat
-  '/8.png', // Aici vine sursa imaginea 8 – Capitole începute
-];
-
 const UMFCD_IMAGE_SRC = '/UMFCD.png'; // Imaginea pentru Examene UMFCD
 
 // Completează adresele dintre ghilimele pentru imaginile din meniul din stânga.
@@ -97,8 +71,6 @@ const validAnswer = (value: unknown) =>
   typeof value === 'string' && /^[A-E]$/.test(value.toUpperCase());
 const answerCount = (answers: Record<string, string> | null | undefined) =>
   Object.values(answers || {}).filter(validAnswer).length;
-const toPercent = (score: number, maximum: number) =>
-  maximum > 0 ? Math.round((score / maximum) * 100) : null;
 const dateKey = (date: Date) =>
   new Intl.DateTimeFormat('sv-SE', {
     timeZone: 'Europe/Bucharest',
@@ -208,14 +180,6 @@ function dailyMotivationMessage(date: Date) {
   return DAILY_MOTIVATION_MESSAGES[dayNumber % DAILY_MOTIVATION_MESSAGES.length];
 }
 
-function formatSeconds(seconds: number) {
-  if (!Number.isFinite(seconds) || seconds <= 0) return '—';
-  if (seconds < 60) return `${Math.round(seconds)} sec`;
-  const minutes = Math.floor(seconds / 60);
-  const remainder = Math.round(seconds % 60);
-  return remainder ? `${minutes} min ${remainder} sec` : `${minutes} min`;
-}
-
 function initialPage(tab: IncomingTab): PageId {
   if (tab === 'practice' || tab === 'umfcd') return tab;
   return 'home';
@@ -234,7 +198,6 @@ export default function StudentDashboard({
   const [page, setPage] = useState<PageId>(() => initialPage(initialTab));
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [selectedStat, setSelectedStat] = useState<Stat | null>(null);
   const [logoutConfirmationOpen, setLogoutConfirmationOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [simulations, setSimulations] = useState<SimWithStatus[]>([]);
@@ -442,7 +405,6 @@ export default function StudentDashboard({
     setFocusedSimulationId(null);
     setPage(destination);
     setMobileMenuOpen(false);
-    setSelectedStat(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -469,7 +431,6 @@ export default function StudentDashboard({
     setFocusedSimulationId(materialRelease.out_source_id);
     setPage(materialRelease.out_section_label === 'Examene UMFCD' ? 'umfcd' : 'all');
     setMobileMenuOpen(false);
-    setSelectedStat(null);
   };
 
   const openSupport = () => {
@@ -499,67 +460,7 @@ export default function StudentDashboard({
     : 0;
 
   const gradedAttempts = [...submittedSimAttempts, ...submittedPracticeAttempts];
-  const gradedAnswers = gradedAttempts.reduce((sum, attempt) => sum + answerCount(attempt.answers), 0);
-  const correctAnswers = gradedAttempts.reduce((sum, attempt) => sum + Number(attempt.score || 0), 0);
-  const accuracy = gradedAnswers > 0 ? toPercent(correctAnswers, gradedAnswers) : null;
-  const simulationResults = submittedSimAttempts
-    .filter((attempt) => Number(attempt.max_score) > 0)
-    .map((attempt) => ({
-      percent: toPercent(Number(attempt.score), Number(attempt.max_score)) || 0,
-      submittedAt: attempt.submitted_at || '',
-    }));
-  const bestResult = simulationResults.length
-    ? Math.max(...simulationResults.map((result) => result.percent)) : null;
-  const latestResult = [...simulationResults].sort((a, b) =>
-    new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime())[0]?.percent ?? null;
-  const averageResult = simulationResults.length
-    ? Math.round(simulationResults.reduce((sum, result) => sum + result.percent, 0) / simulationResults.length)
-    : null;
-
-  const activeDays = new Set<string>();
-  [...allAttempts, ...practiceAttempts].forEach((attempt) => {
-    if (answerCount(attempt.answers) === 0) return;
-    const stamp = new Date(attempt.submitted_at || attempt.started_at);
-    if (Number.isNaN(stamp.getTime())) return;
-    activeDays.add(dateKey(stamp));
-  });
-  const today = new Date();
-  const todayKey = dateKey(today);
-  const yesterdayKey = dateKey(new Date(today.getTime() - 86_400_000));
-  let streak = 0;
-  if (activeDays.has(todayKey) || activeDays.has(yesterdayKey)) {
-    const cursor = new Date(today);
-    if (!activeDays.has(todayKey)) cursor.setDate(cursor.getDate() - 1);
-    while (activeDays.has(dateKey(cursor)) && streak < 3650) {
-      streak += 1;
-      cursor.setDate(cursor.getDate() - 1);
-    }
-  }
-
-  const timedSimAttempts = submittedSimAttempts.filter(
-    (attempt) => answerCount(attempt.answers) > 0 &&
-      Number.isFinite(new Date(attempt.submitted_at!).getTime() - new Date(attempt.started_at).getTime())
-  );
-  const timePerQuestion = timedSimAttempts.length
-    ? timedSimAttempts.reduce((sum, attempt) => {
-        const elapsed = Math.max(0, (new Date(attempt.submitted_at!).getTime() -
-          new Date(attempt.started_at).getTime()) / 1000);
-        const sim = simulations.find((item) => item.id === attempt.simulation_id);
-        const bounded = sim ? Math.min(elapsed, sim.duration_minutes * 60) : elapsed;
-        return sum + bounded;
-      }, 0) / timedSimAttempts.reduce((sum, attempt) => sum + answerCount(attempt.answers), 0)
-    : 0;
-  const finishedInTime = submittedSimAttempts.filter((attempt) => {
-    const sim = simulations.find((item) => item.id === attempt.simulation_id);
-    if (!sim || attempt.expired) return false;
-    const elapsed = new Date(attempt.submitted_at!).getTime() - new Date(attempt.started_at).getTime();
-    return elapsed >= 0 && elapsed <= sim.duration_minutes * 60_000;
-  }).length;
-  const setToLesson = new Map(practiceSets.map((set) => [set.id, set.lesson_id]));
-  const startedLessons = new Set(practiceAttempts
-    .filter((attempt) => answerCount(attempt.answers) > 0)
-    .map((attempt) => setToLesson.get(attempt.set_id))
-    .filter((id): id is string => !!id));
+  const todayKey = dateKey(new Date());
   const finishedGridsByDay = new Map<string, number>();
   gradedAttempts.forEach((attempt) => {
     if (!attempt.submitted_at) return;
@@ -577,65 +478,6 @@ export default function StudentDashboard({
       count: finishedGridsByDay.get(key) || 0,
     };
   });
-
-  const stats: Stat[] = [
-    {
-      label: 'Rata răspunsurilor corecte',
-      value: accuracy === null ? '—' : `${accuracy}%`,
-      note: 'Din răspunsurile trimise',
-      detail: 'Procentul răspunsurilor corecte din întrebările la care ai răspuns în activitățile finalizate.',
-      icon: <Target size={26} strokeWidth={2.2} />, imageSrc: STAT_IMAGE_SOURCES[0], tone: 'blue',
-    },
-    {
-      label: 'Cel mai bun rezultat la o simulare',
-      value: bestResult === null ? '—' : `${bestResult}%`,
-      note: 'Din simulările finalizate',
-      detail: 'Cel mai mare procent obținut la o simulare finalizată.',
-      icon: <Trophy size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[1], tone: 'yellow',
-    },
-    {
-      label: 'Rezultatul ultimei simulări',
-      value: latestResult === null ? '—' : `${latestResult}%`,
-      note: 'Cea mai recentă simulare',
-      detail: 'Procentul obținut la ultima simulare pe care ai finalizat-o.',
-      icon: <FileText size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[2], tone: 'green',
-    },
-    {
-      label: 'Media rezultatelor la simulări',
-      value: averageResult === null ? '—' : `${averageResult}%`,
-      note: 'Media tuturor simulărilor',
-      detail: 'Media aritmetică a procentelor obținute la simulările finalizate.',
-      icon: <ChartNoAxesCombined size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[3], tone: 'red',
-    },
-    {
-      label: 'Seria actuală de zile active',
-      value: `${streak} ${streak === 1 ? 'zi' : 'zile'}`,
-      note: 'Zile consecutive cu activitate',
-      detail: 'Zile consecutive în care ai răspuns la întrebări. Ziua curentă nu rupe seria înainte să începi să lucrezi.',
-      icon: <Flame size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[4], tone: 'yellow',
-    },
-    {
-      label: 'Timp mediu pe întrebare',
-      value: formatSeconds(timePerQuestion),
-      note: 'Din simulările finalizate',
-      detail: 'Durata simulărilor finalizate, împărțită la numărul întrebărilor la care ai răspuns.',
-      icon: <Clock3 size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[5], tone: 'blue',
-    },
-    {
-      label: 'Simulări terminate în timpul alocat',
-      value: String(finishedInTime),
-      note: 'Din simulările finalizate',
-      detail: 'Numărul simulărilor trimise înainte de expirarea duratei alocate.',
-      icon: <Check size={26} strokeWidth={2.5} />, imageSrc: STAT_IMAGE_SOURCES[6], tone: 'red',
-    },
-    {
-      label: 'Capitole începute',
-      value: String(startedLessons.size),
-      note: 'Ai răspuns la cel puțin o grilă',
-      detail: 'Un capitol este început când răspunzi la prima întrebare dintr-un set al său.',
-      icon: <BookOpen size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[7], tone: 'green',
-    },
-  ];
 
   const navItems: { id: PageId; label: string; icon: ReactNode; imageSrc: string }[] = [
     { id: 'home', label: 'Acasă', icon: <Home size={19} />, imageSrc: NAV_IMAGE_SOURCES.home },
@@ -877,11 +719,12 @@ export default function StudentDashboard({
                   {materialRelease?.out_phase === 'celebrating' ? (
                     <>
                       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-                        <PartyPopper size={25} className="release-confetti-float absolute left-[7%] top-[17%] text-[#ffd75a]/45" />
-                        <PartyPopper size={19} className="release-confetti-float-alt absolute right-[8%] top-[13%] text-[#76dfbd]/40" />
-                        <PartyPopper size={20} className="release-confetti-float-alt absolute left-[6%] top-[55%] text-[#9ac9ff]/35" />
-                        <PartyPopper size={24} className="release-confetti-float absolute right-[6%] top-[62%] text-[#ffd75a]/40" />
-                        <PartyPopper size={16} className="release-confetti-float absolute left-[17%] bottom-[11%] text-[#ffae96]/35" />
+                        <PartyPopper size={24} className="release-confetti-stream text-[#ffd75a]" style={{ animationDelay: '-1s' }} />
+                        <PartyPopper size={18} className="release-confetti-stream text-[#76dfbd]" style={{ animationDelay: '-3.5s' }} />
+                        <PartyPopper size={21} className="release-confetti-stream text-[#9ac9ff]" style={{ animationDelay: '-6s' }} />
+                        <PartyPopper size={25} className="release-confetti-stream text-[#ffd75a]" style={{ animationDelay: '-8.5s' }} />
+                        <PartyPopper size={17} className="release-confetti-stream text-[#ffae96]" style={{ animationDelay: '-11s' }} />
+                        <PartyPopper size={20} className="release-confetti-stream text-[#a3ecd2]" style={{ animationDelay: '-13.5s' }} />
                       </div>
                       <h2 className="relative z-10 mx-auto max-w-[320px] text-center text-[clamp(21px,1.7vw,26px)] font-bold leading-snug" style={serif}>
                         Materialele sunt acum accesibile
@@ -889,10 +732,12 @@ export default function StudentDashboard({
                       <div className="relative z-10 mt-6">
                         <ReleaseDestination release={materialRelease} />
                       </div>
-                      <button type="button" onClick={() => void openReleasedMaterial()}
-                        className="release-access-button relative z-10 mx-auto mt-5 flex items-center justify-center gap-2 rounded-xl px-7 py-2.5 text-[18px] font-bold shadow-[0_8px_24px_rgba(0,0,0,0.13)] transition-transform duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#034638] motion-reduce:transition-none motion-reduce:hover:translate-y-0">
-                        Accesează <ChevronRight size={20} aria-hidden="true" />
-                      </button>
+                      <div className="relative z-10 flex min-h-[76px] flex-1 items-center justify-center py-3">
+                        <button type="button" onClick={() => void openReleasedMaterial()}
+                          className="release-access-button flex items-center justify-center gap-2 rounded-xl px-7 py-2.5 text-[18px] font-bold shadow-[0_8px_24px_rgba(0,0,0,0.13)] transition-transform duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#034638] motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+                          Accesează <ChevronRight size={20} aria-hidden="true" />
+                        </button>
+                      </div>
                       <CelebrationExpiry
                         releasedAt={materialRelease.out_available_at}
                         onComplete={() => void loadMaterialRelease()}
@@ -930,18 +775,10 @@ export default function StudentDashboard({
                 </section>
               </div>
 
-              <div className="mb-4 mt-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
-                <h2 className="text-[29px] font-bold leading-tight sm:text-[32px]" style={serif}>
-                  Statistici și performanță
-                </h2>
-                <p className="pb-1 text-[12px] text-[#66798d]">
-                  O privire de ansamblu asupra parcursului tău.
-                </p>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                {stats.map((stat) => (
-                  <StatCard key={stat.label} stat={stat} onClick={() => setSelectedStat(stat)} />
-                ))}
+              <div className="mt-8">
+                <StudentPerformance simulations={simulations} practiceAttempts={practiceAttempts}
+                  practiceLessons={practiceLessons} practiceSets={practiceSets}
+                  onViewSimulations={() => goTo('all')} onViewChapters={() => goTo('practice')} />
               </div>
             </>
           ) : page === 'settings' ? (
@@ -1054,28 +891,6 @@ export default function StudentDashboard({
           )}
         </main>
       </div>
-
-      {selectedStat && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-[#071f19]/45 p-4"
-          onMouseDown={() => setSelectedStat(null)}>
-          <div role="dialog" aria-modal="true" aria-labelledby="stat-dialog-title"
-            className="w-full max-w-md rounded-[24px] border border-[#d8e9e0] bg-white p-6 shadow-2xl"
-            onMouseDown={(event) => event.stopPropagation()}>
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#e1f6ed] text-[#0d6a50]">
-                <StatVisual stat={selectedStat} />
-              </div>
-              <button type="button" onClick={() => setSelectedStat(null)} aria-label="Închide detaliile"
-                className="rounded-lg p-2 text-[#65788b] hover:bg-[#f2f7f4]">
-                <X size={18} />
-              </button>
-            </div>
-            <h2 id="stat-dialog-title" className="mt-5 text-[24px] font-bold" style={serif}>{selectedStat.label}</h2>
-            <p className="mt-3 text-[32px] font-bold text-[#084d3a]">{selectedStat.value}</p>
-            <p className="mt-3 text-sm leading-relaxed text-[#607485]">{selectedStat.detail}</p>
-          </div>
-        </div>
-      )}
 
       {logoutConfirmationOpen && (
         <div
@@ -1243,33 +1058,6 @@ function CelebrationExpiry({ releasedAt, onComplete }: { releasedAt: string; onC
       Spor la lucru! Cele mai noi materiale sunt acum gata de accesat.
     </p>
   );
-}
-
-function StatCard({ stat, onClick }: { stat: Stat; onClick: () => void }) {
-  return (
-    <button type="button" onClick={onClick}
-      className="group flex min-h-[176px] w-full flex-col rounded-[11px] border border-[#e0e7ed] bg-white p-[18px] text-left shadow-[0_3px_13px_rgba(33,55,69,0.025)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#b8d9cb] hover:shadow-[0_12px_30px_rgba(24,74,58,0.09)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3a9b78] motion-reduce:transition-none">
-      <div className="flex w-full items-start gap-4">
-        <span className={`stat-icon-${stat.tone} flex h-[58px] w-[58px] shrink-0 items-center justify-center rounded-full`}>
-          <StatVisual stat={stat} />
-        </span>
-        <span className="flex min-w-0 flex-1 items-start justify-between gap-2">
-          <span className="min-w-0 pt-2 text-[17px] font-bold leading-[1.22]" style={serif}>{stat.label}</span>
-        </span>
-      </div>
-      <div className="mt-auto flex w-full items-center justify-between gap-2 pl-[74px]">
-        <span className="text-[31px] font-extrabold leading-none text-[#14283a]">{stat.value}</span>
-        <ChevronRight size={17} className="shrink-0 text-[#183044] transition-transform group-hover:translate-x-0.5" />
-      </div>
-      <span className="mt-2 block pl-[74px] text-[11px] leading-snug text-[#657b93]">{stat.note}</span>
-    </button>
-  );
-}
-
-function StatVisual({ stat }: { stat: Stat }) {
-  return stat.imageSrc ? (
-    <img src={stat.imageSrc} alt="" className="h-9 w-9 object-contain" loading="lazy" draggable={false} />
-  ) : stat.icon;
 }
 
 function UmfcdIcon({ size, imageSize }: { size: number; imageSize: number }) {
