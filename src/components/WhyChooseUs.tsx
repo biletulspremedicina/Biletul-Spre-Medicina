@@ -1,635 +1,457 @@
-.why-editorial {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  padding: 68px 24px 76px;
-  margin-top: -1px;
-  background: linear-gradient(180deg, #fafaf9 0, #fdfbf7 76px, #fffdfa 190px);
-  color: #142233;
-}
-
-.why-editorial::before {
-  position: absolute;
-  z-index: -2;
-  inset: 0 0 auto;
-  height: 150px;
-  background: linear-gradient(180deg, rgba(250, 250, 249, 1) 0%, rgba(255, 253, 250, .72) 56%, rgba(255, 253, 250, 0) 100%);
-  content: '';
-  pointer-events: none;
-}
-
-.why-editorial-photo {
-  position: absolute;
-  z-index: -1;
-  top: 0;
-  right: 0;
-  width: min(54%, 850px);
-  height: 380px;
-  background-image: linear-gradient(90deg, #fffdfa 0%, rgba(255, 253, 250, .9) 19%, rgba(255, 253, 250, .16) 66%), url('https://images.unsplash.com/photo-1654356709115-3f68998bead4?auto=format&fit=crop&w=1300&q=82');
-  background-position: center, center 52%;
-  background-size: cover;
-  opacity: .72;
-  -webkit-mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, .2) 8%, #000 27%, #000 68%, transparent 100%);
-  mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, .2) 8%, #000 27%, #000 68%, transparent 100%);
-  pointer-events: none;
-}
-
-.why-editorial-inner {
-  position: relative;
-  width: min(100%, 1440px);
-  margin: 0 auto;
-}
-
-.why-editorial-intro {
-  position: relative;
-  z-index: 1;
-  max-width: 1120px;
-}
-
-.why-editorial-eyebrow {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  margin: 0 0 22px;
-  color: #174c42;
-  font-family: Inter, sans-serif;
-  font-size: 12px;
-  font-weight: 750;
-  letter-spacing: .27em;
-}
-
-.why-editorial-eyebrow span {
-  display: inline-block;
-  width: 55px;
-  height: 1px;
-  background: #a9b9af;
-}
-
-.why-editorial-intro h2 {
-  margin: 0;
-  color: #132338;
-  font-family: Georgia, Cambria, 'Times New Roman', serif;
-  font-size: clamp(43px, 4.65vw, 71px);
-  font-weight: 700;
-  letter-spacing: -.045em;
-  line-height: 1.04;
-  text-wrap: balance;
-}
-
-.why-editorial-lead {
-  max-width: 710px;
-  margin: 22px 0 0;
-  color: #485a64;
-  font-family: Inter, sans-serif;
-  font-size: clamp(16px, 1.5vw, 21px);
-  line-height: 1.55;
-}
-
-.why-editorial-stage {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 52%) minmax(0, 48%);
-  align-items: center;
-  margin-top: 40px;
-  min-height: 524px;
-}
-
-.why-editorial-benefits {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  min-width: 0;
-  padding: 12px 0;
-}
-
-.why-editorial-benefits > .why-media-reveal:nth-child(1) {
-  width: 95%;
-  margin-left: 5%;
-}
-
-.why-editorial-benefits > .why-media-reveal:nth-child(2) {
-  width: 91%;
-  margin-left: 10%;
-}
-
-.why-editorial-benefits > .why-media-reveal:nth-child(3) {
-  width: 96%;
-}
-
-.why-editorial-benefit {
-  display: grid;
-  grid-template-columns: 118px minmax(0, 1fr);
-  align-items: center;
-  gap: 17px;
-  min-height: 158px;
-  padding: 24px 30px;
-  overflow: hidden;
-  border: 1px solid rgba(203, 233, 220, .16);
-  border-radius: 22px;
-  background: linear-gradient(125deg, #124b3e 0%, #0a3c32 62%, #07372e 100%);
-  box-shadow: 0 18px 38px rgba(11, 42, 34, .16), 0 4px 10px rgba(11, 42, 34, .09);
-  animation: why-card-float 8s ease-in-out infinite;
-  will-change: transform;
-}
-
-.why-editorial-benefits > .why-media-reveal:nth-child(2) .why-editorial-benefit {
-  animation-delay: -2.7s;
-}
-
-.why-editorial-benefits > .why-media-reveal:nth-child(3) .why-editorial-benefit {
-  animation-delay: -5.1s;
-}
-
-@keyframes why-card-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-3px); }
-}
-
-.why-editorial-media,
-.why-editorial-footer-media {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  margin: 0;
-  background: #164d41;
-  box-shadow: 0 12px 28px rgba(0, 18, 14, .24), inset 0 0 0 1px rgba(255, 255, 255, .12);
-}
-
-.why-editorial-media {
-  width: 110px;
-  aspect-ratio: 1.18;
-  border-radius: 16px;
-  transform: rotate(-2deg);
-}
-
-.why-editorial-benefits > *:nth-child(even) .why-editorial-media {
-  transform: rotate(2deg);
-}
-
-.why-editorial-media::after,
-.why-editorial-footer-media::after {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(145deg, transparent 35%, rgba(209, 236, 224, .15));
-  content: '';
-  pointer-events: none;
-}
-
-.why-editorial-media img,
-.why-editorial-footer-media img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  filter: saturate(.78) contrast(1.04);
-  transition: transform 700ms cubic-bezier(.16, 1, .3, 1), filter 500ms ease;
-}
-
-.why-media-reveal.opacity-100 .why-editorial-media img,
-.why-media-reveal.opacity-100 .why-editorial-footer-media img {
-  animation: why-photo-arrive 950ms cubic-bezier(.16, 1, .3, 1) both;
-}
-
-.why-editorial-benefit:hover .why-editorial-media img,
-.why-editorial-footer-item:hover .why-editorial-footer-media img {
-  transform: scale(1.08);
-  filter: saturate(.98) contrast(1.04);
-}
-
-@keyframes why-photo-arrive {
-  from { opacity: .2; transform: scale(1.16); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-.why-editorial-benefit h3 {
-  margin: 0 0 10px;
-  color: #fffdf8;
-  font-family: Georgia, Cambria, 'Times New Roman', serif;
-  font-size: clamp(21px, 1.85vw, 28px);
-  font-weight: 700;
-  letter-spacing: -.025em;
-  line-height: 1.17;
-}
-
-.why-editorial-benefit p {
-  margin: 0;
-  color: #d7e6df;
-  font-family: Inter, sans-serif;
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-.why-editorial-preview-wrap {
-  position: relative;
-  z-index: 1;
-  min-width: 0;
-  align-self: stretch;
-  margin: -10px 0 -10px -62px;
-}
-
-.why-preview {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  border: 10px solid #173c37;
-  border-radius: 25px;
-  background: #fff;
-  box-shadow: 0 24px 46px rgba(0, 24, 20, .25);
-  color: #172735;
-  font-family: Inter, sans-serif;
-  font-size: 12px;
-}
-
-.why-preview-header {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(130px, .76fr) auto;
-  align-items: center;
-  gap: 25px;
-  min-height: 73px;
-  padding: 14px 22px;
-  border-bottom: 1px solid #e3e9e8;
-}
-
-.why-preview-heading,
-.why-preview-time {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.why-preview-heading strong {
-  color: #103f36;
-  font-size: 14px;
-  font-weight: 750;
-}
-
-.why-preview-heading span,
-.why-preview-time small,
-.why-preview-progress span {
-  color: #65717c;
-  font-size: 10px;
-  line-height: 1.25;
-}
-
-.why-preview-progress span {
-  display: block;
-  margin-bottom: 10px;
-  text-align: right;
-}
-
-.why-preview-progress div {
-  height: 4px;
-  overflow: hidden;
-  border-radius: 99px;
-  background: #e3e8e8;
-}
-
-.why-preview-progress i {
-  display: block;
-  width: 20%;
-  height: 100%;
-  border-radius: inherit;
-  background: #116450;
-}
-
-.why-preview-time {
-  text-align: right;
-}
-
-.why-preview-time strong {
-  color: #164e42;
-  font-size: 15px;
-  font-variant-numeric: tabular-nums;
-}
-
-.why-preview-content {
-  display: grid;
-  grid-template-columns: 51% 49%;
-  flex: 1;
-  min-height: 0;
-}
-
-.why-preview-question,
-.why-preview-explanation {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  padding: 22px 21px 20px;
-}
-
-.why-preview-question {
-  border-right: 1px solid #e5ece9;
-}
-
-.why-preview-question-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.why-preview-question-top strong,
-.why-preview-explanation h4 {
-  font-size: 12px;
-  font-weight: 750;
-}
-
-.why-preview-question-top span {
-  padding: 4px 8px;
-  border-radius: 100px;
-  background: #eff3f5;
-  color: #4d5c68;
-  font-size: 10px;
-  white-space: nowrap;
-}
-
-.why-preview-question h4 {
-  margin: 20px 0 16px;
-  font-size: 13px;
-  font-weight: 650;
-  line-height: 1.5;
-}
-
-.why-preview-options {
-  display: grid;
-  gap: 8px;
-}
-
-.why-preview-option {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 42px;
-  padding: 6px 9px;
-  border: 1px solid #dfe6e5;
-  border-radius: 7px;
-  background: #fff;
-}
-
-.why-preview-option > span,
-.why-preview-other-answers li > span {
-  display: inline-flex;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border: 1px solid #e1e6e8;
-  border-radius: 50%;
-  background: #f5f7f8;
-  font-size: 11px;
-  font-weight: 650;
-}
-
-.why-preview-option strong {
-  font-size: 11px;
-  font-weight: 550;
-}
-
-.why-preview-option.is-correct {
-  border-color: #238263;
-  background: #f2faf6;
-}
-
-.why-preview-option.is-correct > span {
-  border-color: #155240;
-  background: #155240;
-  color: white;
-}
-
-.why-preview-option b {
-  margin-left: auto;
-  color: #146c52;
-  font-size: 17px;
-}
-
-.why-preview-navigation {
-  display: flex;
-  justify-content: space-between;
-  gap: 6px;
-  margin-top: auto;
-  padding-top: 18px;
-  color: #29524b;
-  font-size: 10px;
-}
-
-.why-preview-navigation span:last-child {
-  padding: 9px 10px;
-  border-radius: 5px;
-  background: #174b3d;
-  color: white;
-}
-
-.why-preview-navigation span:first-child {
-  padding: 9px 0;
-}
-
-.why-preview-explanation h4 {
-  margin: 0 0 16px;
-}
-
-.why-preview-correct {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 11px;
-  border-radius: 7px;
-  background: #edf7f1;
-  color: #155342;
-  font-size: 11px;
-}
-
-.why-preview-correct span {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-  width: 17px;
-  height: 17px;
-  border-radius: 50%;
-  background: #14664d;
-  color: white;
-  font-size: 11px;
-}
-
-.why-preview-explanation > p {
-  margin: 13px 0 17px;
-  color: #344650;
-  font-size: 11px;
-  line-height: 1.55;
-}
-
-.why-preview-explanation h5 {
-  margin: 0 0 10px;
-  font-size: 11px;
-  font-weight: 750;
-}
-
-.why-preview-other-answers {
-  display: grid;
-  gap: 9px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.why-preview-other-answers li {
-  display: flex;
-  align-items: start;
-  gap: 9px;
-}
-
-.why-preview-other-answers li > span {
-  width: 20px;
-  height: 20px;
-  font-size: 10px;
-}
-
-.why-preview-other-answers p {
-  margin: 0;
-  color: #4d5961;
-  font-size: 10px;
-  line-height: 1.35;
-}
-
-.why-preview-other-answers strong {
-  color: #26353d;
-}
-
-.why-preview-takeaway {
-  margin-top: auto;
-  padding: 11px 13px;
-  border-radius: 7px;
-  background: #edf6fb;
-  color: #304c5e;
-}
-
-.why-preview-takeaway strong {
-  display: block;
-  margin-bottom: 4px;
-  font-size: 10px;
-}
-
-.why-preview-takeaway p {
-  margin: 0;
-  font-size: 10px;
-  line-height: 1.4;
-}
-
-.why-editorial-footer {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 48px;
-  margin-top: 34px;
-  padding: 0 48px;
-}
-
-.why-editorial-footer > * + * {
-  border-left: 1px solid #d5ddd8;
-  padding-left: 48px;
-}
-
-.why-editorial-footer-item {
-  display: flex;
-  align-items: center;
-  gap: 22px;
-}
-
-.why-editorial-footer-media {
-  flex: 0 0 92px;
-  width: 92px;
-  aspect-ratio: 1.35;
-  border-radius: 14px;
-  box-shadow: 0 10px 25px rgba(23, 58, 48, .14), inset 0 0 0 1px rgba(255, 255, 255, .16);
-}
-
-.why-editorial-footer h3 {
-  margin: 0 0 6px;
-  color: #15283a;
-  font-family: Georgia, Cambria, 'Times New Roman', serif;
-  font-size: clamp(20px, 1.5vw, 24px);
-  line-height: 1.2;
-}
-
-.why-editorial-footer p {
-  max-width: 480px;
-  margin: 0;
-  color: #56646d;
-  font-family: Inter, sans-serif;
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-@media (max-width: 1180px) {
-  .why-editorial-stage { display: block; }
-  .why-editorial-benefits { gap: 14px; padding: 20px 35px 10px; }
-  .why-editorial-benefits > .why-media-reveal:nth-child(1) { width: 96%; margin-left: 0; }
-  .why-editorial-benefits > .why-media-reveal:nth-child(2) { width: 94%; margin-left: 6%; }
-  .why-editorial-benefits > .why-media-reveal:nth-child(3) { width: 97%; margin-left: 1%; }
-  .why-editorial-benefit { min-height: 140px; grid-template-columns: 118px minmax(0, 1fr); }
-  .why-editorial-benefit h3 { font-size: 25px; }
-  .why-editorial-preview-wrap { margin: 5px 18px -10px; }
-  .why-preview { min-height: 460px; }
-  .why-preview { font-size: 11px; }
-  .why-preview-header { gap: 12px; padding-inline: 14px; }
-  .why-preview-question, .why-preview-explanation { padding-inline: 14px; }
-}
-
-@media (max-width: 920px) {
-  .why-editorial { padding-block: 56px 64px; }
-  .why-editorial-photo { width: 65%; height: 310px; }
-  .why-editorial-benefits { gap: 12px; padding: 28px 20px 14px; }
-  .why-editorial-benefit { min-height: 148px; grid-template-columns: 105px minmax(0, 1fr); padding: 21px 24px; }
-  .why-editorial-media { width: 96px; }
-  .why-editorial-footer { gap: 25px; padding-inline: 15px; }
-  .why-editorial-footer > * + * { padding-left: 25px; }
-}
-
-@media (max-width: 620px) {
-  .why-editorial { padding: 46px 16px 55px; }
-  .why-editorial-photo { width: 90%; height: 250px; opacity: .28; }
-  .why-editorial-eyebrow { gap: 12px; font-size: 10px; letter-spacing: .18em; }
-  .why-editorial-eyebrow span { width: 28px; }
-  .why-editorial-intro h2 { font-size: clamp(38px, 9vw, 55px); }
-  .why-editorial-lead { margin-top: 17px; font-size: 16px; }
-  .why-editorial-stage { margin-top: 32px; }
-  .why-editorial-benefits { gap: 10px; padding: 12px 4px 8px; }
-  .why-editorial-benefits > .why-media-reveal:nth-child(1),
-  .why-editorial-benefits > .why-media-reveal:nth-child(2),
-  .why-editorial-benefits > .why-media-reveal:nth-child(3) { width: 100%; margin-left: 0; }
-  .why-editorial-benefit { min-height: 143px; grid-template-columns: 76px minmax(0, 1fr); gap: 12px; padding: 18px 16px; border-radius: 16px; }
-  .why-editorial-media { width: 72px; border-radius: 12px; }
-  .why-editorial-benefit h3 { margin-bottom: 6px; font-size: 21px; }
-  .why-editorial-benefit p { font-size: 12px; line-height: 1.5; }
-  .why-editorial-preview-wrap { margin: 6px 9px -10px; }
-  .why-preview { min-height: 0; border-width: 6px; border-radius: 18px; }
-  .why-preview-header { grid-template-columns: 1fr auto; min-height: 65px; gap: 8px; padding: 12px; }
-  .why-preview-heading span { font-size: 9px; }
-  .why-preview-progress { display: none; }
-  .why-preview-time strong { font-size: 12px; }
-  .why-preview-content { grid-template-columns: 1fr; }
-  .why-preview-question { border-right: 0; border-bottom: 1px solid #e5ece9; }
-  .why-preview-question, .why-preview-explanation { padding: 17px 14px; }
-  .why-preview-question h4 { margin-block: 13px; }
-  .why-preview-navigation { margin-top: 8px; }
-  .why-preview-explanation > p { margin-block: 10px; }
-  .why-preview-other-answers { gap: 6px; }
-  .why-preview-takeaway { margin-top: 15px; }
-  .why-editorial-footer { grid-template-columns: 1fr; gap: 18px; margin-top: 32px; padding: 0 7px; }
-  .why-editorial-footer > * + * { border-top: 1px solid #d5ddd8; border-left: 0; padding: 18px 0 0; }
-  .why-editorial-footer-item { gap: 15px; }
-  .why-editorial-footer-media { flex-basis: 76px; width: 76px; border-radius: 12px; }
-  .why-editorial-footer h3 { font-size: 21px; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .why-editorial-benefit,
-  .why-editorial-media img,
-  .why-editorial-footer-media img {
-    animation: none !important;
-    transition: none;
+import { useState, type KeyboardEvent, type ReactNode } from 'react';
+import {
+  BarChart3,
+  Bookmark,
+  Check,
+  ClipboardCheck,
+  Clock3,
+  PieChart,
+  TrendingUp,
+} from 'lucide-react';
+import Reveal from '@/components/Reveal';
+
+type CardId = 'simulations' | 'exam' | 'dashboard' | 'support' | 'team';
+type CardTone = 'brand' | 'accent' | 'sky' | 'warm';
+
+type Benefit = {
+  text: ReactNode;
+  emphasis?: string;
+  emphasisClassName?: string;
+};
+
+type AdvantageCardProps = {
+  id: CardId;
+  icon: ReactNode;
+  eyebrow: string;
+  title: string;
+  intro?: string;
+  benefits?: Benefit[];
+  children?: ReactNode;
+  tone?: CardTone;
+  className?: string;
+  activeCard: CardId | null;
+  onActivate: (id: CardId) => void;
+};
+
+const BENEFIT_CHECKS: Benefit[] = [
+  {
+    text: (
+      <>
+        <strong>Simulări din întreaga materie de Biologie</strong>, pentru evaluarea
+        completă a nivelului de pregătire.
+      </>
+    ),
+  },
+  {
+    text: (
+      <>
+        <strong>Simulări structurate pe capitole</strong>, ideale pentru aprofundarea
+        și verificarea fiecărui subiect.
+      </>
+    ),
+  },
+  {
+    text: (
+      <>
+        <strong>
+          Simulările și examenele de admitere oferite în anii anteriori de UMFCD
+        </strong>
+        , pentru o pregătire cât mai apropiată de experiența examenului real.
+      </>
+    ),
+  },
+];
+
+const EXAM_BENEFITS: Benefit[] = [
+  {
+    text: 'Ne lăudăm cu grile complexe și atent concepute, fără AI, totul din materie.',
+    emphasis: '60 grile la noi = 200 pe alte platforme',
+    emphasisClassName: 'text-center',
+  },
+  {
+    text: 'Cronometru integrat, pentru gestionarea eficientă a timpului.',
+  },
+  {
+    text: 'Răspunsuri și explicații cuprinzătoare, disponibile imediat după finalizarea simulării.',
+   emphasis: 'Înțelege fiecare greșeală, îmbunătățește pregătirea.',
+emphasisClassName: 'text-center',
+  },
+];
+
+const DASHBOARD_ITEMS = [
+  {
+    icon: <BarChart3 size={17} />,
+    label: 'Performanță pentru fiecare capitol',
+    tone: 'brand',
+  },
+  {
+    icon: <Clock3 size={17} />,
+    label: 'Timp mediu de rezolvare',
+    tone: 'accent',
+  },
+  {
+    icon: <TrendingUp size={17} />,
+    label: 'Evoluția scorului în timp',
+    tone: 'brand',
+  },
+  {
+    icon: <ClipboardCheck size={17} />,
+    label: 'Număr simulări rezolvate',
+    tone: 'brand',
+  },
+  {
+    icon: <Bookmark size={17} />,
+    label: 'Opțiunea „Grile de revăzut”',
+    tone: 'accent',
+  },
+  {
+    icon: <PieChart size={17} />,
+    label: 'Rata medie de răspunsuri corecte',
+    tone: 'brand',
+  },
+] as const;
+
+const CARD_STYLES: Record<
+  CardTone,
+  {
+    card: string;
+    glow: string;
+    icon: string;
+    check: string;
+    benefitBorder: string;
   }
+> = {
+  brand: {
+    card: 'border-brand-200/80 from-white via-white to-brand-50/70',
+    glow: 'bg-brand-100/70',
+    icon: 'bg-brand-100 text-brand-700 ring-brand-200/70',
+    check: 'bg-brand-100 text-brand-700',
+    benefitBorder: 'border-brand-100/80',
+  },
+  accent: {
+    card: 'border-amber-200/80 from-white via-white to-amber-50/75',
+    glow: 'bg-amber-100/70',
+    icon: 'bg-amber-100 text-accent-700 ring-amber-200/70',
+    check: 'bg-amber-100 text-accent-700',
+    benefitBorder: 'border-amber-100',
+  },
+  sky: {
+    card: 'border-sky-200/80 from-white via-white to-sky-50/75',
+    glow: 'bg-sky-100/70',
+    icon: 'bg-sky-100 text-sky-700 ring-sky-200/70',
+    check: 'bg-sky-100 text-sky-700',
+    benefitBorder: 'border-sky-100',
+  },
+  warm: {
+    card: 'border-orange-200/70 from-white via-white to-orange-50/60',
+    glow: 'bg-orange-100/65',
+    icon: 'bg-orange-100 text-orange-700 ring-orange-200/70',
+    check: 'bg-orange-100 text-orange-700',
+    benefitBorder: 'border-orange-100',
+  },
+};
+
+export default function WhyChooseUs() {
+  const [activeCard, setActiveCard] = useState<CardId | null>(null);
+
+  return (
+    <section
+      aria-labelledby="why-choose-us-title"
+      className="relative overflow-hidden px-4 pb-16 pt-5 sm:px-6 sm:pb-20 sm:pt-12 lg:px-8"
+      style={{
+        background:
+          'linear-gradient(180deg, #fafcf9 0%, #f7faf7 58%, #fffdfa 100%)',
+      }}
+    >
+      <div
+        className="pointer-events-none absolute -left-24 top-20 h-80 w-80 rounded-full bg-brand-100/45 blur-3xl"
+        aria-hidden="true"
+      />
+      <div
+        className="pointer-events-none absolute -right-24 top-64 h-80 w-80 rounded-full bg-amber-100/55 blur-3xl"
+        aria-hidden="true"
+      />
+
+      <div className="relative mx-auto max-w-7xl">
+        <Reveal className="mx-auto mb-10 max-w-3xl text-center motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none sm:mb-12">
+          <h2
+            id="why-choose-us-title"
+            className="mt-5 font-display text-3xl font-extrabold leading-tight tracking-tight text-brand-900 sm:text-4xl lg:text-5xl"
+          >
+            De ce să alegi{' '}
+            <span className="text-accent-500">Biletul Spre Medicină</span>?
+          </h2>
+
+          <div
+            className="mx-auto mt-5 h-1 w-20 rounded-full bg-gradient-to-r from-brand-500 to-accent-400"
+            aria-hidden="true"
+          />
+
+          <p className="mx-auto mt-5 max-w-2xl font-sans text-base leading-relaxed text-stone-600 sm:text-lg">
+            Tot ce ai nevoie pentru o pregătire organizată, realistă și eficientă
+            pentru admiterea la medicină.
+          </p>
+        </Reveal>
+
+        <div className="grid gap-5 lg:grid-cols-2 lg:items-stretch">
+          <Reveal
+            className="lg:h-full motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none"
+            delay={60}
+          >
+            <AdvantageCard
+              id="simulations"
+              icon={<CardImage src="/Calendar.png" />}
+              eyebrow="Pregătire constantă"
+              title="Simulări zilnice"
+              intro="Oferim acces la o gamă vastă și variată de simulări, concepute pentru a nu lăsa loc de surprindere la examen."
+              benefits={BENEFIT_CHECKS}
+              tone="brand"
+              className="h-full"
+              activeCard={activeCard}
+              onActivate={setActiveCard}
+            />
+          </Reveal>
+
+          <Reveal
+            className="lg:h-full motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none"
+            delay={120}
+          >
+            <AdvantageCard
+              id="exam"
+              icon={<CardImage src="/Checkboard copy 2.png" />}
+              eyebrow="Ca la examen"
+              title="Simulează cu adevărat experiența examenului"
+              benefits={EXAM_BENEFITS}
+              tone="accent"
+              className="h-full"
+              activeCard={activeCard}
+              onActivate={setActiveCard}
+            />
+          </Reveal>
+
+          <Reveal
+            className="lg:row-span-2 lg:h-full motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none"
+            delay={180}
+          >
+            <AdvantageCard
+              id="dashboard"
+              icon={<CardImage src="/Chartst.png" />}
+              eyebrow="Progresul tău"
+              title="Dashboard integrat"
+              intro="Urmărește în detaliu evoluția"
+              tone="sky"
+              className="h-full"
+              activeCard={activeCard}
+              onActivate={setActiveCard}
+            >
+              <div className="mt-6 grid grid-cols-2 gap-2.5 lg:flex-1 lg:auto-rows-fr lg:gap-3">
+                {DASHBOARD_ITEMS.map((item) => (
+                  <div
+                    key={item.label}
+                    className="group/metric flex min-w-0 flex-col items-start gap-2 rounded-xl border border-sky-100 bg-white/85 p-2.5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-sky-200 hover:shadow-md sm:flex-row sm:items-center sm:gap-3 sm:p-3"
+                  >
+                    <div
+                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg sm:h-9 sm:w-9 ${
+                        item.tone === 'accent'
+                          ? 'bg-amber-100 text-accent-700'
+                          : 'bg-sky-100 text-sky-700'
+                      }`}
+                      aria-hidden="true"
+                    >
+                      {item.icon}
+                    </div>
+                    <p className="min-w-0 break-words text-sm font-medium leading-snug text-stone-700 sm:text-base">
+                      {item.label}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-3 flex items-center justify-center gap-2 rounded-xl border border-sky-100 bg-sky-50/80 px-4 py-3 text-sm font-bold text-sky-800">
+                <span aria-hidden="true">+</span>
+                multe altele statistici
+              </div>
+            </AdvantageCard>
+          </Reveal>
+
+          <Reveal
+            className="lg:h-full motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none"
+            delay={240}
+          >
+            <AdvantageCard
+              id="support"
+              icon={<CardImage src="/Support.png" />}
+              eyebrow="Sprijin pe parcurs"
+              title="Ai o întrebare? Suntem aici să te ajutăm"
+              intro="Beneficiezi de suport dedicat pe parcursul pregătirii, pentru orice nelămurire legată de platformă, simulări sau chiar materie:"
+              benefits={[
+                {
+                  text: 'Asistență de luni până vineri, în intervalul 08:00–17:00.',
+                },
+                {
+                  text: 'Răspunsuri rapide la întrebările și problemele întâmpinate.',
+                },
+              ]}
+              tone="brand"
+              className="h-full"
+              activeCard={activeCard}
+              onActivate={setActiveCard}
+            />
+          </Reveal>
+
+          <Reveal
+            className="lg:h-full motion-reduce:!translate-y-0 motion-reduce:!opacity-100 motion-reduce:!transition-none"
+            delay={300}
+          >
+            <AdvantageCard
+              id="team"
+              icon={<CardImage src="/doctorii.png" />}
+              eyebrow="Oameni care înțeleg"
+              title="Cine suntem?"
+              tone="warm"
+              className="h-full"
+              activeCard={activeCard}
+              onActivate={setActiveCard}
+            >
+              <div className="mt-5 space-y-3 font-sans text-sm leading-relaxed text-stone-600 sm:text-base">
+                <p className="indent-5 font-semibold text-stone-800">
+                  Suntem o echipă formată din profesori și studenți, uniți de
+                  aceeași experiență și de dorința de a face pregătirea mai
+                  eficientă.
+                </p>
+                <p>
+                  Am înțeles și perfecționat metodele de pregătire pentru unul
+                  dintre cele mai solicitante examene, transformând experiența
+                  noastră într-un sistem de simulări adaptat nevoilor reale ale
+                  elevilor.
+                </p>
+              </div>
+            </AdvantageCard>
+          </Reveal>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CardImage({ src }: { src: string }) {
+  return (
+    <img
+      src={src}
+      alt=""
+      className="h-8 w-8 object-contain transition-transform duration-300 group-hover:scale-105"
+      draggable={false}
+    />
+  );
+}
+
+function AdvantageCard({
+  id,
+  icon,
+  title,
+  intro,
+  benefits,
+  children,
+  tone = 'brand',
+  className = '',
+  activeCard,
+  onActivate,
+}: AdvantageCardProps) {
+  const isActive = activeCard === id;
+  const colors = CARD_STYLES[tone];
+
+  const topLine =
+    id === 'simulations'
+      ? 'bg-gradient-to-r from-brand-700 via-brand-400 to-brand-200'
+      : id === 'exam'
+        ? 'bg-gradient-to-r from-amber-100 via-amber-400 to-accent-700'
+        : id === 'dashboard'
+          ? 'bg-gradient-to-r from-sky-700 via-sky-400 to-sky-200'
+          : id === 'support'
+            ? 'bg-gradient-to-r from-brand-100 via-brand-400 to-brand-700'
+            : 'bg-gradient-to-r from-orange-100 via-orange-400 to-orange-700';
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onActivate(id);
+    }
+  };
+
+  return (
+    <article
+      tabIndex={0}
+      role="button"
+      aria-pressed={isActive}
+      aria-label={`${title}. Activează evidențierea cardului.`}
+      onClick={() => onActivate(id)}
+      onKeyDown={handleKeyDown}
+      className={`group relative isolate flex min-h-full cursor-pointer flex-col overflow-hidden rounded-[28px] border bg-gradient-to-br p-5 shadow-[0_8px_32px_rgba(27,61,49,0.05)] outline-none transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_42px_rgba(27,61,49,0.11)] focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 active:translate-y-0 motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:p-7 ${
+        colors.card
+      } ${
+        isActive ? 'ring-2 ring-brand-200 shadow-lg' : ''
+      } ${className}`}
+    >
+      <div
+        className={`absolute inset-x-0 top-0 z-10 h-1.5 ${topLine}`}
+        aria-hidden="true"
+      />
+      <div
+        className={`pointer-events-none absolute -right-12 -top-12 h-44 w-44 rounded-full blur-2xl ${colors.glow}`}
+        aria-hidden="true"
+      />
+
+      <div className="relative flex items-start gap-4">
+        <div
+          className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-[18px] ring-1 shadow-sm ${colors.icon}`}
+          aria-hidden="true"
+        >
+          {icon}
+        </div>
+
+        <div className="min-w-0">
+          <h3 className="mt-2 font-display text-xl font-extrabold leading-tight text-brand-900 sm:text-2xl">
+            {title}
+          </h3>
+
+          {intro && (
+            <p className="mt-2 font-sans text-sm leading-relaxed text-stone-600 sm:text-base">
+              {intro}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {benefits && (
+        <ul className="relative mt-6 space-y-2.5">
+          {benefits.map((benefit, index) => (
+            <li
+              key={index}
+              className={`flex items-start gap-3 rounded-2xl border bg-white/75 px-3 py-3 font-sans text-sm leading-relaxed text-stone-700 sm:px-4 sm:text-base ${colors.benefitBorder}`}
+            >
+              <span
+                className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${colors.check}`}
+                aria-hidden="true"
+              >
+                <Check size={14} strokeWidth={3} />
+              </span>
+
+              <span className="min-w-0">
+                {benefit.text}
+                {benefit.emphasis && (
+                  <span
+                    className={`mt-2 block rounded-lg bg-amber-50 px-2 py-1.5 text-sm font-bold text-accent-700 ${benefit.emphasisClassName ?? ''}`}
+                  >
+                    {benefit.emphasis}
+                  </span>
+                )}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {children}
+    </article>
+  );
 }
