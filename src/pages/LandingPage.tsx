@@ -93,21 +93,8 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
         <div className="absolute -bottom-20 -left-20 h-80 w-80 rounded-full bg-emerald-500/15 blur-3xl" />
 
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Reveal className="mb-8 text-center">
-            <h2 className="font-display text-3xl font-bold tracking-tight text-stone-100 sm:text-4xl">
-              Materiale noi pe platformă în:
-            </h2>
-          </Reveal>
-
           <Reveal delay={80}>
-            <CountdownTimer />
-          </Reveal>
-
-          <Reveal delay={150}>
-            <p className="mx-auto mt-8 max-w-xl text-center text-stone-400">
-              Alătură-te comunității de viitori medici și fii primul care accesează
-              noile simulări și grile explicate.
-            </p>
+            <CountdownTimer onSignIn={onSignIn} />
           </Reveal>
         </div>
       </section>
