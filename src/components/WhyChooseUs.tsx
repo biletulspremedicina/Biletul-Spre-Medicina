@@ -1,635 +1,175 @@
-.why-editorial {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  padding: 68px 24px 76px;
-  margin-top: -1px;
-  background: linear-gradient(180deg, #fafaf9 0, #fdfbf7 76px, #fffdfa 190px);
-  color: #142233;
-}
-
-.why-editorial::before {
-  position: absolute;
-  z-index: -2;
-  inset: 0 0 auto;
-  height: 150px;
-  background: linear-gradient(180deg, rgba(250, 250, 249, 1) 0%, rgba(255, 253, 250, .72) 56%, rgba(255, 253, 250, 0) 100%);
-  content: '';
-  pointer-events: none;
-}
-
-.why-editorial-photo {
-  position: absolute;
-  z-index: -1;
-  top: 0;
-  right: 0;
-  width: min(54%, 850px);
-  height: 380px;
-  background-image: linear-gradient(90deg, #fffdfa 0%, rgba(255, 253, 250, .9) 19%, rgba(255, 253, 250, .16) 66%), url('https://images.unsplash.com/photo-1654356709115-3f68998bead4?auto=format&fit=crop&w=1300&q=82');
-  background-position: center, center 52%;
-  background-size: cover;
-  opacity: .72;
-  -webkit-mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, .2) 8%, #000 27%, #000 68%, transparent 100%);
-  mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, .2) 8%, #000 27%, #000 68%, transparent 100%);
-  pointer-events: none;
-}
-
-.why-editorial-inner {
-  position: relative;
-  width: min(100%, 1440px);
-  margin: 0 auto;
-}
-
-.why-editorial-intro {
-  position: relative;
-  z-index: 1;
-  max-width: 1120px;
-}
-
-.why-editorial-eyebrow {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  margin: 0 0 22px;
-  color: #174c42;
-  font-family: Inter, sans-serif;
-  font-size: 12px;
-  font-weight: 750;
-  letter-spacing: .27em;
-}
-
-.why-editorial-eyebrow span {
-  display: inline-block;
-  width: 55px;
-  height: 1px;
-  background: #a9b9af;
-}
-
-.why-editorial-intro h2 {
-  margin: 0;
-  color: #132338;
-  font-family: Georgia, Cambria, 'Times New Roman', serif;
-  font-size: clamp(43px, 4.65vw, 71px);
-  font-weight: 700;
-  letter-spacing: -.045em;
-  line-height: 1.04;
-  text-wrap: balance;
-}
-
-.why-editorial-lead {
-  max-width: 710px;
-  margin: 22px 0 0;
-  color: #485a64;
-  font-family: Inter, sans-serif;
-  font-size: clamp(16px, 1.5vw, 21px);
-  line-height: 1.55;
-}
-
-.why-editorial-stage {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 52%) minmax(0, 48%);
-  align-items: center;
-  margin-top: 40px;
-  min-height: 524px;
-}
-
-.why-editorial-benefits {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  min-width: 0;
-  padding: 12px 0;
-}
-
-.why-editorial-benefits > .why-media-reveal:nth-child(1) {
-  width: 95%;
-  margin-left: 5%;
-}
-
-.why-editorial-benefits > .why-media-reveal:nth-child(2) {
-  width: 91%;
-  margin-left: 10%;
-}
-
-.why-editorial-benefits > .why-media-reveal:nth-child(3) {
-  width: 96%;
-}
-
-.why-editorial-benefit {
-  display: grid;
-  grid-template-columns: 118px minmax(0, 1fr);
-  align-items: center;
-  gap: 17px;
-  min-height: 158px;
-  padding: 24px 30px;
-  overflow: hidden;
-  border: 1px solid rgba(203, 233, 220, .16);
-  border-radius: 22px;
-  background: linear-gradient(125deg, #124b3e 0%, #0a3c32 62%, #07372e 100%);
-  box-shadow: 0 18px 38px rgba(11, 42, 34, .16), 0 4px 10px rgba(11, 42, 34, .09);
-  animation: why-card-float 8s ease-in-out infinite;
-  will-change: transform;
-}
-
-.why-editorial-benefits > .why-media-reveal:nth-child(2) .why-editorial-benefit {
-  animation-delay: -2.7s;
-}
-
-.why-editorial-benefits > .why-media-reveal:nth-child(3) .why-editorial-benefit {
-  animation-delay: -5.1s;
-}
-
-@keyframes why-card-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-3px); }
-}
-
-.why-editorial-media,
-.why-editorial-footer-media {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  margin: 0;
-  background: #164d41;
-  box-shadow: 0 12px 28px rgba(0, 18, 14, .24), inset 0 0 0 1px rgba(255, 255, 255, .12);
-}
-
-.why-editorial-media {
-  width: 110px;
-  aspect-ratio: 1.18;
-  border-radius: 16px;
-  transform: rotate(-2deg);
-}
-
-.why-editorial-benefits > *:nth-child(even) .why-editorial-media {
-  transform: rotate(2deg);
-}
-
-.why-editorial-media::after,
-.why-editorial-footer-media::after {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(145deg, transparent 35%, rgba(209, 236, 224, .15));
-  content: '';
-  pointer-events: none;
-}
-
-.why-editorial-media img,
-.why-editorial-footer-media img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  filter: saturate(.78) contrast(1.04);
-  transition: transform 700ms cubic-bezier(.16, 1, .3, 1), filter 500ms ease;
-}
-
-.why-media-reveal.opacity-100 .why-editorial-media img,
-.why-media-reveal.opacity-100 .why-editorial-footer-media img {
-  animation: why-photo-arrive 950ms cubic-bezier(.16, 1, .3, 1) both;
-}
-
-.why-editorial-benefit:hover .why-editorial-media img,
-.why-editorial-footer-item:hover .why-editorial-footer-media img {
-  transform: scale(1.08);
-  filter: saturate(.98) contrast(1.04);
-}
-
-@keyframes why-photo-arrive {
-  from { opacity: .2; transform: scale(1.16); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-.why-editorial-benefit h3 {
-  margin: 0 0 10px;
-  color: #fffdf8;
-  font-family: Georgia, Cambria, 'Times New Roman', serif;
-  font-size: clamp(21px, 1.85vw, 28px);
-  font-weight: 700;
-  letter-spacing: -.025em;
-  line-height: 1.17;
-}
-
-.why-editorial-benefit p {
-  margin: 0;
-  color: #d7e6df;
-  font-family: Inter, sans-serif;
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-.why-editorial-preview-wrap {
-  position: relative;
-  z-index: 1;
-  min-width: 0;
-  align-self: stretch;
-  margin: -10px 0 -10px -62px;
-}
-
-.why-preview {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  border: 10px solid #173c37;
-  border-radius: 25px;
-  background: #fff;
-  box-shadow: 0 24px 46px rgba(0, 24, 20, .25);
-  color: #172735;
-  font-family: Inter, sans-serif;
-  font-size: 12px;
-}
-
-.why-preview-header {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(130px, .76fr) auto;
-  align-items: center;
-  gap: 25px;
-  min-height: 73px;
-  padding: 14px 22px;
-  border-bottom: 1px solid #e3e9e8;
-}
-
-.why-preview-heading,
-.why-preview-time {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.why-preview-heading strong {
-  color: #103f36;
-  font-size: 14px;
-  font-weight: 750;
-}
-
-.why-preview-heading span,
-.why-preview-time small,
-.why-preview-progress span {
-  color: #65717c;
-  font-size: 10px;
-  line-height: 1.25;
-}
-
-.why-preview-progress span {
-  display: block;
-  margin-bottom: 10px;
-  text-align: right;
-}
-
-.why-preview-progress div {
-  height: 4px;
-  overflow: hidden;
-  border-radius: 99px;
-  background: #e3e8e8;
-}
-
-.why-preview-progress i {
-  display: block;
-  width: 20%;
-  height: 100%;
-  border-radius: inherit;
-  background: #116450;
-}
-
-.why-preview-time {
-  text-align: right;
-}
-
-.why-preview-time strong {
-  color: #164e42;
-  font-size: 15px;
-  font-variant-numeric: tabular-nums;
-}
-
-.why-preview-content {
-  display: grid;
-  grid-template-columns: 51% 49%;
-  flex: 1;
-  min-height: 0;
-}
-
-.why-preview-question,
-.why-preview-explanation {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  padding: 22px 21px 20px;
-}
-
-.why-preview-question {
-  border-right: 1px solid #e5ece9;
-}
-
-.why-preview-question-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.why-preview-question-top strong,
-.why-preview-explanation h4 {
-  font-size: 12px;
-  font-weight: 750;
-}
-
-.why-preview-question-top span {
-  padding: 4px 8px;
-  border-radius: 100px;
-  background: #eff3f5;
-  color: #4d5c68;
-  font-size: 10px;
-  white-space: nowrap;
-}
-
-.why-preview-question h4 {
-  margin: 20px 0 16px;
-  font-size: 13px;
-  font-weight: 650;
-  line-height: 1.5;
-}
-
-.why-preview-options {
-  display: grid;
-  gap: 8px;
-}
-
-.why-preview-option {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 42px;
-  padding: 6px 9px;
-  border: 1px solid #dfe6e5;
-  border-radius: 7px;
-  background: #fff;
-}
-
-.why-preview-option > span,
-.why-preview-other-answers li > span {
-  display: inline-flex;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border: 1px solid #e1e6e8;
-  border-radius: 50%;
-  background: #f5f7f8;
-  font-size: 11px;
-  font-weight: 650;
-}
-
-.why-preview-option strong {
-  font-size: 11px;
-  font-weight: 550;
-}
-
-.why-preview-option.is-correct {
-  border-color: #238263;
-  background: #f2faf6;
-}
-
-.why-preview-option.is-correct > span {
-  border-color: #155240;
-  background: #155240;
-  color: white;
-}
-
-.why-preview-option b {
-  margin-left: auto;
-  color: #146c52;
-  font-size: 17px;
-}
-
-.why-preview-navigation {
-  display: flex;
-  justify-content: space-between;
-  gap: 6px;
-  margin-top: auto;
-  padding-top: 18px;
-  color: #29524b;
-  font-size: 10px;
-}
-
-.why-preview-navigation span:last-child {
-  padding: 9px 10px;
-  border-radius: 5px;
-  background: #174b3d;
-  color: white;
-}
-
-.why-preview-navigation span:first-child {
-  padding: 9px 0;
-}
-
-.why-preview-explanation h4 {
-  margin: 0 0 16px;
-}
-
-.why-preview-correct {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 11px;
-  border-radius: 7px;
-  background: #edf7f1;
-  color: #155342;
-  font-size: 11px;
-}
-
-.why-preview-correct span {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-  width: 17px;
-  height: 17px;
-  border-radius: 50%;
-  background: #14664d;
-  color: white;
-  font-size: 11px;
-}
-
-.why-preview-explanation > p {
-  margin: 13px 0 17px;
-  color: #344650;
-  font-size: 11px;
-  line-height: 1.55;
-}
-
-.why-preview-explanation h5 {
-  margin: 0 0 10px;
-  font-size: 11px;
-  font-weight: 750;
-}
-
-.why-preview-other-answers {
-  display: grid;
-  gap: 9px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.why-preview-other-answers li {
-  display: flex;
-  align-items: start;
-  gap: 9px;
-}
-
-.why-preview-other-answers li > span {
-  width: 20px;
-  height: 20px;
-  font-size: 10px;
-}
-
-.why-preview-other-answers p {
-  margin: 0;
-  color: #4d5961;
-  font-size: 10px;
-  line-height: 1.35;
-}
-
-.why-preview-other-answers strong {
-  color: #26353d;
-}
-
-.why-preview-takeaway {
-  margin-top: auto;
-  padding: 11px 13px;
-  border-radius: 7px;
-  background: #edf6fb;
-  color: #304c5e;
-}
-
-.why-preview-takeaway strong {
-  display: block;
-  margin-bottom: 4px;
-  font-size: 10px;
-}
-
-.why-preview-takeaway p {
-  margin: 0;
-  font-size: 10px;
-  line-height: 1.4;
-}
-
-.why-editorial-footer {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 48px;
-  margin-top: 34px;
-  padding: 0 48px;
-}
-
-.why-editorial-footer > * + * {
-  border-left: 1px solid #d5ddd8;
-  padding-left: 48px;
-}
-
-.why-editorial-footer-item {
-  display: flex;
-  align-items: center;
-  gap: 22px;
-}
-
-.why-editorial-footer-media {
-  flex: 0 0 92px;
-  width: 92px;
-  aspect-ratio: 1.35;
-  border-radius: 14px;
-  box-shadow: 0 10px 25px rgba(23, 58, 48, .14), inset 0 0 0 1px rgba(255, 255, 255, .16);
-}
-
-.why-editorial-footer h3 {
-  margin: 0 0 6px;
-  color: #15283a;
-  font-family: Georgia, Cambria, 'Times New Roman', serif;
-  font-size: clamp(20px, 1.5vw, 24px);
-  line-height: 1.2;
-}
-
-.why-editorial-footer p {
-  max-width: 480px;
-  margin: 0;
-  color: #56646d;
-  font-family: Inter, sans-serif;
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-@media (max-width: 1180px) {
-  .why-editorial-stage { display: block; }
-  .why-editorial-benefits { gap: 14px; padding: 20px 35px 10px; }
-  .why-editorial-benefits > .why-media-reveal:nth-child(1) { width: 96%; margin-left: 0; }
-  .why-editorial-benefits > .why-media-reveal:nth-child(2) { width: 94%; margin-left: 6%; }
-  .why-editorial-benefits > .why-media-reveal:nth-child(3) { width: 97%; margin-left: 1%; }
-  .why-editorial-benefit { min-height: 140px; grid-template-columns: 118px minmax(0, 1fr); }
-  .why-editorial-benefit h3 { font-size: 25px; }
-  .why-editorial-preview-wrap { margin: 5px 18px -10px; }
-  .why-preview { min-height: 460px; }
-  .why-preview { font-size: 11px; }
-  .why-preview-header { gap: 12px; padding-inline: 14px; }
-  .why-preview-question, .why-preview-explanation { padding-inline: 14px; }
-}
-
-@media (max-width: 920px) {
-  .why-editorial { padding-block: 56px 64px; }
-  .why-editorial-photo { width: 65%; height: 310px; }
-  .why-editorial-benefits { gap: 12px; padding: 28px 20px 14px; }
-  .why-editorial-benefit { min-height: 148px; grid-template-columns: 105px minmax(0, 1fr); padding: 21px 24px; }
-  .why-editorial-media { width: 96px; }
-  .why-editorial-footer { gap: 25px; padding-inline: 15px; }
-  .why-editorial-footer > * + * { padding-left: 25px; }
-}
-
-@media (max-width: 620px) {
-  .why-editorial { padding: 46px 16px 55px; }
-  .why-editorial-photo { width: 90%; height: 250px; opacity: .28; }
-  .why-editorial-eyebrow { gap: 12px; font-size: 10px; letter-spacing: .18em; }
-  .why-editorial-eyebrow span { width: 28px; }
-  .why-editorial-intro h2 { font-size: clamp(38px, 9vw, 55px); }
-  .why-editorial-lead { margin-top: 17px; font-size: 16px; }
-  .why-editorial-stage { margin-top: 32px; }
-  .why-editorial-benefits { gap: 10px; padding: 12px 4px 8px; }
-  .why-editorial-benefits > .why-media-reveal:nth-child(1),
-  .why-editorial-benefits > .why-media-reveal:nth-child(2),
-  .why-editorial-benefits > .why-media-reveal:nth-child(3) { width: 100%; margin-left: 0; }
-  .why-editorial-benefit { min-height: 143px; grid-template-columns: 76px minmax(0, 1fr); gap: 12px; padding: 18px 16px; border-radius: 16px; }
-  .why-editorial-media { width: 72px; border-radius: 12px; }
-  .why-editorial-benefit h3 { margin-bottom: 6px; font-size: 21px; }
-  .why-editorial-benefit p { font-size: 12px; line-height: 1.5; }
-  .why-editorial-preview-wrap { margin: 6px 9px -10px; }
-  .why-preview { min-height: 0; border-width: 6px; border-radius: 18px; }
-  .why-preview-header { grid-template-columns: 1fr auto; min-height: 65px; gap: 8px; padding: 12px; }
-  .why-preview-heading span { font-size: 9px; }
-  .why-preview-progress { display: none; }
-  .why-preview-time strong { font-size: 12px; }
-  .why-preview-content { grid-template-columns: 1fr; }
-  .why-preview-question { border-right: 0; border-bottom: 1px solid #e5ece9; }
-  .why-preview-question, .why-preview-explanation { padding: 17px 14px; }
-  .why-preview-question h4 { margin-block: 13px; }
-  .why-preview-navigation { margin-top: 8px; }
-  .why-preview-explanation > p { margin-block: 10px; }
-  .why-preview-other-answers { gap: 6px; }
-  .why-preview-takeaway { margin-top: 15px; }
-  .why-editorial-footer { grid-template-columns: 1fr; gap: 18px; margin-top: 32px; padding: 0 7px; }
-  .why-editorial-footer > * + * { border-top: 1px solid #d5ddd8; border-left: 0; padding: 18px 0 0; }
-  .why-editorial-footer-item { gap: 15px; }
-  .why-editorial-footer-media { flex-basis: 76px; width: 76px; border-radius: 12px; }
-  .why-editorial-footer h3 { font-size: 21px; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .why-editorial-benefit,
-  .why-editorial-media img,
-  .why-editorial-footer-media img {
-    animation: none !important;
-    transition: none;
-  }
+import Reveal from '@/components/Reveal';
+import './WhyChooseUs.css';
+
+const advantages = [
+  {
+    image: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=360&q=82',
+    imageAlt: 'Elev care lucrează concentrat la un set de exerciții',
+    title: 'Simulări complete și pe capitole',
+    description:
+      'Exersezi din întreaga materie de Biologie, pe capitole și pe subiecte de admitere din anii anteriori la UMFCD.',
+  },
+  {
+    image: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=360&q=82',
+    imageAlt: 'Notițe de studiu scrise de mână',
+    title: 'Explicații care clarifică greșelile',
+    description:
+      'După simulare vezi răspunsurile și explicațiile, ca să înțelegi logica din spatele fiecărei grile.',
+  },
+  {
+    image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=360&q=82',
+    imageAlt: 'Ecran cu grafice pentru urmărirea progresului',
+    title: 'Progres pe care îl poți urmări',
+    description:
+      'Îți urmărești rezultatele, ritmul de lucru și capitolele în care ai nevoie de mai mult exercițiu.',
+  },
+];
+
+const answers = [
+  { letter: 'A', text: 'Cortexul suprarenal' },
+  { letter: 'B', text: 'Hipofiza posterioară', correct: true },
+  { letter: 'C', text: 'Glanda tiroidă' },
+  { letter: 'D', text: 'Pancreasul' },
+];
+
+function ExamPreview() {
+  return (
+    <div className="why-preview" aria-label="Exemplu vizual de revizuire a unei simulări de biologie">
+      <div className="why-preview-header">
+        <div className="why-preview-heading">
+          <strong>Simulare biologie</strong>
+          <span>Revizuirea răspunsurilor · exemplu de interfață</span>
+        </div>
+        <div className="why-preview-progress" aria-hidden="true">
+          <span>Întrebarea 12 din 60</span>
+          <div><i /></div>
+        </div>
+        <div className="why-preview-time">
+          <small>Timp folosit</small>
+          <strong>01:12:34</strong>
+        </div>
+      </div>
+
+      <div className="why-preview-content">
+        <div className="why-preview-question">
+          <div className="why-preview-question-top">
+            <strong>Întrebarea 12</strong>
+            <span>Un singur răspuns corect</span>
+          </div>
+          <h4>Din ce structură este eliberat în sânge hormonul antidiuretic (ADH)?</h4>
+          <div className="why-preview-options">
+            {answers.map(({ letter, text, correct }) => (
+              <div key={letter} className={`why-preview-option${correct ? ' is-correct' : ''}`}>
+                <span>{letter}</span>
+                <strong>{text}</strong>
+                {correct && <b aria-label="Răspuns corect">✓</b>}
+              </div>
+            ))}
+          </div>
+          <div className="why-preview-navigation" aria-hidden="true">
+            <span>← Întrebarea anterioară</span>
+            <span>Întrebarea următoare →</span>
+          </div>
+        </div>
+
+        <div className="why-preview-explanation">
+          <h4>Răspuns și explicație</h4>
+          <div className="why-preview-correct">
+            <span aria-hidden="true">✓</span>
+            <strong>Răspuns corect: B. Hipofiza posterioară</strong>
+          </div>
+          <p>
+            Hormonul antidiuretic este sintetizat în hipotalamus, apoi eliberat
+            în sânge de hipofiza posterioară. El ajută rinichii să reabsoarbă apa.
+          </p>
+          <h5>De ce celelalte variante sunt incorecte?</h5>
+          <ul className="why-preview-other-answers">
+            <li><span>A</span><p><strong>Cortexul suprarenal</strong> produce hormoni precum cortizolul.</p></li>
+            <li><span>C</span><p><strong>Glanda tiroidă</strong> secretă hormoni care reglează metabolismul.</p></li>
+            <li><span>D</span><p><strong>Pancreasul</strong> produce insulină și glucagon.</p></li>
+          </ul>
+          <div className="why-preview-takeaway">
+            <strong>De reținut</strong>
+            <p>Nu doar afli varianta corectă — înțelegi de ce este corectă.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function WhyChooseUs() {
+  return (
+    <section id="de-ce-noi" className="why-editorial" aria-labelledby="why-choose-us-title">
+      <div className="why-editorial-photo" aria-hidden="true" />
+      <div className="why-editorial-inner">
+        <Reveal className="why-editorial-intro">
+          <p className="why-editorial-eyebrow">
+          DE CE BILETUL SPRE MEDICINĂ ?<span aria-hidden="true" />
+          </p>
+          <h2 id="why-choose-us-title">
+            Exersezi ca la examen<br />Zeci de simulări si materiale
+          </h2>
+          <p className="why-editorial-lead">
+            Simulări realiste, explicații clare și un parcurs care te duce mai
+            aproape de locul tău la Medicină.
+          </p>
+        </Reveal>
+
+        <div className="why-editorial-stage">
+          <div className="why-editorial-benefits">
+            {advantages.map((advantage, index) => (
+              <Reveal key={advantage.title} delay={100 + index * 110} className="why-media-reveal">
+                <div className="why-editorial-benefit">
+                  <figure className="why-editorial-media">
+                    <img src={advantage.image} alt={advantage.imageAlt} loading="lazy" />
+                  </figure>
+                  <div>
+                    <h3>{advantage.title}</h3>
+                    <p>{advantage.description}</p>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+          <Reveal className="why-editorial-preview-wrap" delay={280}>
+            <ExamPreview />
+          </Reveal>
+        </div>
+
+        <div className="why-editorial-footer">
+          <Reveal delay={140} className="why-media-reveal">
+            <div className="why-editorial-footer-item">
+              <figure className="why-editorial-footer-media">
+                <img
+                  src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=420&q=82"
+                  alt="Studenți care învață împreună"
+                  loading="lazy"
+                />
+              </figure>
+              <div>
+                <h3>Creat de profesori și studenți</h3>
+                <p>Pregătire gândită de oameni care cunosc materia și parcursul tău.</p>
+              </div>
+            </div>
+          </Reveal>
+          <Reveal delay={240} className="why-media-reveal">
+            <div className="why-editorial-footer-item">
+              <figure className="why-editorial-footer-media">
+                <img
+                  src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=420&q=82"
+                  alt="Echipă care discută și oferă sprijin"
+                  loading="lazy"
+                />
+              </figure>
+              <div>
+                <h3>Suport uman când ai nevoie</h3>
+                <p>Pentru întrebări despre platformă, simulări sau materie, de luni până vineri, 08:00–17:00.</p>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </div>
+    </section>
+  );
 }
