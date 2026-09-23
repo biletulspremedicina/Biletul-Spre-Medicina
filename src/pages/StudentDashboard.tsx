@@ -4,12 +4,15 @@ import {
   Bell,
   BookOpen,
   Bookmark,
+  Check,
   CheckCircle2,
   ChevronRight,
   Clock3,
   Crown,
+  Flame,
   GraduationCap,
   Home,
+  Layers,
   Loader2,
   Lock,
   LogOut,
@@ -20,10 +23,13 @@ import {
   RotateCcw,
   Sparkles,
   Sun,
+  Target,
   Timer,
   Trash2,
+  Trophy,
   X,
   FileText,
+  ChartNoAxesCombined,
   CalendarClock,
   PartyPopper,
 } from 'lucide-react';
@@ -31,8 +37,6 @@ import { supabase, type Attempt, type MaterialReleaseRPC, type PracticeAttempt, 
 import { useAuth } from '@/context/AuthContext';
 import Loading from '@/components/Loading';
 import StudentSettings from '@/pages/StudentSettings';
-import StudentPerformance from '@/components/StudentPerformance';
-import PracticeLibrary from '@/components/PracticeLibrary';
 
 type IncomingTab = 'all' | 'practice' | 'umfcd' | 'dashboard';
 type PageId = 'home' | 'all' | 'practice' | 'umfcd' | 'review' | 'settings';
@@ -54,11 +58,29 @@ type SimWithStatus = Simulation & {
 };
 
 type PracticeSetRow = { id: string; lesson_id: string };
-const UMFCD_IMAGE_SRC = '/UMFCD.png'; // Imaginea pentru Examene UMFCD
-const SIMULATION_PHOTOS = [
-  'https://upload.wikimedia.org/wikipedia/commons/2/24/Test-986769_640.jpg',
-  'https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Exam_paper.jpg/960px-Exam_paper.jpg',
+type Stat = {
+  label: string;
+  value: string;
+  note: string;
+  detail: string;
+  icon: ReactNode;
+  imageSrc: string;
+  tone: 'blue' | 'yellow' | 'green' | 'red';
+};
+
+// Completează doar adresele dintre ghilimele. Până atunci rămân pictogramele actuale.
+const STAT_IMAGE_SOURCES = [
+  '/1.png', // Aici vine sursa imaginea 1 – Rata răspunsurilor corecte
+  '/2.png', // Aici vine sursa imaginea 2 – Cel mai bun rezultat la o simulare
+  '/3.png', // Aici vine sursa imaginea 3 – Rezultatul ultimei simulări
+  '/4.png', // Aici vine sursa imaginea 4 – Media rezultatelor la simulări
+  '/5.png', // Aici vine sursa imaginea 5 – Seria actuală de zile active
+  '/6.png', // Aici vine sursa imaginea 6 – Timp mediu pe întrebare
+  '/7.png', // Aici vine sursa imaginea 7 – Simulări terminate în timpul alocat
+  '/8.png', // Aici vine sursa imaginea 8 – Capitole începute
 ];
+
+const UMFCD_IMAGE_SRC = '/UMFCD.png'; // Imaginea pentru Examene UMFCD
 
 // Completează adresele dintre ghilimele pentru imaginile din meniul din stânga.
 // Până atunci rămân iconițele actuale (inclusiv sigla UMFCD).
@@ -75,6 +97,8 @@ const validAnswer = (value: unknown) =>
   typeof value === 'string' && /^[A-E]$/.test(value.toUpperCase());
 const answerCount = (answers: Record<string, string> | null | undefined) =>
   Object.values(answers || {}).filter(validAnswer).length;
+const toPercent = (score: number, maximum: number) =>
+  maximum > 0 ? Math.round((score / maximum) * 100) : null;
 const dateKey = (date: Date) =>
   new Intl.DateTimeFormat('sv-SE', {
     timeZone: 'Europe/Bucharest',
@@ -184,6 +208,14 @@ function dailyMotivationMessage(date: Date) {
   return DAILY_MOTIVATION_MESSAGES[dayNumber % DAILY_MOTIVATION_MESSAGES.length];
 }
 
+function formatSeconds(seconds: number) {
+  if (!Number.isFinite(seconds) || seconds <= 0) return '—';
+  if (seconds < 60) return `${Math.round(seconds)} sec`;
+  const minutes = Math.floor(seconds / 60);
+  const remainder = Math.round(seconds % 60);
+  return remainder ? `${minutes} min ${remainder} sec` : `${minutes} min`;
+}
+
 function initialPage(tab: IncomingTab): PageId {
   if (tab === 'practice' || tab === 'umfcd') return tab;
   return 'home';
@@ -202,6 +234,7 @@ export default function StudentDashboard({
   const [page, setPage] = useState<PageId>(() => initialPage(initialTab));
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [selectedStat, setSelectedStat] = useState<Stat | null>(null);
   const [logoutConfirmationOpen, setLogoutConfirmationOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [simulations, setSimulations] = useState<SimWithStatus[]>([]);
@@ -409,6 +442,7 @@ export default function StudentDashboard({
     setFocusedSimulationId(null);
     setPage(destination);
     setMobileMenuOpen(false);
+    setSelectedStat(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -435,6 +469,7 @@ export default function StudentDashboard({
     setFocusedSimulationId(materialRelease.out_source_id);
     setPage(materialRelease.out_section_label === 'Examene UMFCD' ? 'umfcd' : 'all');
     setMobileMenuOpen(false);
+    setSelectedStat(null);
   };
 
   const openSupport = () => {
@@ -464,7 +499,67 @@ export default function StudentDashboard({
     : 0;
 
   const gradedAttempts = [...submittedSimAttempts, ...submittedPracticeAttempts];
-  const todayKey = dateKey(new Date());
+  const gradedAnswers = gradedAttempts.reduce((sum, attempt) => sum + answerCount(attempt.answers), 0);
+  const correctAnswers = gradedAttempts.reduce((sum, attempt) => sum + Number(attempt.score || 0), 0);
+  const accuracy = gradedAnswers > 0 ? toPercent(correctAnswers, gradedAnswers) : null;
+  const simulationResults = submittedSimAttempts
+    .filter((attempt) => Number(attempt.max_score) > 0)
+    .map((attempt) => ({
+      percent: toPercent(Number(attempt.score), Number(attempt.max_score)) || 0,
+      submittedAt: attempt.submitted_at || '',
+    }));
+  const bestResult = simulationResults.length
+    ? Math.max(...simulationResults.map((result) => result.percent)) : null;
+  const latestResult = [...simulationResults].sort((a, b) =>
+    new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime())[0]?.percent ?? null;
+  const averageResult = simulationResults.length
+    ? Math.round(simulationResults.reduce((sum, result) => sum + result.percent, 0) / simulationResults.length)
+    : null;
+
+  const activeDays = new Set<string>();
+  [...allAttempts, ...practiceAttempts].forEach((attempt) => {
+    if (answerCount(attempt.answers) === 0) return;
+    const stamp = new Date(attempt.submitted_at || attempt.started_at);
+    if (Number.isNaN(stamp.getTime())) return;
+    activeDays.add(dateKey(stamp));
+  });
+  const today = new Date();
+  const todayKey = dateKey(today);
+  const yesterdayKey = dateKey(new Date(today.getTime() - 86_400_000));
+  let streak = 0;
+  if (activeDays.has(todayKey) || activeDays.has(yesterdayKey)) {
+    const cursor = new Date(today);
+    if (!activeDays.has(todayKey)) cursor.setDate(cursor.getDate() - 1);
+    while (activeDays.has(dateKey(cursor)) && streak < 3650) {
+      streak += 1;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+  }
+
+  const timedSimAttempts = submittedSimAttempts.filter(
+    (attempt) => answerCount(attempt.answers) > 0 &&
+      Number.isFinite(new Date(attempt.submitted_at!).getTime() - new Date(attempt.started_at).getTime())
+  );
+  const timePerQuestion = timedSimAttempts.length
+    ? timedSimAttempts.reduce((sum, attempt) => {
+        const elapsed = Math.max(0, (new Date(attempt.submitted_at!).getTime() -
+          new Date(attempt.started_at).getTime()) / 1000);
+        const sim = simulations.find((item) => item.id === attempt.simulation_id);
+        const bounded = sim ? Math.min(elapsed, sim.duration_minutes * 60) : elapsed;
+        return sum + bounded;
+      }, 0) / timedSimAttempts.reduce((sum, attempt) => sum + answerCount(attempt.answers), 0)
+    : 0;
+  const finishedInTime = submittedSimAttempts.filter((attempt) => {
+    const sim = simulations.find((item) => item.id === attempt.simulation_id);
+    if (!sim || attempt.expired) return false;
+    const elapsed = new Date(attempt.submitted_at!).getTime() - new Date(attempt.started_at).getTime();
+    return elapsed >= 0 && elapsed <= sim.duration_minutes * 60_000;
+  }).length;
+  const setToLesson = new Map(practiceSets.map((set) => [set.id, set.lesson_id]));
+  const startedLessons = new Set(practiceAttempts
+    .filter((attempt) => answerCount(attempt.answers) > 0)
+    .map((attempt) => setToLesson.get(attempt.set_id))
+    .filter((id): id is string => !!id));
   const finishedGridsByDay = new Map<string, number>();
   gradedAttempts.forEach((attempt) => {
     if (!attempt.submitted_at) return;
@@ -482,6 +577,65 @@ export default function StudentDashboard({
       count: finishedGridsByDay.get(key) || 0,
     };
   });
+
+  const stats: Stat[] = [
+    {
+      label: 'Rata răspunsurilor corecte',
+      value: accuracy === null ? '—' : `${accuracy}%`,
+      note: 'Din răspunsurile trimise',
+      detail: 'Procentul răspunsurilor corecte din întrebările la care ai răspuns în activitățile finalizate.',
+      icon: <Target size={26} strokeWidth={2.2} />, imageSrc: STAT_IMAGE_SOURCES[0], tone: 'blue',
+    },
+    {
+      label: 'Cel mai bun rezultat la o simulare',
+      value: bestResult === null ? '—' : `${bestResult}%`,
+      note: 'Din simulările finalizate',
+      detail: 'Cel mai mare procent obținut la o simulare finalizată.',
+      icon: <Trophy size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[1], tone: 'yellow',
+    },
+    {
+      label: 'Rezultatul ultimei simulări',
+      value: latestResult === null ? '—' : `${latestResult}%`,
+      note: 'Cea mai recentă simulare',
+      detail: 'Procentul obținut la ultima simulare pe care ai finalizat-o.',
+      icon: <FileText size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[2], tone: 'green',
+    },
+    {
+      label: 'Media rezultatelor la simulări',
+      value: averageResult === null ? '—' : `${averageResult}%`,
+      note: 'Media tuturor simulărilor',
+      detail: 'Media aritmetică a procentelor obținute la simulările finalizate.',
+      icon: <ChartNoAxesCombined size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[3], tone: 'red',
+    },
+    {
+      label: 'Seria actuală de zile active',
+      value: `${streak} ${streak === 1 ? 'zi' : 'zile'}`,
+      note: 'Zile consecutive cu activitate',
+      detail: 'Zile consecutive în care ai răspuns la întrebări. Ziua curentă nu rupe seria înainte să începi să lucrezi.',
+      icon: <Flame size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[4], tone: 'yellow',
+    },
+    {
+      label: 'Timp mediu pe întrebare',
+      value: formatSeconds(timePerQuestion),
+      note: 'Din simulările finalizate',
+      detail: 'Durata simulărilor finalizate, împărțită la numărul întrebărilor la care ai răspuns.',
+      icon: <Clock3 size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[5], tone: 'blue',
+    },
+    {
+      label: 'Simulări terminate în timpul alocat',
+      value: String(finishedInTime),
+      note: 'Din simulările finalizate',
+      detail: 'Numărul simulărilor trimise înainte de expirarea duratei alocate.',
+      icon: <Check size={26} strokeWidth={2.5} />, imageSrc: STAT_IMAGE_SOURCES[6], tone: 'red',
+    },
+    {
+      label: 'Capitole începute',
+      value: String(startedLessons.size),
+      note: 'Ai răspuns la cel puțin o grilă',
+      detail: 'Un capitol este început când răspunzi la prima întrebare dintr-un set al său.',
+      icon: <BookOpen size={26} strokeWidth={2.1} />, imageSrc: STAT_IMAGE_SOURCES[7], tone: 'green',
+    },
+  ];
 
   const navItems: { id: PageId; label: string; icon: ReactNode; imageSrc: string }[] = [
     { id: 'home', label: 'Acasă', icon: <Home size={19} />, imageSrc: NAV_IMAGE_SOURCES.home },
@@ -573,9 +727,6 @@ export default function StudentDashboard({
 
   const filteredSims = simulations.filter((sim) => sim.student_section === page);
   const completedInCategory = filteredSims.filter((sim) => sim.hasSubmitted).length;
-  const simulationProgress = filteredSims.length
-    ? Math.round((completedInCategory / filteredSims.length) * 100)
-    : 0;
 
   return (
     <div className="min-h-screen bg-white font-sans text-[#14283a] lg:grid lg:grid-cols-[236px_minmax(0,1fr)]">
@@ -726,12 +877,11 @@ export default function StudentDashboard({
                   {materialRelease?.out_phase === 'celebrating' ? (
                     <>
                       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-                        <PartyPopper size={24} className="release-confetti-stream text-[#ffd75a]" style={{ animationDelay: '-1s' }} />
-                        <PartyPopper size={18} className="release-confetti-stream text-[#76dfbd]" style={{ animationDelay: '-3.5s' }} />
-                        <PartyPopper size={21} className="release-confetti-stream text-[#9ac9ff]" style={{ animationDelay: '-6s' }} />
-                        <PartyPopper size={25} className="release-confetti-stream text-[#ffd75a]" style={{ animationDelay: '-8.5s' }} />
-                        <PartyPopper size={17} className="release-confetti-stream text-[#ffae96]" style={{ animationDelay: '-11s' }} />
-                        <PartyPopper size={20} className="release-confetti-stream text-[#a3ecd2]" style={{ animationDelay: '-13.5s' }} />
+                        <PartyPopper size={25} className="release-confetti-float absolute left-[7%] top-[17%] text-[#ffd75a]/45" />
+                        <PartyPopper size={19} className="release-confetti-float-alt absolute right-[8%] top-[13%] text-[#76dfbd]/40" />
+                        <PartyPopper size={20} className="release-confetti-float-alt absolute left-[6%] top-[55%] text-[#9ac9ff]/35" />
+                        <PartyPopper size={24} className="release-confetti-float absolute right-[6%] top-[62%] text-[#ffd75a]/40" />
+                        <PartyPopper size={16} className="release-confetti-float absolute left-[17%] bottom-[11%] text-[#ffae96]/35" />
                       </div>
                       <h2 className="relative z-10 mx-auto max-w-[320px] text-center text-[clamp(21px,1.7vw,26px)] font-bold leading-snug" style={serif}>
                         Materialele sunt acum accesibile
@@ -739,12 +889,10 @@ export default function StudentDashboard({
                       <div className="relative z-10 mt-6">
                         <ReleaseDestination release={materialRelease} />
                       </div>
-                      <div className="relative z-10 flex min-h-[76px] flex-1 items-center justify-center py-3">
-                        <button type="button" onClick={() => void openReleasedMaterial()}
-                          className="release-access-button flex items-center justify-center gap-2 rounded-xl px-7 py-2.5 text-[18px] font-bold shadow-[0_8px_24px_rgba(0,0,0,0.13)] transition-transform duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#034638] motion-reduce:transition-none motion-reduce:hover:translate-y-0">
-                          Accesează <ChevronRight size={20} aria-hidden="true" />
-                        </button>
-                      </div>
+                      <button type="button" onClick={() => void openReleasedMaterial()}
+                        className="release-access-button relative z-10 mx-auto mt-5 flex items-center justify-center gap-2 rounded-xl px-7 py-2.5 text-[18px] font-bold shadow-[0_8px_24px_rgba(0,0,0,0.13)] transition-transform duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#034638] motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+                        Accesează <ChevronRight size={20} aria-hidden="true" />
+                      </button>
                       <CelebrationExpiry
                         releasedAt={materialRelease.out_available_at}
                         onComplete={() => void loadMaterialRelease()}
@@ -782,10 +930,18 @@ export default function StudentDashboard({
                 </section>
               </div>
 
-              <div className="mt-8">
-                <StudentPerformance simulations={simulations} practiceAttempts={practiceAttempts}
-                  practiceLessons={practiceLessons} practiceSets={practiceSets}
-                  onViewSimulations={() => goTo('all')} onViewChapters={() => goTo('practice')} />
+              <div className="mb-4 mt-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
+                <h2 className="text-[29px] font-bold leading-tight sm:text-[32px]" style={serif}>
+                  Statistici și performanță
+                </h2>
+                <p className="pb-1 text-[12px] text-[#66798d]">
+                  O privire de ansamblu asupra parcursului tău.
+                </p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                {stats.map((stat) => (
+                  <StatCard key={stat.label} stat={stat} onClick={() => setSelectedStat(stat)} />
+                ))}
               </div>
             </>
           ) : page === 'settings' ? (
@@ -798,40 +954,49 @@ export default function StudentDashboard({
               onThemeChange={onThemeChange}
             />
           ) : page === 'practice' ? (
-            <PracticeLibrary lessons={practiceLessons}
-              onOpen={(lesson) => onOpenPracticeLesson(lesson.out_id, lesson.out_title)} />
-          ) : page === 'all' || page === 'umfcd' ? (
-            <section className={`simulation-library ${page === 'umfcd' ? 'simulation-library--umfcd' : ''}`}>
-              <div className="simulation-library__hero">
-                <div className="simulation-library__hero-copy">
-                  <p className="simulation-library__eyebrow">Pregătire pentru admitere</p>
-                  <h1>{page === 'all' ? 'Simulări biologie' : 'Examene UMFCD'}</h1>
-                  <p className="simulation-library__subtitle">{page === 'all'
-                    ? 'Testează-ți pregătirea pe întreaga materie.'
-                    : 'Rezolvă subiecte din examenele și simulările UMFCD.'}</p>
+            <section>
+              <PageHeading icon={<SidebarNavIcon src={NAV_IMAGE_SOURCES.practice} fallback={<GraduationCap size={27} />} size={34} />} title="Antrenament pe capitole"
+                subtitle="Alege un capitol și exersează grilele în ritmul tău." />
+              {practiceLessons.length === 0 ? (
+                <EmptyState icon={<BookOpen size={36} />} title="Nu există capitole publicate momentan."
+                  text="Revino mai târziu pentru materiale noi." />
+              ) : (
+                <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                  {practiceLessons.map((lesson) => (
+                    <PracticeLessonCard key={lesson.out_id} lesson={lesson}
+                      onOpen={() => onOpenPracticeLesson(lesson.out_id, lesson.out_title)} />
+                  ))}
                 </div>
-                <div className="simulation-library__hero-photo" role="img" aria-label="Foaie de răspunsuri la examen și creion" />
-              </div>
-              <div className="simulation-library__section-heading">
-                <h2>{page === 'all' ? 'Simulări disponibile' : 'Examene disponibile'}</h2>
-                <div className="simulation-library__progress" aria-label={`${completedInCategory} din ${filteredSims.length} ${page === 'all' ? 'simulări' : 'examene'} rezolvate`}>
-                  <span>{completedInCategory} din {filteredSims.length} rezolvate</span>
-                  <div className="simulation-library__progress-track" role="progressbar"
-                    aria-valuenow={completedInCategory} aria-valuemin={0} aria-valuemax={filteredSims.length || 1}>
-                    <div style={{ width: `${simulationProgress}%` }} />
-                  </div>
+              )}
+            </section>
+          ) : page === 'all' || page === 'umfcd' ? (
+            <section>
+              <PageHeading icon={page === 'all'
+                ? <SidebarNavIcon src={NAV_IMAGE_SOURCES.all} fallback={<FileText size={27} />} size={34} />
+                : <SidebarNavIcon src={NAV_IMAGE_SOURCES.umfcd} fallback={<UmfcdIcon size={27} imageSize={38} />} size={38} />}
+                title={page === 'all' ? 'Simulări biologie' : 'Examene UMFCD'}
+                subtitle={page === 'all'
+                  ? 'Testează-ți pregătirea prin simulările disponibile.'
+                  : 'Rezolvă subiecte din examenele și simulările UMFCD.'} />
+              <div className="mb-6 rounded-2xl border border-[#dcece5] bg-[#f7fcf9] px-5 py-4">
+                <div className="flex items-baseline justify-between gap-3">
+                  <p className="font-semibold text-[#153f34]">
+                    {completedInCategory} din {filteredSims.length} simulări rezolvate
+                  </p>
+                  <span className="text-xs text-[#71827b]">{filteredSims.length} disponibile</span>
+                </div>
+                <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#dbe9e2]">
+                  <div className="h-full rounded-full bg-[#167d5f] transition-[width] duration-500"
+                    style={{ width: `${filteredSims.length ? Math.round((completedInCategory / filteredSims.length) * 100) : 0}%` }} />
                 </div>
               </div>
               {filteredSims.length === 0 ? (
-                <div className="px-6 pb-8">
-                  <EmptyState icon={<Archive size={36} />}
-                    title={page === 'all' ? 'Nu există simulări în această categorie.' : 'Nu există examene UMFCD disponibile.'}
-                    text="Revino mai târziu pentru materiale noi." />
-                </div>
+                <EmptyState icon={<Archive size={36} />} title="Nu există simulări în această categorie."
+                  text="Revino mai târziu pentru simulări noi." />
               ) : (
-                <div className="simulation-library__grid">
-                  {filteredSims.map((sim, index) => (
-                    <ArchiveSimCard key={sim.id} sim={sim} index={index} editorial focused={sim.id === focusedSimulationId} hasActiveSub={hasActiveSub}
+                <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                  {filteredSims.map((sim) => (
+                    <ArchiveSimCard key={sim.id} sim={sim} focused={sim.id === focusedSimulationId} hasActiveSub={hasActiveSub}
                       onStart={() => onStartSimulation(sim.id)}
                       onViewResults={(attemptId) => onViewResults(sim.id, attemptId)}
                       onBuySubscription={handleBuySubscription} buyingSub={buyingSub}
@@ -889,6 +1054,28 @@ export default function StudentDashboard({
           )}
         </main>
       </div>
+
+      {selectedStat && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-[#071f19]/45 p-4"
+          onMouseDown={() => setSelectedStat(null)}>
+          <div role="dialog" aria-modal="true" aria-labelledby="stat-dialog-title"
+            className="w-full max-w-md rounded-[24px] border border-[#d8e9e0] bg-white p-6 shadow-2xl"
+            onMouseDown={(event) => event.stopPropagation()}>
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#e1f6ed] text-[#0d6a50]">
+                <StatVisual stat={selectedStat} />
+              </div>
+              <button type="button" onClick={() => setSelectedStat(null)} aria-label="Închide detaliile"
+                className="rounded-lg p-2 text-[#65788b] hover:bg-[#f2f7f4]">
+                <X size={18} />
+              </button>
+            </div>
+            <h2 id="stat-dialog-title" className="mt-5 text-[24px] font-bold" style={serif}>{selectedStat.label}</h2>
+            <p className="mt-3 text-[32px] font-bold text-[#084d3a]">{selectedStat.value}</p>
+            <p className="mt-3 text-sm leading-relaxed text-[#607485]">{selectedStat.detail}</p>
+          </div>
+        </div>
+      )}
 
       {logoutConfirmationOpen && (
         <div
@@ -1058,6 +1245,33 @@ function CelebrationExpiry({ releasedAt, onComplete }: { releasedAt: string; onC
   );
 }
 
+function StatCard({ stat, onClick }: { stat: Stat; onClick: () => void }) {
+  return (
+    <button type="button" onClick={onClick}
+      className="group flex min-h-[176px] w-full flex-col rounded-[11px] border border-[#e0e7ed] bg-white p-[18px] text-left shadow-[0_3px_13px_rgba(33,55,69,0.025)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#b8d9cb] hover:shadow-[0_12px_30px_rgba(24,74,58,0.09)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3a9b78] motion-reduce:transition-none">
+      <div className="flex w-full items-start gap-4">
+        <span className={`stat-icon-${stat.tone} flex h-[58px] w-[58px] shrink-0 items-center justify-center rounded-full`}>
+          <StatVisual stat={stat} />
+        </span>
+        <span className="flex min-w-0 flex-1 items-start justify-between gap-2">
+          <span className="min-w-0 pt-2 text-[17px] font-bold leading-[1.22]" style={serif}>{stat.label}</span>
+        </span>
+      </div>
+      <div className="mt-auto flex w-full items-center justify-between gap-2 pl-[74px]">
+        <span className="text-[31px] font-extrabold leading-none text-[#14283a]">{stat.value}</span>
+        <ChevronRight size={17} className="shrink-0 text-[#183044] transition-transform group-hover:translate-x-0.5" />
+      </div>
+      <span className="mt-2 block pl-[74px] text-[11px] leading-snug text-[#657b93]">{stat.note}</span>
+    </button>
+  );
+}
+
+function StatVisual({ stat }: { stat: Stat }) {
+  return stat.imageSrc ? (
+    <img src={stat.imageSrc} alt="" className="h-9 w-9 object-contain" loading="lazy" draggable={false} />
+  ) : stat.icon;
+}
+
 function UmfcdIcon({ size, imageSize }: { size: number; imageSize: number }) {
   const [imageFailed, setImageFailed] = useState(false);
   if (!UMFCD_IMAGE_SRC || imageFailed) return <Crown size={size} />;
@@ -1215,12 +1429,36 @@ function EmptyState({ icon, title, text }: { icon: ReactNode; title: string; tex
   );
 }
 
+function PracticeLessonCard({ lesson, onOpen }: { lesson: PracticeLessonRPC; onOpen: () => void }) {
+  return (
+    <div className="group flex flex-col rounded-2xl border border-[#dce9e3] bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-[#9fcdb9] hover:shadow-lg motion-reduce:transition-none">
+      <div className="mb-3 flex items-start gap-3">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#e3f4ea] text-[#176b4f]">
+          <BookOpen size={22} />
+        </div>
+        <div className="min-w-0 flex-1">
+          <span className="badge mb-1 bg-[#f1f6f3] text-[#547364]">{lesson.out_subject}</span>
+          <h3 className="line-clamp-2 font-display text-base font-semibold text-stone-900">{lesson.out_title}</h3>
+        </div>
+      </div>
+      {lesson.out_description && <p className="mb-3 line-clamp-2 text-sm text-stone-600">{lesson.out_description}</p>}
+      <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-stone-500">
+        <span className="flex items-center gap-1"><Layers size={13} /> {lesson.out_set_count} seturi</span>
+        <span className="flex items-center gap-1"><FileText size={13} /> {lesson.out_question_count} grile</span>
+      </div>
+      <div className="mt-auto border-t border-stone-100 pt-3">
+        <button type="button" onClick={onOpen} className="btn-primary w-full">
+          Rezolvă grile <ChevronRight size={16} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function ArchiveSimCard({
-  sim, index = 0, editorial = false, focused, hasActiveSub, onStart, onViewResults, onBuySubscription, buyingSub, onReleaseReached,
+  sim, focused, hasActiveSub, onStart, onViewResults, onBuySubscription, buyingSub, onReleaseReached,
 }: {
   sim: SimWithStatus;
-  index?: number;
-  editorial?: boolean;
   focused: boolean;
   hasActiveSub: boolean;
   onStart: () => void;
@@ -1230,7 +1468,6 @@ function ArchiveSimCard({
   onReleaseReached: () => void;
 }) {
   const isFree = !sim.requires_subscription;
-  const isUmfcd = sim.student_section === 'umfcd';
   const submitted = sim.attempts
     .filter((attempt) => !!attempt.submitted_at)
     .sort((a, b) => new Date(b.submitted_at!).getTime() - new Date(a.submitted_at!).getTime());
@@ -1240,19 +1477,7 @@ function ArchiveSimCard({
 
   return (
     <div id={`released-simulation-${sim.id}`}
-      className={`${editorial ? 'simulation-library__card' : 'group flex scroll-mt-24 flex-col rounded-2xl border border-[#dfe8e3] bg-white p-5 shadow-sm transition-all duration-200 hover:border-[#abd2be] hover:shadow-md motion-reduce:transition-none'} ${focused ? `ring-2 ${sim.student_section === 'umfcd' ? 'ring-blue-500' : 'ring-emerald-500'} ring-offset-2` : ''}`}>
-      {editorial && (
-        <div className="simulation-library__card-image">
-          <img src={SIMULATION_PHOTOS[index % SIMULATION_PHOTOS.length]} alt="" loading="lazy"
-            onError={(event) => {
-              if (event.currentTarget.src !== SIMULATION_PHOTOS[0]) event.currentTarget.src = SIMULATION_PHOTOS[0];
-            }} />
-          <div className="simulation-library__card-index" aria-hidden="true">
-            <span>{String(index + 1).padStart(2, '0')}</span>
-            <small>{isUmfcd ? <>Examen<br />UMFCD</> : <>Toată<br />materia</>}</small>
-          </div>
-        </div>
-      )}
+      className={`group flex scroll-mt-24 flex-col rounded-2xl border border-[#dfe8e3] bg-white p-5 shadow-sm transition-all duration-200 hover:border-[#abd2be] hover:shadow-md motion-reduce:transition-none ${focused ? 'ring-2 ring-emerald-500 ring-offset-2' : ''}`}>
       <div className="mb-3 flex flex-wrap items-start gap-2">
         <h3 className="line-clamp-2 min-w-0 flex-1 font-display text-base font-semibold leading-snug text-stone-900">
           {sim.title}
@@ -1261,12 +1486,6 @@ function ArchiveSimCard({
           <span className="badge shrink-0 bg-brand-100 text-brand-700">
             <CheckCircle2 size={12} /> Susținut{isFree ? ` (${submitted.length}x)` : ''}
           </span>
-        ) : editorial && sim.hasInProgress ? (
-          <span className="badge shrink-0 bg-amber-100 text-amber-700">În curs</span>
-        ) : editorial && isScheduled ? (
-          <span className="badge shrink-0 bg-blue-50 text-blue-700">Programată</span>
-        ) : editorial && (isFree || hasActiveSub) ? (
-          <span className="badge shrink-0 bg-stone-100 text-stone-500">{isUmfcd ? 'Nesusținut' : 'Nesusținută'}</span>
         ) : isFree ? (
           <span className="badge shrink-0 bg-stone-100 text-stone-500">Nesusținut</span>
         ) : hasActiveSub ? (
@@ -1275,8 +1494,8 @@ function ArchiveSimCard({
           <span className="badge shrink-0 bg-stone-100 text-stone-500"><Lock size={12} /> Abonament necesar</span>
         )}
       </div>
-      {!editorial && sim.description && <p className="mb-3 line-clamp-2 text-sm text-stone-600">{sim.description}</p>}
-      <div className={`mb-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-stone-500 ${editorial ? 'simulation-library__card-meta' : ''}`}>
+      {sim.description && <p className="mb-3 line-clamp-2 text-sm text-stone-600">{sim.description}</p>}
+      <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-stone-500">
         <span className="flex items-center gap-1"><Clock3 size={13} /> {sim.duration_minutes} min</span>
         <span className="flex items-center gap-1"><BookOpen size={13} /> {sim.questionCount} grile</span>
         <span className="flex items-center gap-1">
@@ -1289,7 +1508,7 @@ function ArchiveSimCard({
           </span>
         )}
       </div>
-      <div className={`mt-auto flex flex-col gap-2 border-t border-stone-100 pt-4 ${editorial ? 'simulation-library__card-actions' : ''}`}>
+      <div className="mt-auto flex flex-col gap-2 border-t border-stone-100 pt-4">
         {isScheduled && sim.available_at ? (
           <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-center text-sm font-semibold text-blue-800">
             <span className="flex items-center justify-center gap-2">
@@ -1300,35 +1519,33 @@ function ArchiveSimCard({
         ) : isFree ? (
           <>
             <button type="button" onClick={onStart} className="btn-primary w-full">
-              {sim.hasInProgress ? <><PlayCircle size={16} /> {isUmfcd ? 'Continuă examenul' : 'Continuă simularea'}</>
+              {sim.hasInProgress ? <><PlayCircle size={16} /> Continuă simularea</>
                 : hasSubmitted ? <><RotateCcw size={16} /> Rezolvă din nou</>
-                : <><PlayCircle size={16} /> {isUmfcd ? 'Rezolvă examenul' : 'Rezolvă simularea'}</>}
+                : <><PlayCircle size={16} /> Rezolvă simularea</>}
             </button>
             {hasSubmitted ? (
               <button type="button" onClick={() => onViewResults(latestAttempt?.id)} className="btn-secondary w-full">
-                <BookOpen size={16} /> {isUmfcd ? 'Detalii examen' : 'Detalii simulare'}
+                <BookOpen size={16} /> Detalii simulare
               </button>
-            ) : !editorial ? (
+            ) : (
               <span className="flex items-center justify-center gap-1 text-xs text-stone-400">
                 <Lock size={11} /> Detaliile sunt disponibile după prima rezolvare
               </span>
-            ) : null}
-            {!editorial && <span className="flex items-center justify-center gap-1 text-xs text-stone-400">
+            )}
+            <span className="flex items-center justify-center gap-1 text-xs text-stone-400">
               <Sparkles size={11} /> Antrenament nelimitat
-            </span>}
+            </span>
           </>
         ) : hasSubmitted ? (
           <>
             <button type="button" onClick={() => onViewResults(latestAttempt?.id)} className="btn-secondary w-full">
-              <BookOpen size={16} /> {isUmfcd ? 'Detalii examen' : 'Detalii simulare'}
+              <BookOpen size={16} /> Detalii simulare
             </button>
             <span className="text-center text-xs font-medium text-stone-500">Susținut — o singură încercare</span>
           </>
         ) : hasActiveSub ? (
           <button type="button" onClick={onStart} className="btn-primary w-full">
-            <PlayCircle size={16} /> {sim.hasInProgress
-              ? (isUmfcd ? 'Continuă examenul' : 'Continuă simularea')
-              : (isUmfcd ? 'Rezolvă examenul' : 'Rezolvă simularea')}
+            <PlayCircle size={16} /> {sim.hasInProgress ? 'Continuă simularea' : 'Rezolvă simularea'}
           </button>
         ) : (
           <>

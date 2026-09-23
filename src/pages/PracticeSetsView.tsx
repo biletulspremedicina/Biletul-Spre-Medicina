@@ -66,7 +66,7 @@ export default function PracticeSetsView({
   const hasActiveSub = !!subscription;
 
   return (
-    <div className="practice-sets-page min-h-screen bg-stone-50">
+    <div className="min-h-screen bg-stone-50">
       <header className="sticky top-0 z-10 border-b border-stone-200 bg-white/80 backdrop-blur-sm">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 py-4">
           <Logo size="sm" />
