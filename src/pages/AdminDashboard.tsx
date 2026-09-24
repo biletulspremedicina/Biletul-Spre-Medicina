@@ -5,6 +5,7 @@ import {
   LayoutDashboard, Users, Plus, Edit2, Trash2, Eye, EyeOff,
   ChevronLeft, Save, X, Loader2, Trophy, CreditCard, BookOpen, Clock, Settings, CheckCircle2, AlertTriangle, GraduationCap,
   CalendarClock,
+  FlaskConical,
 } from 'lucide-react';
 import Logo from '@/components/Logo';
 import Loading from '@/components/Loading';
@@ -31,9 +32,10 @@ function formatReleaseDate(value: string) {
 import PracticeAdmin from '@/pages/PracticeAdmin';
 import QuestionBankAdmin from '@/components/admin/QuestionBankAdmin';
 import AdminChatTab from '@/components/admin/AdminChatTab';
+import ChemistryAdmin from '@/pages/ChemistryAdmin';
 import { MessageSquare } from 'lucide-react';
 
-type Tab = 'simulations' | 'umfcd2' | 'practice' | 'bank' | 'chat' | 'monitoring' | 'settings';
+type Tab = 'simulations' | 'umfcd2' | 'practice' | 'bank' | 'chemistry' | 'chat' | 'monitoring' | 'settings';
 
 export default function AdminDashboard({ onExit }: Props) {
   const { profile, signOut } = useAuth();
@@ -92,6 +94,9 @@ export default function AdminDashboard({ onExit }: Props) {
           <TabButton active={tab === 'bank'} onClick={() => setTab('bank')} icon={<BookOpen size={16} />}>
             Banca de grile
           </TabButton>
+          <TabButton active={tab === 'chemistry'} onClick={() => setTab('chemistry')} icon={<FlaskConical size={16} />}>
+            Lecții de chimie
+          </TabButton>
           <TabButton active={tab === 'chat'} onClick={() => setTab('chat')} icon={<MessageSquare size={16} />}>
             Chat asistență
           </TabButton>
@@ -132,6 +137,8 @@ export default function AdminDashboard({ onExit }: Props) {
         {tab === 'practice' && <PracticeAdmin />}
 
         {tab === 'bank' && <QuestionBankAdmin />}
+
+        {tab === 'chemistry' && <ChemistryAdmin />}
 
         {tab === 'chat' && <AdminChatTab />}
 
@@ -1013,3 +1020,4 @@ function SettingsTab() {
     </div>
   );
 }
+

@@ -11,6 +11,7 @@ import AdminDashboard from '@/pages/AdminDashboard';
 import PracticeSetsView from '@/pages/PracticeSetsView';
 import PracticeSetView from '@/pages/PracticeSetView';
 import PracticeResultsView from '@/pages/PracticeResultsView';
+import ChemistryLessonView from '@/pages/ChemistryLessonView';
 import Loading from '@/components/Loading';
 import SupportChat from '@/components/SupportChat';
 
@@ -24,7 +25,8 @@ type Route =
   | 'admin-dashboard'
   | 'practice-sets'
   | 'practice-solve'
-  | 'practice-results';
+  | 'practice-results'
+  | 'chemistry-lesson';
 
 type StudentTheme = 'light' | 'dark' | 'system';
 const STUDENT_THEME_KEY = 'bsm-student-theme';
@@ -48,9 +50,10 @@ function AppContent() {
   const [focusedPracticeSetId, setFocusedPracticeSetId] = useState<string | null>(null);
   const [activePracticeSetId, setActivePracticeSetId] = useState<string | null>(null);
   const [activePracticeAttemptId, setActivePracticeAttemptId] = useState<string | null>(null);
+  const [activeChemistryLessonId, setActiveChemistryLessonId] = useState<string | null>(null);
   const [practiceBuyingSub, setPracticeBuyingSub] = useState(false);
   const [practiceSubNonce, setPracticeSubNonce] = useState(0);
-  const [studentInitialTab, setStudentInitialTab] = useState<'all' | 'practice' | 'umfcd' | 'dashboard'>('all');
+  const [studentInitialTab, setStudentInitialTab] = useState<'all' | 'practice' | 'umfcd' | 'chemistry' | 'dashboard'>('all');
   const [showStudentOnboarding, setShowStudentOnboarding] = useState(false);
   const [studentTheme, setStudentTheme] = useState<StudentTheme>(savedStudentTheme);
   const [systemPrefersDark, setSystemPrefersDark] = useState(() => window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -140,6 +143,11 @@ function AppContent() {
     setRoute('practice-results');
   };
 
+  const handleOpenChemistryLesson = (lessonId: string) => {
+    setActiveChemistryLessonId(lessonId);
+    setRoute('chemistry-lesson');
+  };
+
   const handleBuySubscription = async () => {
     setPracticeBuyingSub(true);
     try {
@@ -183,6 +191,18 @@ function AppContent() {
   }
 
   // Practice routes
+  if (route === 'chemistry-lesson' && activeChemistryLessonId) {
+    return (
+      <>
+        <ChemistryLessonView
+          lessonId={activeChemistryLessonId}
+          onBack={() => { setStudentInitialTab('chemistry'); setRoute('student-dashboard'); }}
+        />
+        <SupportChat />
+      </>
+    );
+  }
+
 if (route === 'practice-sets' && activePracticeLessonId) {
     return (
       <>
@@ -259,6 +279,7 @@ if (route === 'practice-sets' && activePracticeLessonId) {
         onStartSimulation={handleStartSimulation}
         onViewResults={handleViewResults}
         onOpenPracticeLesson={handleOpenPracticeLesson}
+        onOpenChemistryLesson={handleOpenChemistryLesson}
         initialTab={studentInitialTab}
         theme={studentTheme}
         onThemeChange={changeStudentTheme}
@@ -275,3 +296,4 @@ export default function App() {
     </AuthProvider>
   );
 }
+
