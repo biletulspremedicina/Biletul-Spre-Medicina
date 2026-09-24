@@ -54,8 +54,8 @@ export default function ChemistryLessonView({ lessonId, onBack }: { lessonId: st
             <article className="min-w-0 rounded-3xl border border-[#dce9e4] bg-white px-5 py-7 shadow-sm sm:px-10 sm:py-10 lg:px-12">
               <div className="mb-9 border-b border-[#e3ece8] pb-8">
                 <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-[#e6f5ef] px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-[#16634e]"><Beaker size={15} /> Chimie</div>
-                <h1 className="font-display text-3xl font-extrabold leading-tight text-[#123f34] sm:text-4xl">{lesson.title}</h1>
-                {lesson.description && <p className="mt-4 text-lg leading-8 text-stone-600">{lesson.description}</p>}
+                <h1 className="break-words [overflow-wrap:anywhere] font-display text-3xl font-extrabold leading-tight text-[#123f34] sm:text-4xl">{lesson.title}</h1>
+                {lesson.description && <p className="mt-4 break-words [overflow-wrap:anywhere] text-lg leading-8 text-stone-600">{lesson.description}</p>}
               </div>
 
               {contents.length > 0 && (
@@ -83,7 +83,7 @@ function Contents({ items, onSelect }: { items: ChemistryLessonBlock[]; onSelect
   return (
     <nav className="space-y-1 border-t border-[#e5eeea] p-2 lg:border-0 lg:p-0">
       {items.map((item) => (
-        <button key={item.id} onClick={() => onSelect(item.id)} className={`block w-full rounded-lg px-3 py-2 text-left text-sm leading-snug hover:bg-[#edf7f2] hover:text-[#116149] ${item.block_type === 'subheading' ? 'pl-6 text-stone-500' : 'font-semibold text-stone-700'}`}>{item.content}</button>
+        <button key={item.id} onClick={() => onSelect(item.id)} className={`block w-full break-words [overflow-wrap:anywhere] rounded-lg px-3 py-2 text-left text-sm leading-snug hover:bg-[#edf7f2] hover:text-[#116149] ${item.block_type === 'subheading' ? 'pl-6 text-stone-500' : 'font-semibold text-stone-700'}`}>{item.content}</button>
       ))}
     </nav>
   );
