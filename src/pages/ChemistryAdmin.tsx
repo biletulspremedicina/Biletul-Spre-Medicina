@@ -291,12 +291,15 @@ function ListContentEditor({ block, setBlock }: {
     });
   };
 
-  const wrapSelection = (kind: 'important' | 'formula') => {
+  const wrapSelection = (kind: 'important' | 'highlight' | 'formula') => {
     const textarea = textareaRef.current;
     const start = textarea?.selectionStart ?? value.length;
     const end = textarea?.selectionEnd ?? start;
-    const selectedText = value.slice(start, end) || (kind === 'formula' ? 'H2SO4' : 'text important');
-    replaceSelection(kind === 'formula' ? `{{${selectedText}}}` : `==${selectedText}==`, true);
+    const selectedText = value.slice(start, end) || (kind === 'formula' ? 'H2SO4' : 'text evidențiat');
+    const replacement = kind === 'formula'
+      ? `{{${selectedText}}}`
+      : kind === 'important' ? `==${selectedText}==` : `%%${selectedText}%%`;
+    replaceSelection(replacement, true);
   };
 
   const handlePaste = (event: ClipboardEvent<HTMLTextAreaElement>) => {
@@ -324,6 +327,9 @@ function ListContentEditor({ block, setBlock }: {
         <div className="flex flex-wrap gap-2">
           <button type="button" className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-800 hover:bg-red-100" onClick={() => wrapSelection('important')}>
             <Highlighter size={16} /> Marchează important
+          </button>
+          <button type="button" className="inline-flex items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-900 hover:bg-amber-100" onClick={() => wrapSelection('highlight')}>
+            <Highlighter size={16} /> Evidențiază galben
           </button>
           <button type="button" className="inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800 hover:bg-emerald-100" onClick={() => wrapSelection('formula')}>
             <Subscript size={16} /> Formulă în text
@@ -374,6 +380,16 @@ function TextContentEditor({ block, setBlock }: {
     });
   };
 
+  const markHighlighted = () => {
+    const textarea = textareaRef.current;
+    const start = textarea?.selectionStart ?? block.content.length;
+    const end = textarea?.selectionEnd ?? start;
+    const selectedText = block.content.slice(start, end);
+    const text = selectedText || 'text evidențiat';
+    replaceSelection(`%%${text}%%`, text.length + 4);
+    requestAnimationFrame(() => textareaRef.current?.setSelectionRange(start + 2, start + 2 + text.length));
+  };
+
   const markAsFormula = () => {
     const textarea = textareaRef.current;
     const start = textarea?.selectionStart ?? block.content.length;
@@ -401,6 +417,9 @@ function TextContentEditor({ block, setBlock }: {
           <button type="button" className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-800 hover:bg-red-100" onClick={markImportant}>
             <Highlighter size={16} /> Marchează important
           </button>
+          <button type="button" className="inline-flex items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-900 hover:bg-amber-100" onClick={markHighlighted}>
+            <Highlighter size={16} /> Evidențiază galben
+          </button>
           <button type="button" className="inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800 hover:bg-emerald-100" onClick={markAsFormula}>
             <Subscript size={16} /> Formulă în text
           </button>
@@ -417,7 +436,7 @@ function TextContentEditor({ block, setBlock }: {
       <div className="mt-2 rounded-xl bg-stone-50 px-3 py-2 text-xs leading-5 text-stone-600">
         {block.block_type === 'formula'
           ? 'Cifrele și n din formulele generale sunt așezate automat jos: CnH2n+2 devine CₙH₂ₙ₊₂. Pentru sarcini poți scrie Fe^3+.'
-          : 'Textul lipit din PDF este curățat automat. Selectează un fragment și folosește „Marchează important” sau „Formulă în text”.'}
+          : 'Textul lipit din PDF este curățat automat. Selectează un fragment și folosește evidențierea roșie, markerul galben sau „Formulă în text”.'}
       </div>
       {block.content && (
         <div className="mt-4 rounded-2xl border border-stone-200 bg-white p-5">

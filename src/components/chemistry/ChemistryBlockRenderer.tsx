@@ -4,24 +4,30 @@ import { AlertCircle, Beaker, Lightbulb } from 'lucide-react';
 export function plainLessonText(value: string) {
   return value
     .replace(/==([\s\S]+?)==/g, '$1')
+    .replace(/%%([\s\S]+?)%%/g, '$1')
     .replace(/\{\{([\s\S]+?)\}\}/g, '$1');
 }
 
 function LessonText({ value }: { value: string }) {
-  const parts: Array<{ text: string; kind: 'normal' | 'important' | 'formula' }> = [];
-  const pattern = /==([\s\S]+?)==|\{\{([\s\S]+?)\}\}/g;
+  const parts: Array<{ text: string; kind: 'normal' | 'important' | 'highlight' | 'formula' }> = [];
+  const pattern = /==([\s\S]+?)==|%%([\s\S]+?)%%|\{\{([\s\S]+?)\}\}/g;
   let cursor = 0;
   let match: RegExpExecArray | null;
 
   while ((match = pattern.exec(value)) !== null) {
     if (match.index > cursor) parts.push({ text: value.slice(cursor, match.index), kind: 'normal' });
-    parts.push({ text: match[1] ?? match[2], kind: match[1] !== undefined ? 'important' : 'formula' });
+    parts.push({
+      text: match[1] ?? match[2] ?? match[3],
+      kind: match[1] !== undefined ? 'important' : match[2] !== undefined ? 'highlight' : 'formula',
+    });
     cursor = match.index + match[0].length;
   }
   if (cursor < value.length) parts.push({ text: value.slice(cursor), kind: 'normal' });
 
   return <>{parts.map((part, index) => part.kind === 'important'
     ? <mark key={index} className="rounded bg-red-100 px-1 py-0.5 font-semibold text-red-900 [box-decoration-break:clone]">{part.text}</mark>
+    : part.kind === 'highlight'
+      ? <mark key={index} className="rounded bg-amber-200 px-1 py-0.5 font-semibold text-amber-950 [box-decoration-break:clone]">{part.text}</mark>
     : part.kind === 'formula'
       ? <span key={index} className="whitespace-nowrap text-[1.08em] text-[#123f34]"><ChemicalFormula value={part.text} /></span>
       : <span key={index}>{part.text}</span>)}</>;
