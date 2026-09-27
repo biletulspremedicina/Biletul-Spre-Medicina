@@ -31,12 +31,14 @@ function ChemicalFormula({ value }: { value: string }) {
   const subscriptDigits: Record<string, string> = {
     '₀': '0', '₁': '1', '₂': '2', '₃': '3', '₄': '4',
     '₅': '5', '₆': '6', '₇': '7', '₈': '8', '₉': '9',
+    'ₙ': 'n', '₊': '+', '₋': '−',
   };
   const superscriptCharacters: Record<string, string> = {
     '⁰': '0', '¹': '1', '²': '2', '³': '3', '⁴': '4',
     '⁵': '5', '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9', '⁺': '+', '⁻': '−',
   };
   const parts: Array<{ kind: 'normal' | 'sub' | 'sup'; text: string }> = [];
+  const generalFormula = /(?:\d|[₀-₉])n|\)n/.test(value) || (value.match(/n/g)?.length ?? 0) > 1;
   const push = (kind: 'normal' | 'sub' | 'sup', text: string) => {
     if (!text) return;
     const previous = parts[parts.length - 1];
@@ -64,6 +66,13 @@ function ChemicalFormula({ value }: { value: string }) {
       let charge = '';
       while (index < value.length && superscriptCharacters[value[index]]) charge += superscriptCharacters[value[index++]];
       push('sup', charge);
+      continue;
+    }
+    if (generalFormula && character === 'n' && /[A-Za-z0-9₀-₉)\]]/.test(value[index - 1] || '')) {
+      let expression = 'n';
+      index += 1;
+      while (index < value.length && /[0-9n+\-−]/.test(value[index])) expression += value[index++];
+      push('sub', expression.replace('-', '−'));
       continue;
     }
     if (/\d/.test(character)) {
