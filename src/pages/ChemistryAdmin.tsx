@@ -171,7 +171,7 @@ export default function ChemistryAdmin() {
         </div>
         {message && <div className="mb-5 rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm">{message}</div>}
         {preview ? (
-          <div className="mx-auto max-w-4xl rounded-3xl border border-stone-200 bg-white p-6 shadow-sm sm:p-10">
+          <div className="mx-auto max-w-6xl rounded-3xl border border-stone-200 bg-white p-6 shadow-sm sm:p-10">
             <div className="space-y-7">{blocks.map((block) => <ChemistryBlockRenderer key={block.id} block={block} />)}</div>
             {blocks.length === 0 && <p className="py-12 text-center text-stone-500">Lecția nu are încă niciun bloc.</p>}
           </div>
