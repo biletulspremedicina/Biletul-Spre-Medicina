@@ -24,10 +24,11 @@ const emptyBlock = (lessonId: string, position: number): ChemistryLessonBlock =>
 
 function cleanPastedText(value: string) {
   return value
-    .replace(/\r\n?/g, '\n')
+    .replace(/\r\n?|[\u2028\u2029]/g, '\n')
     .replace(/\u00ad/g, '')
     .replace(/\u00a0/g, ' ')
     .replace(/([A-Za-zĂÂÎȘȚăâîșț])-\s*\n\s*(?=[a-zăâîșț])/g, '$1')
+    .replace(/([0-9₀-₉)\]])\s*\n+\s*(?=[-−–—]\s*[A-ZĂÂÎȘȚ])/g, '$1 ')
     .split(/\n{2,}/)
     .map((paragraph) => paragraph
       .split('\n')
@@ -298,6 +299,24 @@ function ListContentEditor({ block, setBlock }: {
     replaceSelection(kind === 'formula' ? `{{${selectedText}}}` : `==${selectedText}==`, true);
   };
 
+  const handlePaste = (event: ClipboardEvent<HTMLTextAreaElement>) => {
+    const pastedText = event.clipboardData.getData('text/plain');
+    if (!pastedText) return;
+    event.preventDefault();
+
+    const normalizedLines = pastedText
+      .replace(/\r\n?|[\u2028\u2029]/g, '\n')
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean);
+    const isBulletedList = normalizedLines.some((line) => /^(?:[•●▪◦]|[-–—]\s)\s*/.test(line));
+    const cleanedText = isBulletedList
+      ? normalizedLines.map((line) => line.replace(/^(?:[•●▪◦]|[-–—]\s)\s*/, '')).join('\n')
+      : cleanPastedText(pastedText).replace(/\n+/g, ' ');
+
+    replaceSelection(cleanedText);
+  };
+
   return (
     <div className="mt-4">
       <div className="mb-2 flex flex-wrap items-end justify-between gap-2">
@@ -311,7 +330,7 @@ function ListContentEditor({ block, setBlock }: {
           </button>
         </div>
       </div>
-      <textarea ref={textareaRef} className="input min-h-48 text-base leading-7" value={value} onChange={(event) => setBlock({ ...block, items: event.target.value.split('\n') })} />
+      <textarea ref={textareaRef} className="input min-h-48 text-base leading-7" value={value} onChange={(event) => setBlock({ ...block, items: event.target.value.split('\n') })} onPaste={handlePaste} />
       <p className="mt-2 text-xs leading-5 text-stone-600">Selectează orice fragment din listă și folosește unul dintre butoanele de mai sus.</p>
       {block.items.some((item) => item.trim()) && (
         <div className="mt-4 rounded-2xl border border-stone-200 bg-white p-5">
