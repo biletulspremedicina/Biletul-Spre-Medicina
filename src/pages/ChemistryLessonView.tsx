@@ -46,11 +46,11 @@ export default function ChemistryLessonView({ lessonId, onBack }: { lessonId: st
           <div className="ml-auto flex items-center gap-2"><Logo className="h-8 w-auto" /><span className="hidden text-sm font-bold text-[#164d3e] sm:inline">Lecții de chimie</span></div>
         </div>
       </header>
-      <main className="mx-auto max-w-7xl px-4 py-7 sm:px-6 sm:py-10">
+      <main className="mx-auto max-w-[1500px] px-4 py-7 sm:px-6 sm:py-10">
         {error || !lesson ? (
           <div className="mx-auto max-w-xl rounded-2xl border border-red-200 bg-red-50 p-8 text-center text-red-800"><p>{error || 'Lecția nu există.'}</p><button className="btn-secondary mt-5" onClick={onBack}>Înapoi</button></div>
         ) : (
-          <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_270px]">
+          <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_260px]">
             <article className="min-w-0 rounded-3xl border border-[#dce9e4] bg-white px-5 py-7 shadow-sm sm:px-10 sm:py-10 lg:px-12">
               <div className="mb-9 border-b border-[#e3ece8] pb-8">
                 <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-[#e6f5ef] px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-[#16634e]"><Beaker size={15} /> Chimie</div>
