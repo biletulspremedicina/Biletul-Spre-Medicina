@@ -397,7 +397,7 @@ function TextContentEditor({ block, setBlock }: {
       />
       <div className="mt-2 rounded-xl bg-stone-50 px-3 py-2 text-xs leading-5 text-stone-600">
         {block.block_type === 'formula'
-          ? 'Cifrele din formule sunt transformate automat în indici jos. Sarcinile copiate ca ³⁺/²⁻ se păstrează, iar manual poți scrie Fe^3+.'
+          ? 'Cifrele și n din formulele generale sunt așezate automat jos: CnH2n+2 devine CₙH₂ₙ₊₂. Pentru sarcini poți scrie Fe^3+.'
           : 'Textul lipit din PDF este curățat automat. Selectează un fragment și folosește „Marchează important” sau „Formulă în text”.'}
       </div>
       {block.content && (
