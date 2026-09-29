@@ -210,14 +210,14 @@ export default function StudentPerformance({ simulations, practiceAttempts, prac
     </div>
 
     <div className="performance-top">
-      <div className={`performance-accuracy performance-panel ${data.accuracyPoints.length ? '' : 'is-empty'}`}>
+      <div className="performance-accuracy performance-panel">
         <div className="performance-panel-head"><div><h3>Rata răspunsurilor corecte</h3><p>Din răspunsurile trimise</p></div></div>
         <div className="performance-accuracy-content">
           <div className="performance-accuracy-summary"><strong className="performance-big-number">{percentLabel(data.accuracy)}</strong>
             {data.accuracyDelta !== null && <span className={`performance-delta ${data.accuracyDelta < 0 ? 'is-negative' : ''}`}>
               {data.accuracyDelta > 0 ? '+' : ''}{data.accuracyDelta} pp</span>}
             <small>{data.accuracyDelta !== null ? 'față de perioada anterioară' : `${data.totalAnswers} răspunsuri în această perioadă`}</small></div>
-          {data.accuracyPoints.length > 0 && <TrendChart points={data.accuracyPoints} max={100} ticks={['100%', '75%', '50%', '25%', '0%']} id="accuracy" />}
+          <TrendChart points={data.accuracyPoints} max={100} ticks={['100%', '75%', '50%', '25%', '0%']} id="accuracy" />
         </div>
       </div>
       <div className="performance-sim performance-panel">
@@ -241,20 +241,21 @@ export default function StudentPerformance({ simulations, practiceAttempts, prac
               title={`${shortDate(day.key)}: ${day.active ? 'zi cu activitate' : 'fără activitate'}`} />)}</div>
             <small>Ultimele 4 săptămâni</small><div className="performance-legend"><i /> Zi cu activitate <i /> Fără activitate</div></div></div>
       </div>
-      <div className={`performance-time performance-panel ${data.timePoints.length ? '' : 'is-empty'}`}><h3>Timp mediu pe întrebare</h3><p>Din simulările finalizate</p>
+      <div className="performance-time performance-panel"><h3>Timp mediu pe întrebare</h3><p>Din simulările finalizate</p>
         <strong className="performance-mid-number">{secondsLabel(data.avgSeconds)}</strong>
         {data.timeDelta !== null && <small className={`performance-time-delta ${data.timeDelta > 0 ? 'is-negative' : ''}`}>
           {data.timeDelta > 0 ? '+' : ''}{data.timeDelta} sec față de perioada anterioară</small>}
-        {data.timePoints.length > 0 && <TrendChart points={data.timePoints} max={timeTickMax} ticks={[`${timeTickMax}`, `${timeTickMax / 2}`, '0']} id="time" />}
+        <TrendChart points={data.timePoints} max={timeTickMax} ticks={[`${timeTickMax}`, `${timeTickMax / 2}`, '0']} id="time" />
       </div>
-      <div className={`performance-ontime performance-panel ${data.totalSim ? '' : 'is-empty'}`}><h3>În timpul alocat</h3>
+      <div className="performance-ontime performance-panel"><h3>În timpul alocat</h3>
         <div className="performance-ontime-content"><strong className="performance-mid-number">{data.onTime} din {data.totalSim}</strong>
-          {data.totalSim > 0 && <div className="performance-ring" style={{ '--progress': `${(data.onTime / data.totalSim) * 100}%` } as CSSProperties}>
-            <strong>{Math.round((data.onTime / data.totalSim) * 100)}%</strong></div>}</div>
-        {data.totalSim > 0 && <><div className="performance-ontime-bar" aria-label={`${data.onTime} din ${data.totalSim} simulări finalizate în timp`}>
-          {Array.from({ length: Math.min(data.totalSim, 12) }, (_, index) => <span key={index}
-            className={index / Math.min(data.totalSim, 12) < data.onTime / data.totalSim ? 'is-active' : ''} />)}</div>
-        <div className="performance-legend"><i /> Finalizată în timp <i /> Depășit timpul</div></>}
+          <div className="performance-ring" style={{ '--progress': `${data.totalSim ? (data.onTime / data.totalSim) * 100 : 0}%` } as CSSProperties}>
+            <strong>{data.totalSim ? `${Math.round((data.onTime / data.totalSim) * 100)}%` : '—'}</strong></div></div>
+        <div className="performance-ontime-bar" aria-label={`${data.onTime} din ${data.totalSim} simulări finalizate în timp`}>
+          {data.totalSim ? Array.from({ length: Math.min(data.totalSim, 12) }, (_, index) => <span key={index}
+            className={index / Math.min(data.totalSim, 12) < data.onTime / data.totalSim ? 'is-active' : ''} />)
+            : <span className="is-empty" />}</div>
+        <div className="performance-legend"><i /> Finalizată în timp <i /> Depășit timpul</div>
       </div>
     </div>
     <div className="performance-chapters performance-panel"><div className="performance-chapters-copy"><h3>Capitole începute</h3>

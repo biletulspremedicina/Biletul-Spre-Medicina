@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, Beaker, ChevronDown, List, Loader2 } from 'lucide-react';
 import { supabase, type ChemistryLesson, type ChemistryLessonBlock } from '@/lib/supabase';
-import { ChemistryBlockRenderer, plainLessonText } from '@/components/chemistry/ChemistryBlockRenderer';
+import { ChemistryBlockRenderer } from '@/components/chemistry/ChemistryBlockRenderer';
 import Logo from '@/components/Logo';
 
 export default function ChemistryLessonView({ lessonId, onBack }: { lessonId: string; onBack: () => void }) {
@@ -46,11 +46,11 @@ export default function ChemistryLessonView({ lessonId, onBack }: { lessonId: st
           <div className="ml-auto flex items-center gap-2"><Logo className="h-8 w-auto" /><span className="hidden text-sm font-bold text-[#164d3e] sm:inline">Lecții de chimie</span></div>
         </div>
       </header>
-      <main className="mx-auto max-w-[1500px] px-4 py-7 sm:px-6 sm:py-10">
+      <main className="mx-auto max-w-7xl px-4 py-7 sm:px-6 sm:py-10">
         {error || !lesson ? (
           <div className="mx-auto max-w-xl rounded-2xl border border-red-200 bg-red-50 p-8 text-center text-red-800"><p>{error || 'Lecția nu există.'}</p><button className="btn-secondary mt-5" onClick={onBack}>Înapoi</button></div>
         ) : (
-          <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_260px]">
+          <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_270px]">
             <article className="min-w-0 rounded-3xl border border-[#dce9e4] bg-white px-5 py-7 shadow-sm sm:px-10 sm:py-10 lg:px-12">
               <div className="mb-9 border-b border-[#e3ece8] pb-8">
                 <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-[#e6f5ef] px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-[#16634e]"><Beaker size={15} /> Chimie</div>
@@ -83,7 +83,7 @@ function Contents({ items, onSelect }: { items: ChemistryLessonBlock[]; onSelect
   return (
     <nav className="space-y-1 border-t border-[#e5eeea] p-2 lg:border-0 lg:p-0">
       {items.map((item) => (
-        <button key={item.id} onClick={() => onSelect(item.id)} className={`block w-full break-words [overflow-wrap:anywhere] rounded-lg px-3 py-2 text-left text-[15px] leading-snug hover:bg-[#edf7f2] hover:text-[#116149] ${item.block_type === 'subheading' ? 'pl-6 text-stone-500' : 'font-semibold text-stone-700'}`}>{plainLessonText(item.content)}</button>
+        <button key={item.id} onClick={() => onSelect(item.id)} className={`block w-full break-words [overflow-wrap:anywhere] rounded-lg px-3 py-2 text-left text-sm leading-snug hover:bg-[#edf7f2] hover:text-[#116149] ${item.block_type === 'subheading' ? 'pl-6 text-stone-500' : 'font-semibold text-stone-700'}`}>{item.content}</button>
       ))}
     </nav>
   );

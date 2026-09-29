@@ -10,8 +10,6 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
 });
 
-export const PREMIUM_ATTEMPT_LIMIT = 3;
-
 export type Profile = {
   id: string;
   email: string;
@@ -204,6 +202,42 @@ export type SetQuestion = {
   question_id: string;
   position: number;
   created_at: string;
+};
+
+// ── Lecții teoretice de chimie ─────────────────────────────────────
+
+export type ChemistryLesson = {
+  id: string;
+  title: string;
+  description: string;
+  position: number;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ChemistryBlockType =
+  | 'heading'
+  | 'subheading'
+  | 'paragraph'
+  | 'list'
+  | 'note'
+  | 'formula'
+  | 'image';
+
+export type ChemistryLessonBlock = {
+  id: string;
+  lesson_id: string;
+  block_type: ChemistryBlockType;
+  content: string;
+  items: string[];
+  image_url: string;
+  image_alt: string;
+  caption: string;
+  note_style: 'info' | 'important' | 'example';
+  position: number;
+  created_at: string;
+  updated_at: string;
 };
 
 export type PracticeAttempt = {
@@ -435,3 +469,4 @@ export const CHAT_STATUS_LABELS: Record<string, string> = {
   ongoing: 'În desfășurare',
   closed: 'Închisă',
 };
+

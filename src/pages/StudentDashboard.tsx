@@ -26,21 +26,23 @@ import {
   FileText,
   CalendarClock,
   PartyPopper,
+  FlaskConical,
 } from 'lucide-react';
-import { supabase, PREMIUM_ATTEMPT_LIMIT, type Attempt, type MaterialReleaseRPC, type PracticeAttempt, type PracticeLessonRPC, type ReviewQuestionRPC, type Simulation, type Subscription } from '@/lib/supabase';
+import { supabase, type Attempt, type ChemistryLesson, type MaterialReleaseRPC, type PracticeAttempt, type PracticeLessonRPC, type ReviewQuestionRPC, type Simulation, type Subscription } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import Loading from '@/components/Loading';
 import StudentSettings from '@/pages/StudentSettings';
 import StudentPerformance from '@/components/StudentPerformance';
 import PracticeLibrary from '@/components/PracticeLibrary';
 
-type IncomingTab = 'all' | 'practice' | 'umfcd' | 'dashboard';
-type PageId = 'home' | 'all' | 'practice' | 'umfcd' | 'review' | 'settings';
+type IncomingTab = 'all' | 'practice' | 'umfcd' | 'chemistry' | 'dashboard';
+type PageId = 'home' | 'all' | 'practice' | 'umfcd' | 'chemistry' | 'review' | 'settings';
 
 type Props = {
   onStartSimulation: (simulationId: string) => void;
   onViewResults: (simulationId: string, attemptId?: string) => void;
   onOpenPracticeLesson: (lessonId: string, lessonTitle: string, focusSetId?: string) => void;
+  onOpenChemistryLesson: (lessonId: string) => void;
   initialTab?: IncomingTab;
   theme: 'light' | 'dark' | 'system';
   onThemeChange: (theme: 'light' | 'dark' | 'system') => void;
@@ -68,6 +70,7 @@ const NAV_IMAGE_SOURCES = {
   practice: '/Capitole.png', // Aici pui sursa imaginii ANTRENAMENT PE CAPITOLE
   umfcd: '', // Aici pui sursa imaginii EXAMENE UMFCD
   review: '/Revizie2.png', // Aici pui sursa imaginii INTREBARI DE REVIZUIT
+  chemistry: '',
 };
 
 const serif = { fontFamily: 'Georgia, Cambria, "Times New Roman", serif' };
@@ -185,7 +188,7 @@ function dailyMotivationMessage(date: Date) {
 }
 
 function initialPage(tab: IncomingTab): PageId {
-  if (tab === 'practice' || tab === 'umfcd') return tab;
+  if (tab === 'practice' || tab === 'umfcd' || tab === 'chemistry') return tab;
   return 'home';
 }
 
@@ -193,6 +196,7 @@ export default function StudentDashboard({
   onStartSimulation,
   onViewResults,
   onOpenPracticeLesson,
+  onOpenChemistryLesson,
   initialTab = 'all',
   theme,
   onThemeChange,
@@ -206,6 +210,7 @@ export default function StudentDashboard({
   const [signingOut, setSigningOut] = useState(false);
   const [simulations, setSimulations] = useState<SimWithStatus[]>([]);
   const [practiceLessons, setPracticeLessons] = useState<PracticeLessonRPC[]>([]);
+  const [chemistryLessons, setChemistryLessons] = useState<ChemistryLesson[]>([]);
   const [practiceAttempts, setPracticeAttempts] = useState<PracticeAttempt[]>([]);
   const [practiceSets, setPracticeSets] = useState<PracticeSetRow[]>([]);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
@@ -263,7 +268,7 @@ export default function StudentDashboard({
     setLoading(true);
     setLoadError(null);
     try {
-      const [simRes, subRes, attemptRes, practiceAttemptRes, practiceSetRes, lessonRes, settingsRes] =
+      const [simRes, subRes, attemptRes, practiceAttemptRes, practiceSetRes, lessonRes, settingsRes, chemistryRes] =
         await Promise.all([
           supabase.from('simulations').select('*').order('created_at', { ascending: false }),
           supabase.from('subscriptions').select('*').eq('user_id', userId).order('end_at', { ascending: false }),
@@ -272,6 +277,7 @@ export default function StudentDashboard({
           supabase.from('practice_sets').select('id, lesson_id').eq('is_active', true),
           supabase.rpc('get_practice_lessons'),
           supabase.from('app_settings').select('*').eq('id', 1).maybeSingle(),
+          supabase.from('chemistry_lessons').select('*').eq('is_published', true).order('position').order('created_at'),
         ]);
 
       if (simRes.error || subRes.error || attemptRes.error) {
@@ -308,6 +314,7 @@ export default function StudentDashboard({
       setPracticeAttempts((practiceAttemptRes.data || []) as PracticeAttempt[]);
       setPracticeSets((practiceSetRes.data || []) as PracticeSetRow[]);
       setPracticeLessons((lessonRes.data || []) as PracticeLessonRPC[]);
+      setChemistryLessons((chemistryRes.data || []) as ChemistryLesson[]);
     } catch (error) {
       console.error('Student dashboard load error:', error);
       setLoadError('Nu am putut încărca pagina. Reîncearcă.');
@@ -487,6 +494,7 @@ export default function StudentDashboard({
     { id: 'home', label: 'Acasă', icon: <Home size={19} />, imageSrc: NAV_IMAGE_SOURCES.home },
     { id: 'all', label: 'Simulări biologie', icon: <FileText size={19} />, imageSrc: NAV_IMAGE_SOURCES.all },
     { id: 'practice', label: 'Antrenament pe capitole', icon: <GraduationCap size={20} />, imageSrc: NAV_IMAGE_SOURCES.practice },
+    { id: 'chemistry', label: 'Lecții de chimie', icon: <FlaskConical size={20} />, imageSrc: NAV_IMAGE_SOURCES.chemistry },
     { id: 'umfcd', label: 'Examene UMFCD', icon: <UmfcdIcon size={19} imageSize={28} />, imageSrc: NAV_IMAGE_SOURCES.umfcd },
     { id: 'review', label: 'Întrebări de revizuit', icon: <Bookmark size={19} />, imageSrc: NAV_IMAGE_SOURCES.review },
   ];
@@ -630,8 +638,8 @@ export default function StudentDashboard({
 
           {page === 'home' ? (
             <>
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-[1.45fr_0.96fr_1.12fr]">
-                <section className="relative flex min-h-[310px] flex-col overflow-hidden rounded-[12px] border border-[#cde9df] bg-[linear-gradient(125deg,#fbfffd_0%,#f2fbf8_100%)] p-4 sm:p-5 md:col-span-2 md:min-h-[250px] xl:col-span-1 xl:min-h-[356px]">
+              <div className="grid gap-4 xl:grid-cols-[1.45fr_0.96fr_1.12fr]">
+                <section className="relative flex min-h-[356px] flex-col overflow-hidden rounded-[12px] border border-[#cde9df] bg-[linear-gradient(125deg,#fbfffd_0%,#f2fbf8_100%)] p-4 sm:p-5">
                   <div className="pointer-events-none absolute -right-8 top-14 h-52 w-52 rounded-full border-[30px] border-[#ddf5eb]/55" aria-hidden="true" />
                   <div className="relative flex items-start gap-5">
                     {isEvening ? (
@@ -694,7 +702,7 @@ export default function StudentDashboard({
                   </div>
                 </section>
 
-                <section className="flex min-h-[290px] flex-col rounded-[12px] border border-[#dfe6ec] bg-white p-5 xl:min-h-[356px]">
+                <section className="flex min-h-[356px] flex-col rounded-[12px] border border-[#dfe6ec] bg-white p-5">
                   <h2 className="text-[27px] font-bold leading-tight" style={serif}>Progres global</h2>
                   <p className="mt-1 text-[13px] leading-relaxed text-[#5d6e85]">
                     Întrebări distincte rezolvate cel puțin o dată din totalul disponibil pe platformă.
@@ -718,7 +726,7 @@ export default function StudentDashboard({
                   </p>
                 </section>
 
-                <section className="relative flex min-h-[290px] flex-col overflow-hidden rounded-[12px] bg-[#034638] p-6 text-white xl:min-h-[356px]">
+                <section className="relative flex min-h-[356px] flex-col overflow-hidden rounded-[12px] bg-[#034638] p-6 text-white">
                   <svg className="pointer-events-none absolute bottom-0 left-0 w-full opacity-20" viewBox="0 0 430 70" preserveAspectRatio="none" aria-hidden="true">
                     <path d="M0 38 Q92 85 190 48 T430 40 V70 H0Z" fill="#4ba27f" />
                     <path d="M0 58 Q135 5 265 52 T430 32 V70 H0Z" fill="#277d60" />
@@ -800,6 +808,28 @@ export default function StudentDashboard({
           ) : page === 'practice' ? (
             <PracticeLibrary lessons={practiceLessons}
               onOpen={(lesson) => onOpenPracticeLesson(lesson.out_id, lesson.out_title)} />
+          ) : page === 'chemistry' ? (
+            <section>
+              <PageHeading icon={<FlaskConical size={30} />} title="Lecții de chimie"
+                subtitle="Parcurge teoria, formulele și schemele explicate pas cu pas." />
+              {chemistryLessons.length === 0 ? (
+                <EmptyState icon={<FlaskConical size={36} />} title="Nu există lecții de chimie publicate momentan."
+                  text="Revino mai târziu pentru materiale noi." />
+              ) : (
+                <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                  {chemistryLessons.map((lesson, index) => (
+                    <button key={lesson.id} type="button" onClick={() => onOpenChemistryLesson(lesson.id)}
+                      className="group overflow-hidden rounded-2xl border border-[#dce9e4] bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:border-[#9bcdbb] hover:shadow-md">
+                      <div className="flex h-28 items-center justify-between bg-[linear-gradient(125deg,#e6f5ef_0%,#f5fbf8_100%)] px-6">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#176f57] text-white shadow-sm"><FlaskConical size={28} /></div>
+                        <span className="text-5xl font-black text-[#176f57]/10">{String(index + 1).padStart(2, '0')}</span>
+                      </div>
+                      <div className="p-5"><h3 className="text-lg font-bold text-[#153f34] group-hover:text-[#0d7456]">{lesson.title}</h3><p className="mt-2 line-clamp-2 min-h-10 text-sm leading-5 text-stone-500">{lesson.description || 'Deschide lecția pentru a vedea conținutul.'}</p><span className="mt-5 inline-flex items-center gap-1 text-sm font-bold text-[#167d5f]">Deschide lecția <ChevronRight size={16} /></span></div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </section>
           ) : page === 'all' || page === 'umfcd' ? (
             <section className={`simulation-library ${page === 'umfcd' ? 'simulation-library--umfcd' : ''}`}>
               <div className="simulation-library__hero">
@@ -1236,7 +1266,6 @@ function ArchiveSimCard({
     .sort((a, b) => new Date(b.submitted_at!).getTime() - new Date(a.submitted_at!).getTime());
   const hasSubmitted = submitted.length > 0;
   const latestAttempt = submitted[0];
-  const paidLimitReached = !isFree && submitted.filter((attempt) => !attempt.is_archive_retake).length >= PREMIUM_ATTEMPT_LIMIT && !sim.hasInProgress;
   const isScheduled = !!sim.available_at && new Date(sim.available_at).getTime() > Date.now();
 
   if (editorial && !isUmfcd) {
@@ -1281,18 +1310,16 @@ function ArchiveSimCard({
                 <button type="button" onClick={() => onViewResults(latestAttempt?.id)}
                   className="simulation-library__biology-secondary">Vezi detalii</button>
               )}
-              {paidLimitReached ? (
-                <p className="simulation-library__biology-complete">Această simulare a fost deja lucrată.</p>
-              ) : isFree || hasActiveSub ? (
+              {isFree || (!hasSubmitted && hasActiveSub) ? (
                 <button type="button" onClick={onStart} className="simulation-library__biology-primary">
                   {sim.hasInProgress ? 'Continuă simularea' : 'Rezolvă simularea'}
                 </button>
-              ) : (
+              ) : !hasSubmitted ? (
                 <button type="button" onClick={onBuySubscription} disabled={buyingSub}
                   className="simulation-library__biology-primary">
                   {buyingSub ? 'Se activează…' : 'Activează abonamentul'}
                 </button>
-              )}
+              ) : null}
             </>
           )}
         </div>
@@ -1379,39 +1406,25 @@ function ArchiveSimCard({
               <Sparkles size={11} /> Antrenament nelimitat
             </span>}
           </>
-        ) : paidLimitReached ? (
+        ) : hasSubmitted ? (
           <>
-            <span className="text-center text-sm font-medium text-stone-600">
-              {isUmfcd ? 'Acest examen a fost deja lucrat.' : 'Această simulare a fost deja lucrată.'}
-            </span>
             <button type="button" onClick={() => onViewResults(latestAttempt?.id)} className="btn-secondary w-full">
               <BookOpen size={16} /> {isUmfcd ? 'Detalii examen' : 'Detalii simulare'}
             </button>
+            <span className="text-center text-xs font-medium text-stone-500">Susținut — o singură încercare</span>
           </>
         ) : hasActiveSub ? (
-          <>
-            <button type="button" onClick={onStart} className="btn-primary w-full">
-              <PlayCircle size={16} /> {sim.hasInProgress
-                ? (isUmfcd ? 'Continuă examenul' : 'Continuă simularea')
-                : (isUmfcd ? 'Rezolvă examenul' : 'Rezolvă simularea')}
-            </button>
-            {hasSubmitted && (
-              <button type="button" onClick={() => onViewResults(latestAttempt?.id)} className="btn-secondary w-full">
-                <BookOpen size={16} /> {isUmfcd ? 'Detalii examen' : 'Detalii simulare'}
-              </button>
-            )}
-          </>
+          <button type="button" onClick={onStart} className="btn-primary w-full">
+            <PlayCircle size={16} /> {sim.hasInProgress
+              ? (isUmfcd ? 'Continuă examenul' : 'Continuă simularea')
+              : (isUmfcd ? 'Rezolvă examenul' : 'Rezolvă simularea')}
+          </button>
         ) : (
           <>
             <button type="button" onClick={onBuySubscription} disabled={buyingSub} className="btn-accent w-full">
               {buyingSub && <Loader2 size={16} className="animate-spin" />}
               <Crown size={16} /> Cumpără abonament pentru a accesa
             </button>
-            {hasSubmitted && (
-              <button type="button" onClick={() => onViewResults(latestAttempt?.id)} className="btn-secondary w-full">
-                <BookOpen size={16} /> {isUmfcd ? 'Detalii examen' : 'Detalii simulare'}
-              </button>
-            )}
             <span className="text-center text-xs text-stone-400">Mod test – abonamentul se activează gratuit</span>
           </>
         )}
