@@ -87,26 +87,26 @@ export default function PracticeSetsView({
   return (
     <div className="practice-sets-page min-h-screen bg-stone-50">
       <header className="practice-sets-page__topbar sticky top-0 z-10 border-b border-stone-200 bg-white/90 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
+        <div className="flex w-full items-center justify-between gap-4 px-3 py-3 sm:px-4 lg:px-5">
           <div className="flex origin-left scale-[0.9] items-center gap-1 sm:scale-100 sm:gap-1.5">
             <div className="sm:hidden"><Logo size="sm" /></div>
             <div className="hidden sm:block"><Logo /></div>
             <span className="flex select-none flex-col text-[10px] font-extrabold uppercase leading-[1.08] tracking-wide sm:text-[12px]">
-              <span>Biletul</span><span>Spre</span><span className="text-brand-600">Medicină</span>
+              <span>Biletul</span><span>Spre</span><span className="practice-sets-page__brand-word">Medicină</span>
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <button type="button" onClick={onBack} className="practice-sets-page__nav-button" aria-label="Înapoi la capitole">
+            <button type="button" onClick={onBack} className="practice-sets-page__nav-button practice-sets-page__nav-button--back" aria-label="Înapoi la capitole">
               <ChevronLeft size={20} aria-hidden="true" /><span>Înapoi</span>
             </button>
-            <button type="button" onClick={onHome} className="practice-sets-page__nav-button" aria-label="Acasă">
+            <button type="button" onClick={onHome} className="practice-sets-page__nav-button practice-sets-page__nav-button--home" aria-label="Acasă">
               <img src="/Home.png" alt="" width={22} height={22} /><span>Acasă</span>
             </button>
           </div>
         </div>
       </header>
 
-      <main className="practice-sets-page__content mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      <main className="practice-sets-page__content w-full px-3 py-5 sm:px-4 lg:px-5">
         <section className="practice-sets-page__hero" aria-labelledby="practice-lesson-title">
           <img className="practice-sets-page__hero-photo" src={practiceChapterImageFor(lessonTitle, true)} alt="" />
           <div className="practice-sets-page__hero-veil" />
@@ -210,7 +210,7 @@ function PracticeSetCard({
 
   return (
     <article id={`practice-set-${set.out_id}`}
-      className={`simulation-library__card simulation-library__card--biology practice-set-card ${focused ? 'ring-2 ring-emerald-500 ring-offset-2' : ''}`}
+      className={`simulation-library__card simulation-library__card--biology practice-set-card ${focused ? 'ring-2 ring-rose-700 ring-offset-2' : ''}`}
       aria-label={`${set.out_title}, ${set.out_question_count} grile`}>
       <div className="simulation-library__biology-heading">
         <h3>Set</h3>
