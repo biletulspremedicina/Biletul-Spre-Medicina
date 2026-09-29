@@ -1,43 +1,22 @@
 import { useState } from 'react';
 import { Search } from 'lucide-react';
 import type { PracticeLessonRPC } from '@/lib/supabase';
+import { PRACTICE_LIBRARY_HERO_IMAGE, practiceChapterImageFor } from '@/lib/practiceChapterImages';
 
 type Props = {
   lessons: PracticeLessonRPC[];
   onOpen: (lesson: PracticeLessonRPC) => void;
 };
 
-// Fotografii/planșe reale: Unsplash (Annie Spratt, CDC, NYPL, Frederick Shaw)
-// și Wikimedia Commons (fotografia ochiului, domeniu public).
-const PHOTO = {
-  hero: 'https://images.unsplash.com/photo-1532153470116-e8c2088b8ac1?auto=format&fit=crop&w=1100&q=82',
-  overview: 'https://images.unsplash.com/photo-1755718670262-079fa2a36201?auto=format&fit=crop&w=360&h=180&q=80',
-  cell: 'https://images.unsplash.com/photo-1778612506418-d33b3ad1f03b?auto=format&fit=crop&w=360&h=180&q=80',
-  bones: 'https://images.unsplash.com/photo-1725398467934-18e46c88afaa?auto=format&fit=crop&w=360&h=180&q=80',
-  muscle: 'https://images.unsplash.com/photo-1725399459286-c13790cecf80?auto=format&fit=crop&w=360&h=180&q=80',
-  nerves: 'https://images.unsplash.com/photo-1725399078986-f75c61981dc5?auto=format&fit=crop&w=360&h=180&q=80',
-  senses: 'https://commons.wikimedia.org/wiki/Special:FilePath/030608_Pupil.jpg?width=360',
-};
-
 function normalize(value: string) {
   return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('ro-RO');
-}
-
-function imageFor(title: string) {
-  const name = normalize(title);
-  if (name.includes('celul') || name.includes('tesut')) return PHOTO.cell;
-  if (name.includes('osos') || name.includes('schelet') || name.includes('oase')) return PHOTO.bones;
-  if (name.includes('muscular') || name.includes('muschi')) return PHOTO.muscle;
-  if (name.includes('nerv')) return PHOTO.nerves;
-  if (name.includes('analizator') || name.includes('simtur')) return PHOTO.senses;
-  return PHOTO.overview;
 }
 
 function ChapterPhoto({ title }: { title: string }) {
   const [failed, setFailed] = useState(false);
   return (
     <span className="block h-16 w-24 shrink-0 overflow-hidden rounded-[3px] bg-[#e9eeea] sm:h-[72px] sm:w-[116px]">
-      {!failed && <img src={imageFor(title)} alt="" loading="lazy" onError={() => setFailed(true)}
+      {!failed && <img src={practiceChapterImageFor(title)} alt="" loading="lazy" onError={() => setFailed(true)}
         className="h-full w-full object-cover saturate-[.8]" />}
     </span>
   );
@@ -55,7 +34,7 @@ export default function PracticeLibrary({ lessons, onOpen }: Props) {
   return (
     <section className="practice-library overflow-hidden border border-[#e1e8e3] bg-[#fffefa] text-[#152b2b]">
       <div className="practice-library__hero relative isolate flex min-h-[218px] items-center overflow-hidden border-b border-[#dce5df] bg-[#f9faf7] px-6 py-9 sm:px-9 lg:min-h-[238px]">
-        <div className="absolute inset-0 -z-20 bg-cover bg-right bg-no-repeat" style={{ backgroundImage: `url('${PHOTO.hero}')` }} />
+        <div className="absolute inset-0 -z-20 bg-cover bg-right bg-no-repeat" style={{ backgroundImage: `url('${PRACTICE_LIBRARY_HERO_IMAGE}')` }} />
         <div className="practice-library__hero-veil absolute inset-0 -z-10 bg-[linear-gradient(90deg,#fffefa_0%,#fffefa_43%,rgba(255,254,250,.94)_53%,rgba(255,254,250,.04)_81%)] max-sm:bg-[linear-gradient(90deg,#fffefa_0%,rgba(255,254,250,.95)_68%,rgba(255,254,250,.72)_100%)]" />
         <div className="relative max-w-[770px]">
           <p className="practice-library__eyebrow mb-3 text-[11px] font-bold uppercase tracking-[.25em] text-[#3c6659]">Bibliotecă de exersare</p>
