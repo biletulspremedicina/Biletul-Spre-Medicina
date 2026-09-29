@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { supabase, type PracticeSetRPC, type Subscription } from '@/lib/supabase';
+import { supabase, PREMIUM_ATTEMPT_LIMIT, type PracticeSetRPC, type Subscription } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import {
   ChevronLeft, FileText, Crown, PlayCircle, RotateCcw,
@@ -66,7 +66,7 @@ export default function PracticeSetsView({
   const hasActiveSub = !!subscription;
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="practice-sets-page min-h-screen bg-stone-50">
       <header className="sticky top-0 z-10 border-b border-stone-200 bg-white/80 backdrop-blur-sm">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 py-4">
           <Logo size="sm" />
@@ -144,6 +144,7 @@ function PracticeSetCard({
   const isPremium = set.out_requires_subscription;
   const isLocked = isPremium && !hasActiveSub;
   const hasAttempts = set.out_attempt_count > 0;
+  const limitReached = isPremium && set.out_attempt_count >= PREMIUM_ATTEMPT_LIMIT;
   const isScheduled = !!set.out_available_at && new Date(set.out_available_at).getTime() > Date.now();
 
   return (
@@ -196,6 +197,13 @@ function PracticeSetCard({
             </span>
             <ReleaseCountdown target={set.out_available_at} onComplete={onReleaseReached} />
           </div>
+        ) : limitReached ? (
+          <>
+            <p className="py-2 text-center text-sm font-medium text-stone-600">Acest set a fost deja lucrat.</p>
+            <button onClick={() => onViewResults()} className="btn-secondary w-full">
+              <BookOpen size={16} /> Vezi rezultatele
+            </button>
+          </>
         ) : isLocked ? (
           <>
             <button
