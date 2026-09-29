@@ -830,6 +830,121 @@ html.student-dark .simulation-library--umfcd .border-dashed > div { background: 
 .simulation-library,
 .practice-sets-page { animation: study-colour-fade .42s ease-out; }
 
+.practice-sets-page__topbar { color: #182f28; }
+.practice-sets-page__nav-button {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px 13px;
+  border: 1px solid #dbe5df;
+  border-radius: 11px;
+  background: #fff;
+  color: #1b4938;
+  font-size: 13px;
+  font-weight: 650;
+  transition: border-color .2s ease, background-color .2s ease;
+}
+.practice-sets-page__nav-button:hover { border-color: #9fc4ae; background: #f3f8f4; }
+.practice-sets-page__nav-button:focus-visible { outline: 2px solid #347451; outline-offset: 2px; }
+.practice-sets-page__nav-button img { display: block; width: 22px; height: 22px; object-fit: contain; }
+
+.practice-sets-page__hero {
+  position: relative;
+  display: flex;
+  min-height: 168px;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid #eadbdd;
+  border-radius: 17px;
+  background: #692537;
+}
+.practice-sets-page__hero-photo {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 61%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+.practice-sets-page__hero-veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, #692537 0%, #692537 35%, rgba(105,37,55,.91) 53%, rgba(105,37,55,.2) 100%);
+}
+.practice-sets-page__hero-copy {
+  position: relative;
+  z-index: 1;
+  width: min(75%, 850px);
+  padding: 25px clamp(24px, 3vw, 42px);
+}
+.practice-sets-page__hero-copy p {
+  margin-bottom: 9px;
+  color: #f4cdd3;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .23em;
+  text-transform: uppercase;
+}
+.practice-sets-page__hero-copy h1 {
+  color: #fffaf8;
+  font-family: Georgia, Cambria, "Times New Roman", serif;
+  font-size: clamp(25px, 2.8vw, 39px);
+  font-weight: 700;
+  line-height: 1.09;
+  letter-spacing: -.035em;
+  text-wrap: balance;
+}
+.practice-sets-page__section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 25px 2px 17px;
+  color: #17362b;
+}
+.practice-sets-page__section-heading h2 {
+  font-family: Georgia, Cambria, "Times New Roman", serif;
+  font-size: clamp(25px, 2.4vw, 34px);
+  font-weight: 700;
+  letter-spacing: -.03em;
+  line-height: 1.1;
+}
+.practice-sets-page__section-heading span { color: #607069; font-size: 13px; white-space: nowrap; }
+.practice-sets-page__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+  gap: 18px;
+}
+.practice-set-card { min-height: 0; }
+.practice-set-card .simulation-library__biology-heading { min-height: 69px; }
+.practice-set-card .simulation-library__biology-number { color: #1a6547; }
+.practice-set-card .simulation-library__biology-meta { min-height: 27px; }
+.practice-set-card .simulation-library__biology-actions { padding-top: 17px; }
+
+@media (max-width: 1100px) {
+  .practice-sets-page__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 680px) {
+  .practice-sets-page__nav-button { width: 42px; padding: 8px; }
+  .practice-sets-page__nav-button span { display: none; }
+  .practice-sets-page__hero { min-height: 150px; }
+  .practice-sets-page__hero-photo { width: 100%; }
+  .practice-sets-page__hero-veil { background: linear-gradient(90deg, #692537 0%, rgba(105,37,55,.96) 60%, rgba(105,37,55,.62) 100%); }
+  .practice-sets-page__hero-copy { width: 100%; }
+  .practice-sets-page__grid { grid-template-columns: 1fr; }
+  .practice-sets-page__section-heading { align-items: start; flex-direction: column; }
+}
+
+html.student-dark .practice-sets-page__topbar { color: #e8f2eb; background: #172923; border-color: #35554a; }
+html.student-dark .practice-sets-page__nav-button { background: #20392c; border-color: #45604f; color: #e8f2eb; }
+html.student-dark .practice-sets-page__nav-button:hover { background: #294737; }
+html.student-dark .practice-sets-page__hero { border-color: #5d3943; }
+html.student-dark .practice-sets-page__section-heading { color: #e8f2eb; }
+html.student-dark .practice-sets-page__section-heading span { color: #adc2b6; }
+
 /* Chapter training keeps the same editorial layout, in a warm medical burgundy. */
 .practice-library { border-color: #eadbdc; background: #fffdfb; }
 .practice-library .practice-library__hero { background: #692537; border-color: #eadbdd; }
