@@ -28,7 +28,7 @@ import {
   PartyPopper,
   FlaskConical,
 } from 'lucide-react';
-import { supabase, type Attempt, type ChemistryLesson, type MaterialReleaseRPC, type PracticeAttempt, type PracticeLessonRPC, type ReviewQuestionRPC, type Simulation, type Subscription } from '@/lib/supabase';
+import { supabase, PREMIUM_ATTEMPT_LIMIT, type Attempt, type ChemistryLesson, type MaterialReleaseRPC, type PracticeAttempt, type PracticeLessonRPC, type ReviewQuestionRPC, type Simulation, type Subscription } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import Loading from '@/components/Loading';
 import StudentSettings from '@/pages/StudentSettings';
@@ -638,8 +638,8 @@ export default function StudentDashboard({
 
           {page === 'home' ? (
             <>
-              <div className="grid gap-4 xl:grid-cols-[1.45fr_0.96fr_1.12fr]">
-                <section className="relative flex min-h-[356px] flex-col overflow-hidden rounded-[12px] border border-[#cde9df] bg-[linear-gradient(125deg,#fbfffd_0%,#f2fbf8_100%)] p-4 sm:p-5">
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-[1.45fr_0.96fr_1.12fr]">
+                <section className="relative flex min-h-[310px] flex-col overflow-hidden rounded-[12px] border border-[#cde9df] bg-[linear-gradient(125deg,#fbfffd_0%,#f2fbf8_100%)] p-4 sm:p-5 md:col-span-2 md:min-h-[250px] xl:col-span-1 xl:min-h-[356px]">
                   <div className="pointer-events-none absolute -right-8 top-14 h-52 w-52 rounded-full border-[30px] border-[#ddf5eb]/55" aria-hidden="true" />
                   <div className="relative flex items-start gap-5">
                     {isEvening ? (
@@ -702,7 +702,7 @@ export default function StudentDashboard({
                   </div>
                 </section>
 
-                <section className="flex min-h-[356px] flex-col rounded-[12px] border border-[#dfe6ec] bg-white p-5">
+                <section className="flex min-h-[290px] flex-col rounded-[12px] border border-[#dfe6ec] bg-white p-5 xl:min-h-[356px]">
                   <h2 className="text-[27px] font-bold leading-tight" style={serif}>Progres global</h2>
                   <p className="mt-1 text-[13px] leading-relaxed text-[#5d6e85]">
                     Întrebări distincte rezolvate cel puțin o dată din totalul disponibil pe platformă.
@@ -726,7 +726,7 @@ export default function StudentDashboard({
                   </p>
                 </section>
 
-                <section className="relative flex min-h-[356px] flex-col overflow-hidden rounded-[12px] bg-[#034638] p-6 text-white">
+                <section className="relative flex min-h-[290px] flex-col overflow-hidden rounded-[12px] bg-[#034638] p-6 text-white xl:min-h-[356px]">
                   <svg className="pointer-events-none absolute bottom-0 left-0 w-full opacity-20" viewBox="0 0 430 70" preserveAspectRatio="none" aria-hidden="true">
                     <path d="M0 38 Q92 85 190 48 T430 40 V70 H0Z" fill="#4ba27f" />
                     <path d="M0 58 Q135 5 265 52 T430 32 V70 H0Z" fill="#277d60" />
@@ -1266,6 +1266,7 @@ function ArchiveSimCard({
     .sort((a, b) => new Date(b.submitted_at!).getTime() - new Date(a.submitted_at!).getTime());
   const hasSubmitted = submitted.length > 0;
   const latestAttempt = submitted[0];
+  const paidLimitReached = !isFree && submitted.filter((attempt) => !attempt.is_archive_retake).length >= PREMIUM_ATTEMPT_LIMIT && !sim.hasInProgress;
   const isScheduled = !!sim.available_at && new Date(sim.available_at).getTime() > Date.now();
 
   if (editorial && !isUmfcd) {
@@ -1310,16 +1311,18 @@ function ArchiveSimCard({
                 <button type="button" onClick={() => onViewResults(latestAttempt?.id)}
                   className="simulation-library__biology-secondary">Vezi detalii</button>
               )}
-              {isFree || (!hasSubmitted && hasActiveSub) ? (
+              {paidLimitReached ? (
+                <p className="simulation-library__biology-complete">Această simulare a fost deja lucrată.</p>
+              ) : isFree || hasActiveSub ? (
                 <button type="button" onClick={onStart} className="simulation-library__biology-primary">
                   {sim.hasInProgress ? 'Continuă simularea' : 'Rezolvă simularea'}
                 </button>
-              ) : !hasSubmitted ? (
+              ) : (
                 <button type="button" onClick={onBuySubscription} disabled={buyingSub}
                   className="simulation-library__biology-primary">
                   {buyingSub ? 'Se activează…' : 'Activează abonamentul'}
                 </button>
-              ) : null}
+              )}
             </>
           )}
         </div>
@@ -1406,25 +1409,39 @@ function ArchiveSimCard({
               <Sparkles size={11} /> Antrenament nelimitat
             </span>}
           </>
-        ) : hasSubmitted ? (
+        ) : paidLimitReached ? (
           <>
+            <span className="text-center text-sm font-medium text-stone-600">
+              {isUmfcd ? 'Acest examen a fost deja lucrat.' : 'Această simulare a fost deja lucrată.'}
+            </span>
             <button type="button" onClick={() => onViewResults(latestAttempt?.id)} className="btn-secondary w-full">
               <BookOpen size={16} /> {isUmfcd ? 'Detalii examen' : 'Detalii simulare'}
             </button>
-            <span className="text-center text-xs font-medium text-stone-500">Susținut — o singură încercare</span>
           </>
         ) : hasActiveSub ? (
-          <button type="button" onClick={onStart} className="btn-primary w-full">
-            <PlayCircle size={16} /> {sim.hasInProgress
-              ? (isUmfcd ? 'Continuă examenul' : 'Continuă simularea')
-              : (isUmfcd ? 'Rezolvă examenul' : 'Rezolvă simularea')}
-          </button>
+          <>
+            <button type="button" onClick={onStart} className="btn-primary w-full">
+              <PlayCircle size={16} /> {sim.hasInProgress
+                ? (isUmfcd ? 'Continuă examenul' : 'Continuă simularea')
+                : (isUmfcd ? 'Rezolvă examenul' : 'Rezolvă simularea')}
+            </button>
+            {hasSubmitted && (
+              <button type="button" onClick={() => onViewResults(latestAttempt?.id)} className="btn-secondary w-full">
+                <BookOpen size={16} /> {isUmfcd ? 'Detalii examen' : 'Detalii simulare'}
+              </button>
+            )}
+          </>
         ) : (
           <>
             <button type="button" onClick={onBuySubscription} disabled={buyingSub} className="btn-accent w-full">
               {buyingSub && <Loader2 size={16} className="animate-spin" />}
               <Crown size={16} /> Cumpără abonament pentru a accesa
             </button>
+            {hasSubmitted && (
+              <button type="button" onClick={() => onViewResults(latestAttempt?.id)} className="btn-secondary w-full">
+                <BookOpen size={16} /> {isUmfcd ? 'Detalii examen' : 'Detalii simulare'}
+              </button>
+            )}
             <span className="text-center text-xs text-stone-400">Mod test – abonamentul se activează gratuit</span>
           </>
         )}
