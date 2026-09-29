@@ -1277,6 +1277,13 @@ function ArchiveSimCard({
   const historyRef = useRef<HTMLOListElement>(null);
   const [selectedAttemptId, setSelectedAttemptId] = useState<string | null>(null);
   const selectedAttempt = submitted.find((attempt) => attempt.id === selectedAttemptId) ?? latestAttempt;
+  const selectedAttemptIndex = submitted.findIndex((attempt) => attempt.id === selectedAttempt?.id);
+  const selectAdjacentAttempt = (direction: -1 | 1) => {
+    const nextIndex = selectedAttemptIndex + direction;
+    if (nextIndex < 0 || nextIndex >= submitted.length) return;
+    setSelectedAttemptId(submitted[nextIndex].id);
+    historyRef.current?.children[nextIndex]?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+  };
   const biologyTitle = sim.title.replace(/^(Simulare(?:\s+Biologie)?)\s*#\s*\d+\s*$/i, '$1');
 
   if (editorial && !isUmfcd) {
@@ -1304,8 +1311,8 @@ function ArchiveSimCard({
           <div className="simulation-library__biology-history-slider">
             {submitted.length > 1 && (
               <button type="button" className="simulation-library__biology-history-arrow"
-                onClick={() => historyRef.current?.scrollBy({ left: -180, behavior: 'smooth' })}
-                aria-label="Vezi încercările precedente"><ChevronLeft size={17} /></button>
+                onClick={() => selectAdjacentAttempt(-1)} disabled={selectedAttemptIndex <= 0}
+                aria-label="Selectează încercarea mai recentă"><ChevronLeft size={18} /></button>
             )}
             {hasSubmitted ? (
               <ol ref={historyRef} aria-label="Încercări anterioare">
@@ -1314,7 +1321,7 @@ function ArchiveSimCard({
                     <button type="button" onClick={() => setSelectedAttemptId(attempt.id)}
                       aria-pressed={selectedAttempt?.id === attempt.id}
                       aria-label={`Selectează încercarea ${submitted.length - attemptIndex}, scor ${attempt.score} din ${attempt.max_score}`}>
-                      <span>Încercarea {submitted.length - attemptIndex}</span>
+                      <span className="simulation-library__biology-attempt-label">Încercarea {submitted.length - attemptIndex}</span>
                       <strong>{attempt.score}/{attempt.max_score}</strong>
                     </button>
                   </li>
@@ -1323,8 +1330,8 @@ function ArchiveSimCard({
             ) : <p>Nicio încercare încă</p>}
             {submitted.length > 1 && (
               <button type="button" className="simulation-library__biology-history-arrow"
-                onClick={() => historyRef.current?.scrollBy({ left: 180, behavior: 'smooth' })}
-                aria-label="Vezi următoarele încercări"><ChevronRight size={17} /></button>
+                onClick={() => selectAdjacentAttempt(1)} disabled={selectedAttemptIndex >= submitted.length - 1}
+                aria-label="Selectează încercarea mai veche"><ChevronRight size={18} /></button>
             )}
           </div>
         </div>
