@@ -24,10 +24,11 @@ const emptyBlock = (lessonId: string, position: number): ChemistryLessonBlock =>
 
 function cleanPastedText(value: string) {
   return value
-    .replace(/\r\n?/g, '\n')
+    .replace(/\r\n?|[\u2028\u2029]/g, '\n')
     .replace(/\u00ad/g, '')
     .replace(/\u00a0/g, ' ')
     .replace(/([A-Za-zĂÂÎȘȚăâîșț])-\s*\n\s*(?=[a-zăâîșț])/g, '$1')
+    .replace(/([0-9₀-₉)\]])\s*\n+\s*(?=[-−–—]\s*[A-ZĂÂÎȘȚ])/g, '$1 ')
     .split(/\n{2,}/)
     .map((paragraph) => paragraph
       .split('\n')
@@ -171,7 +172,7 @@ export default function ChemistryAdmin() {
         </div>
         {message && <div className="mb-5 rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm">{message}</div>}
         {preview ? (
-          <div className="mx-auto max-w-4xl rounded-3xl border border-stone-200 bg-white p-6 shadow-sm sm:p-10">
+          <div className="mx-auto max-w-6xl rounded-3xl border border-stone-200 bg-white p-6 shadow-sm sm:p-10">
             <div className="space-y-7">{blocks.map((block) => <ChemistryBlockRenderer key={block.id} block={block} />)}</div>
             {blocks.length === 0 && <p className="py-12 text-center text-stone-500">Lecția nu are încă niciun bloc.</p>}
           </div>
@@ -290,12 +291,33 @@ function ListContentEditor({ block, setBlock }: {
     });
   };
 
-  const wrapSelection = (kind: 'important' | 'formula') => {
+  const wrapSelection = (kind: 'important' | 'highlight' | 'formula') => {
     const textarea = textareaRef.current;
     const start = textarea?.selectionStart ?? value.length;
     const end = textarea?.selectionEnd ?? start;
-    const selectedText = value.slice(start, end) || (kind === 'formula' ? 'H2SO4' : 'text important');
-    replaceSelection(kind === 'formula' ? `{{${selectedText}}}` : `==${selectedText}==`, true);
+    const selectedText = value.slice(start, end) || (kind === 'formula' ? 'H2SO4' : 'text evidențiat');
+    const replacement = kind === 'formula'
+      ? `{{${selectedText}}}`
+      : kind === 'important' ? `==${selectedText}==` : `%%${selectedText}%%`;
+    replaceSelection(replacement, true);
+  };
+
+  const handlePaste = (event: ClipboardEvent<HTMLTextAreaElement>) => {
+    const pastedText = event.clipboardData.getData('text/plain');
+    if (!pastedText) return;
+    event.preventDefault();
+
+    const normalizedLines = pastedText
+      .replace(/\r\n?|[\u2028\u2029]/g, '\n')
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean);
+    const isBulletedList = normalizedLines.some((line) => /^(?:[•●▪◦]|[-–—]\s)\s*/.test(line));
+    const cleanedText = isBulletedList
+      ? normalizedLines.map((line) => line.replace(/^(?:[•●▪◦]|[-–—]\s)\s*/, '')).join('\n')
+      : cleanPastedText(pastedText).replace(/\n+/g, ' ');
+
+    replaceSelection(cleanedText);
   };
 
   return (
@@ -306,12 +328,15 @@ function ListContentEditor({ block, setBlock }: {
           <button type="button" className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-800 hover:bg-red-100" onClick={() => wrapSelection('important')}>
             <Highlighter size={16} /> Marchează important
           </button>
+          <button type="button" className="inline-flex items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-900 hover:bg-amber-100" onClick={() => wrapSelection('highlight')}>
+            <Highlighter size={16} /> Evidențiază galben
+          </button>
           <button type="button" className="inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800 hover:bg-emerald-100" onClick={() => wrapSelection('formula')}>
             <Subscript size={16} /> Formulă în text
           </button>
         </div>
       </div>
-      <textarea ref={textareaRef} className="input min-h-48 text-base leading-7" value={value} onChange={(event) => setBlock({ ...block, items: event.target.value.split('\n') })} />
+      <textarea ref={textareaRef} className="input min-h-48 text-base leading-7" value={value} onChange={(event) => setBlock({ ...block, items: event.target.value.split('\n') })} onPaste={handlePaste} />
       <p className="mt-2 text-xs leading-5 text-stone-600">Selectează orice fragment din listă și folosește unul dintre butoanele de mai sus.</p>
       {block.items.some((item) => item.trim()) && (
         <div className="mt-4 rounded-2xl border border-stone-200 bg-white p-5">
@@ -355,6 +380,16 @@ function TextContentEditor({ block, setBlock }: {
     });
   };
 
+  const markHighlighted = () => {
+    const textarea = textareaRef.current;
+    const start = textarea?.selectionStart ?? block.content.length;
+    const end = textarea?.selectionEnd ?? start;
+    const selectedText = block.content.slice(start, end);
+    const text = selectedText || 'text evidențiat';
+    replaceSelection(`%%${text}%%`, text.length + 4);
+    requestAnimationFrame(() => textareaRef.current?.setSelectionRange(start + 2, start + 2 + text.length));
+  };
+
   const markAsFormula = () => {
     const textarea = textareaRef.current;
     const start = textarea?.selectionStart ?? block.content.length;
@@ -382,6 +417,9 @@ function TextContentEditor({ block, setBlock }: {
           <button type="button" className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-800 hover:bg-red-100" onClick={markImportant}>
             <Highlighter size={16} /> Marchează important
           </button>
+          <button type="button" className="inline-flex items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-900 hover:bg-amber-100" onClick={markHighlighted}>
+            <Highlighter size={16} /> Evidențiază galben
+          </button>
           <button type="button" className="inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800 hover:bg-emerald-100" onClick={markAsFormula}>
             <Subscript size={16} /> Formulă în text
           </button>
@@ -397,8 +435,8 @@ function TextContentEditor({ block, setBlock }: {
       />
       <div className="mt-2 rounded-xl bg-stone-50 px-3 py-2 text-xs leading-5 text-stone-600">
         {block.block_type === 'formula'
-          ? 'Cifrele din formule sunt transformate automat în indici jos. Sarcinile copiate ca ³⁺/²⁻ se păstrează, iar manual poți scrie Fe^3+.'
-          : 'Textul lipit din PDF este curățat automat. Selectează un fragment și folosește „Marchează important” sau „Formulă în text”.'}
+          ? 'Cifrele și n din formulele generale sunt așezate automat jos: CnH2n+2 devine CₙH₂ₙ₊₂. Pentru sarcini poți scrie Fe^3+.'
+          : 'Textul lipit din PDF este curățat automat. Selectează un fragment și folosește evidențierea roșie, markerul galben sau „Formulă în text”.'}
       </div>
       {block.content && (
         <div className="mt-4 rounded-2xl border border-stone-200 bg-white p-5">

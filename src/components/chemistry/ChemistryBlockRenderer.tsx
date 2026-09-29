@@ -4,24 +4,30 @@ import { AlertCircle, Beaker, Lightbulb } from 'lucide-react';
 export function plainLessonText(value: string) {
   return value
     .replace(/==([\s\S]+?)==/g, '$1')
+    .replace(/%%([\s\S]+?)%%/g, '$1')
     .replace(/\{\{([\s\S]+?)\}\}/g, '$1');
 }
 
 function LessonText({ value }: { value: string }) {
-  const parts: Array<{ text: string; kind: 'normal' | 'important' | 'formula' }> = [];
-  const pattern = /==([\s\S]+?)==|\{\{([\s\S]+?)\}\}/g;
+  const parts: Array<{ text: string; kind: 'normal' | 'important' | 'highlight' | 'formula' }> = [];
+  const pattern = /==([\s\S]+?)==|%%([\s\S]+?)%%|\{\{([\s\S]+?)\}\}/g;
   let cursor = 0;
   let match: RegExpExecArray | null;
 
   while ((match = pattern.exec(value)) !== null) {
     if (match.index > cursor) parts.push({ text: value.slice(cursor, match.index), kind: 'normal' });
-    parts.push({ text: match[1] ?? match[2], kind: match[1] !== undefined ? 'important' : 'formula' });
+    parts.push({
+      text: match[1] ?? match[2] ?? match[3],
+      kind: match[1] !== undefined ? 'important' : match[2] !== undefined ? 'highlight' : 'formula',
+    });
     cursor = match.index + match[0].length;
   }
   if (cursor < value.length) parts.push({ text: value.slice(cursor), kind: 'normal' });
 
   return <>{parts.map((part, index) => part.kind === 'important'
     ? <mark key={index} className="rounded bg-red-100 px-1 py-0.5 font-semibold text-red-900 [box-decoration-break:clone]">{part.text}</mark>
+    : part.kind === 'highlight'
+      ? <mark key={index} className="rounded bg-amber-200 px-1 py-0.5 font-semibold text-amber-950 [box-decoration-break:clone]">{part.text}</mark>
     : part.kind === 'formula'
       ? <span key={index} className="whitespace-nowrap text-[1.08em] text-[#123f34]"><ChemicalFormula value={part.text} /></span>
       : <span key={index}>{part.text}</span>)}</>;
@@ -31,12 +37,14 @@ function ChemicalFormula({ value }: { value: string }) {
   const subscriptDigits: Record<string, string> = {
     '₀': '0', '₁': '1', '₂': '2', '₃': '3', '₄': '4',
     '₅': '5', '₆': '6', '₇': '7', '₈': '8', '₉': '9',
+    'ₙ': 'n', '₊': '+', '₋': '−',
   };
   const superscriptCharacters: Record<string, string> = {
     '⁰': '0', '¹': '1', '²': '2', '³': '3', '⁴': '4',
     '⁵': '5', '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9', '⁺': '+', '⁻': '−',
   };
   const parts: Array<{ kind: 'normal' | 'sub' | 'sup'; text: string }> = [];
+  const generalFormula = /(?:\d|[₀-₉])n|\)n/.test(value) || (value.match(/n/g)?.length ?? 0) > 1;
   const push = (kind: 'normal' | 'sub' | 'sup', text: string) => {
     if (!text) return;
     const previous = parts[parts.length - 1];
@@ -64,6 +72,13 @@ function ChemicalFormula({ value }: { value: string }) {
       let charge = '';
       while (index < value.length && superscriptCharacters[value[index]]) charge += superscriptCharacters[value[index++]];
       push('sup', charge);
+      continue;
+    }
+    if (generalFormula && character === 'n' && /[A-Za-z0-9₀-₉)\]]/.test(value[index - 1] || '')) {
+      let expression = 'n';
+      index += 1;
+      while (index < value.length && /[0-9n+\-−]/.test(value[index])) expression += value[index++];
+      push('sub', expression.replace('-', '−'));
       continue;
     }
     if (/\d/.test(character)) {
