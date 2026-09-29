@@ -33,6 +33,7 @@ export type Simulation = {
   is_active: boolean;
   created_at: string;
   student_section: 'all' | 'umfcd';
+  display_order: number | null;
 };
 
 export type AppSettings = {
