@@ -10,6 +10,8 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
 });
 
+export const PREMIUM_ATTEMPT_LIMIT = 3;
+
 export type Profile = {
   id: string;
   email: string;
@@ -469,4 +471,3 @@ export const CHAT_STATUS_LABELS: Record<string, string> = {
   ongoing: 'În desfășurare',
   closed: 'Închisă',
 };
-
