@@ -369,7 +369,10 @@ html.student-dark .release-access-button:hover { background-color: #eaf9f2; }
   box-shadow: 0 10px 30px rgba(34, 66, 45, .035);
 }
 
-.simulation-library:not(.simulation-library--umfcd) .simulation-library__grid { grid-auto-rows: 1fr; }
+.simulation-library:not(.simulation-library--umfcd) .simulation-library__grid {
+  grid-auto-rows: auto;
+  align-items: start;
+}
 
 .simulation-library__card {
   display: flex;
@@ -482,9 +485,9 @@ html.student-dark .simulation-library__card .btn-primary:hover { background: #23
 
 .simulation-library__card .btn-primary:active { transform: none; }
 
-/* Biology simulation cards: equal-height surfaces with compact, swipeable history. */
+/* Biology simulation cards: each card follows its own history height. */
 .simulation-library__card--biology {
-  min-height: 302px;
+  min-height: 0;
   padding: 20px;
   border-color: #d8e4da;
   border-radius: 18px;
@@ -563,6 +566,42 @@ html.student-dark .simulation-library__card .btn-primary:hover { background: #23
   font-size: 18px;
   font-weight: 700;
   text-align: center;
+}
+
+.simulation-library__biology-history-toggle {
+  display: flex;
+  width: 100%;
+  min-height: 32px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 8px;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.simulation-library__biology-history-toggle svg {
+  flex: none;
+  transition: transform .3s ease;
+}
+
+.simulation-library__biology-history-toggle[aria-expanded="false"] svg { transform: rotate(-90deg); }
+.simulation-library__biology-history-toggle:focus-visible { outline: 2px solid #208358; outline-offset: 2px; border-radius: 6px; }
+
+.simulation-library__biology-history-panel {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  transition: max-height .38s cubic-bezier(.2, .7, .2, 1), opacity .22s ease, visibility 0s linear .38s;
+}
+
+.simulation-library__biology-history-panel--open {
+  max-height: 180px;
+  opacity: 1;
+  visibility: visible;
+  transition: max-height .38s cubic-bezier(.2, .7, .2, 1), opacity .3s ease, visibility 0s;
 }
 
 .simulation-library__biology-history-slider {
@@ -768,7 +807,7 @@ html.student-dark .simulation-library--umfcd .border-dashed > div { background: 
   .simulation-library__hero-photo { inset: 0; opacity: .34; }
   .simulation-library__section-heading { align-items: start; flex-direction: column; gap: 12px; }
   .simulation-library__grid { grid-template-columns: 1fr; }
-  .simulation-library__card--biology { min-height: 302px; }
+  .simulation-library__card--biology { min-height: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -776,6 +815,9 @@ html.student-dark .simulation-library--umfcd .border-dashed > div { background: 
   .simulation-library__card:hover { transform: none; }
   .simulation-library__progress-track div { transition: none; }
   .simulation-library__biology-actions button { transition: none; }
+  .simulation-library__biology-history-panel,
+  .simulation-library__biology-history-panel--open,
+  .simulation-library__biology-history-toggle svg { transition: none; }
 }
 
 /* A restrained colour fade when moving between the three study libraries or opening a chapter. */
