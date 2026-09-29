@@ -5,6 +5,7 @@ import {
   BookOpen,
   Bookmark,
   CheckCircle2,
+  ChevronLeft,
   ChevronRight,
   Clock3,
   Crown,
@@ -301,7 +302,12 @@ export default function StudentDashboard({
         const row = result.data?.[0] as { sim_id: string; question_count: number } | undefined;
         if (row) counts[row.sim_id] = Number(row.question_count) || 0;
       });
-      setSimulations(sims.map((sim) => {
+      const orderedSims = [...sims].sort((first, second) =>
+        (first.display_order ?? Number.MAX_SAFE_INTEGER) - (second.display_order ?? Number.MAX_SAFE_INTEGER)
+        || new Date(second.created_at).getTime() - new Date(first.created_at).getTime()
+        || first.id.localeCompare(second.id)
+      );
+      setSimulations(orderedSims.map((sim) => {
         const ownAttempts = attempts.filter((attempt) => attempt.simulation_id === sim.id);
         return {
           ...sim,
@@ -1268,35 +1274,56 @@ function ArchiveSimCard({
   const latestAttempt = submitted[0];
   const paidLimitReached = !isFree && submitted.filter((attempt) => !attempt.is_archive_retake).length >= PREMIUM_ATTEMPT_LIMIT && !sim.hasInProgress;
   const isScheduled = !!sim.available_at && new Date(sim.available_at).getTime() > Date.now();
+  const historyRef = useRef<HTMLOListElement>(null);
+  const biologyTitle = sim.title.replace(/^(Simulare(?:\s+Biologie)?)\s*#\s*\d+\s*$/i, '$1');
 
   if (editorial && !isUmfcd) {
     return (
       <article id={`released-simulation-${sim.id}`}
         className={`simulation-library__card simulation-library__card--biology ${focused ? 'ring-2 ring-emerald-500 ring-offset-2' : ''}`}>
-        <h3>{sim.title}</h3>
+        <div className="simulation-library__biology-heading">
+          <h3>{biologyTitle}</h3>
+          <span className="simulation-library__biology-number" aria-label={`Simularea ${Number(index ?? 0) + 1}`}>
+            {String(Number(index ?? 0) + 1).padStart(2, '0')}
+          </span>
+        </div>
         <div className="simulation-library__biology-meta">
-          <span>{sim.questionCount} grile</span>
+          <span><strong>{sim.questionCount}</strong> grile</span>
           <span aria-hidden="true">·</span>
-          <span>{sim.duration_minutes} min</span>
+          <span><strong>{sim.duration_minutes}</strong> min</span>
           <span aria-hidden="true">·</span>
-          <span>{isFree ? 'Fără abonament' : 'Necesită abonament'}</span>
+          <span className={isFree ? 'simulation-library__biology-access--free' : 'simulation-library__biology-access--premium'}>
+            {isFree ? 'Fără abonament' : 'Necesită abonament'}
+          </span>
         </div>
 
         <div className="simulation-library__biology-history">
           <h4>Istoric</h4>
-          {hasSubmitted ? (
-            <ol>
-              {submitted.map((attempt, attemptIndex) => (
-                <li key={attempt.id}>
-                  <button type="button" onClick={() => onViewResults(attempt.id)}
-                    aria-label={`Vezi detaliile încercării ${submitted.length - attemptIndex}, scor ${attempt.score} din ${attempt.max_score}`}>
-                    <span>Încercarea {submitted.length - attemptIndex}</span>
-                    <strong>{attempt.score}/{attempt.max_score}</strong>
-                  </button>
-                </li>
-              ))}
-            </ol>
-          ) : <p>Nicio încercare</p>}
+          <div className="simulation-library__biology-history-slider">
+            {submitted.length > 1 && (
+              <button type="button" className="simulation-library__biology-history-arrow"
+                onClick={() => historyRef.current?.scrollBy({ left: -180, behavior: 'smooth' })}
+                aria-label="Vezi încercările precedente"><ChevronLeft size={17} /></button>
+            )}
+            {hasSubmitted ? (
+              <ol ref={historyRef} aria-label="Încercări anterioare">
+                {[...submitted].reverse().map((attempt, attemptIndex) => (
+                  <li key={attempt.id}>
+                    <button type="button" onClick={() => onViewResults(attempt.id)}
+                      aria-label={`Vezi detaliile încercării ${attemptIndex + 1}, scor ${attempt.score} din ${attempt.max_score}`}>
+                      <span>Încercarea {attemptIndex + 1}</span>
+                      <strong>{attempt.score}/{attempt.max_score}</strong>
+                    </button>
+                  </li>
+                ))}
+              </ol>
+            ) : <p>Nicio încercare încă</p>}
+            {submitted.length > 1 && (
+              <button type="button" className="simulation-library__biology-history-arrow"
+                onClick={() => historyRef.current?.scrollBy({ left: 180, behavior: 'smooth' })}
+                aria-label="Vezi următoarele încercări"><ChevronRight size={17} /></button>
+            )}
+          </div>
         </div>
 
         <div className="simulation-library__biology-actions">
