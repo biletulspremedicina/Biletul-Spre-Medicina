@@ -1,6 +1,6 @@
 // Ordinea este intenționată: după ultima informație, seria reîncepe cu prima.
 export const DAILY_MEDICAL_FACTS = [
-  'Știai că Școala Medicală din Salerno funcționa încă din secolul al IX-lea și este considerată prima școală de medicină medievală din Occident?',
+  'Știai că Școala Medicală din Salerno funcționa încă din secolul al IX-lea și este considerată prima facultate de medicină din Europa.',
   'Tu știai că Werner Forssmann și-a introdus singur un cateter prin vena brațului până în inimă, în 1929?',
   'Știai că Barry Marshall a băut o cultură de Helicobacter pylori pentru a demonstra că bacteria poate provoca gastrită?',
   'Astăzi afli că H. pylori a fost cultivată cu succes după ce probele au rămas în incubator mai mult decât prevedea protocolul.',
