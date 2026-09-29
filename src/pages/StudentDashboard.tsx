@@ -35,6 +35,7 @@
   import StudentSettings from '@/pages/StudentSettings';
   import StudentPerformance from '@/components/StudentPerformance';
   import PracticeLibrary from '@/components/PracticeLibrary';
+  import { medicalFactForDate } from '@/lib/dailyMedicalFacts';
 
   type IncomingTab = 'all' | 'practice' | 'umfcd' | 'chemistry' | 'dashboard';
   type PageId = 'home' | 'all' | 'practice' | 'umfcd' | 'chemistry' | 'review' | 'settings';
@@ -222,6 +223,7 @@
     const [loadError, setLoadError] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [communityPercent, setCommunityPercent] = useState(() => demoCommunityPercent(new Date()));
+    const [dailyFactDateKey, setDailyFactDateKey] = useState(() => dateKey(new Date()));
     const [reviewQuestions, setReviewQuestions] = useState<ReviewQuestionRPC[]>([]);
     const [reviewLoading, setReviewLoading] = useState(false);
     const [reviewError, setReviewError] = useState<string | null>(null);
@@ -262,6 +264,16 @@
       return () => {
         window.clearTimeout(timer);
         document.removeEventListener('visibilitychange', updateWhenVisible);
+      };
+    }, []);
+
+    useEffect(() => {
+      const updateDate = () => setDailyFactDateKey(dateKey(new Date()));
+      const interval = window.setInterval(updateDate, 30_000);
+      document.addEventListener('visibilitychange', updateDate);
+      return () => {
+        window.clearInterval(interval);
+        document.removeEventListener('visibilitychange', updateDate);
       };
     }, []);
 
@@ -601,17 +613,17 @@
         {sidebar}
 
         <div className="min-w-0">
-          <header className="relative z-20 flex h-[60px] items-center justify-between border-b border-[#e6eaeb] bg-white px-5 sm:px-7">
+          <header className="relative z-20 flex min-h-[60px] items-center justify-between border-b border-[#e6eaeb] bg-white px-5 py-2 sm:px-7">
             <button type="button" onClick={() => setMobileMenuOpen(true)}
               className="mr-3 rounded-lg p-2 text-[#164d3e] hover:bg-[#e9f5ef] lg:hidden" aria-label="Deschide meniul">
               <Menu size={22} />
             </button>
-            <p className="min-w-0 truncate text-[12px] font-medium text-[#536477] sm:text-[13px]">
+            <p className="min-w-0 text-[12px] font-medium leading-snug text-[#536477] sm:text-[13px]">
               <span className="font-semibold text-[#2e896d]">Devino cel mai bun</span>
               <span className="mx-3 text-[#c6d1d2]">—</span>
-              Disciplina de azi → Rezultatele de mâine.
+              {medicalFactForDate(dailyFactDateKey)}
             </p>
-            <div className="relative ml-auto">
+            <div className="relative ml-auto shrink-0">
               <button type="button" onClick={() => setNotificationsOpen((open) => !open)}
                 aria-label="Notificări" aria-expanded={notificationsOpen}
                 className="relative rounded-full p-2 text-[#172b38] hover:bg-[#edf6f2]">
@@ -1330,7 +1342,7 @@
             <span><strong>{sim.duration_minutes}</strong> min</span>
             <span aria-hidden="true">·</span>
             <span className={isFree ? 'simulation-library__biology-access--free' : 'simulation-library__biology-access--premium'}>
-              {isFree ? 'Fără abonament' : 'Necesită abonament'}
+              {isFree ? 'Fără abonament' : 'Acces cu abonament'}
             </span>
           </div>
 
