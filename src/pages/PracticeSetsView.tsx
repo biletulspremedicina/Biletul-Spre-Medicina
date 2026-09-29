@@ -1,12 +1,12 @@
-import { useEffect, useState, useCallback } from 'react';
-import { supabase, PREMIUM_ATTEMPT_LIMIT, type PracticeSetRPC, type Subscription } from '@/lib/supabase';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { supabase, PREMIUM_ATTEMPT_LIMIT, type PracticeAttempt, type PracticeSetRPC, type Subscription } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import {
-  ChevronLeft, FileText, Crown, PlayCircle, RotateCcw,
-  BookOpen, Trophy, Loader2, Sparkles, History, CalendarClock,
+  ChevronLeft, ChevronDown, CalendarClock,
 } from 'lucide-react';
 import Logo from '@/components/Logo';
 import Loading from '@/components/Loading';
+import { practiceChapterImageFor } from '@/lib/practiceChapterImages';
 
 type Props = {
   lessonId: string;
@@ -15,17 +15,20 @@ type Props = {
   onStartSet: (setId: string) => void;
   onViewResults: (setId: string, attemptId?: string) => void;
   onBack: () => void;
+  onHome: () => void;
   onBuySubscription: () => void;
   buyingSub: boolean;
 };
 
 export default function PracticeSetsView({
-  lessonId, lessonTitle, focusSetId, onStartSet, onViewResults, onBack, onBuySubscription, buyingSub,
+  lessonId, lessonTitle, focusSetId, onStartSet, onViewResults, onBack, onHome, onBuySubscription, buyingSub,
 }: Props) {
-  const { profile, signOut } = useAuth();
+  const { profile } = useAuth();
   const [sets, setSets] = useState<PracticeSetRPC[]>([]);
+  const [attempts, setAttempts] = useState<PracticeAttempt[]>([]);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
+  const openHistories = useRef<Record<string, boolean>>({});
 
   const load = useCallback(async () => {
     if (!profile) return;
@@ -35,7 +38,22 @@ export default function PracticeSetsView({
       p_lesson_id: lessonId,
     });
     if (setsError) console.error('get_practice_sets error:', setsError);
-    setSets((setsData || []) as unknown as PracticeSetRPC[]);
+    const lessonSets = (setsData || []) as unknown as PracticeSetRPC[];
+    setSets(lessonSets);
+
+    if (lessonSets.length > 0) {
+      const { data: attemptData, error: attemptsError } = await supabase
+        .from('practice_attempts')
+        .select('*')
+        .eq('user_id', profile.id)
+        .in('set_id', lessonSets.map((set) => set.out_id))
+        .not('submitted_at', 'is', null)
+        .order('submitted_at', { ascending: true });
+      if (attemptsError) console.error('practice_attempts error:', attemptsError);
+      setAttempts((attemptData || []) as PracticeAttempt[]);
+    } else {
+      setAttempts([]);
+    }
 
     const { data: subs } = await supabase
       .from('subscriptions')
@@ -64,55 +82,61 @@ export default function PracticeSetsView({
   }, [focusSetId, loading, sets]);
 
   const hasActiveSub = !!subscription;
+  const totalQuestions = sets.reduce((total, set) => total + set.out_question_count, 0);
 
   return (
     <div className="practice-sets-page min-h-screen bg-stone-50">
-      <header className="sticky top-0 z-10 border-b border-stone-200 bg-white/80 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 py-4">
-          <Logo size="sm" />
-          <div className="flex items-center gap-3">
-            {hasActiveSub ? (
-              <span className="badge bg-amber-100 text-amber-700">
-                <Crown size={12} /> Abonament activ
-              </span>
-            ) : (
-              <span className="badge bg-stone-100 text-stone-500">Fără abonament</span>
-            )}
-            <button onClick={signOut} className="btn-ghost">Deconectare</button>
+      <header className="practice-sets-page__topbar sticky top-0 z-10 border-b border-stone-200 bg-white/90 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
+          <div className="flex origin-left scale-[0.9] items-center gap-1 sm:scale-100 sm:gap-1.5">
+            <div className="sm:hidden"><Logo size="sm" /></div>
+            <div className="hidden sm:block"><Logo /></div>
+            <span className="flex select-none flex-col text-[10px] font-extrabold uppercase leading-[1.08] tracking-wide sm:text-[12px]">
+              <span>Biletul</span><span>Spre</span><span className="text-brand-600">Medicină</span>
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={onBack} className="practice-sets-page__nav-button" aria-label="Înapoi la capitole">
+              <ChevronLeft size={20} aria-hidden="true" /><span>Înapoi</span>
+            </button>
+            <button type="button" onClick={onHome} className="practice-sets-page__nav-button" aria-label="Acasă">
+              <img src="/Home.png" alt="" width={22} height={22} /><span>Acasă</span>
+            </button>
           </div>
         </div>
       </header>
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-        <button onClick={onBack} className="btn-ghost mb-4">
-          <ChevronLeft size={16} /> Înapoi la lecții
-        </button>
-
-        <div className="mb-6 rounded-2xl bg-gradient-to-r from-brand-50 to-stone-50 border border-brand-200 p-5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-600 text-white">
-              <BookOpen size={20} />
-            </div>
-            <div>
-              <h3 className="font-display text-lg font-bold text-stone-900">{lessonTitle}</h3>
-              <p className="text-sm text-stone-600">Rezolvă seturile de grile din această lecție.</p>
-            </div>
+      <main className="practice-sets-page__content mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <section className="practice-sets-page__hero" aria-labelledby="practice-lesson-title">
+          <img className="practice-sets-page__hero-photo" src={practiceChapterImageFor(lessonTitle, true)} alt="" />
+          <div className="practice-sets-page__hero-veil" />
+          <div className="practice-sets-page__hero-copy">
+            <p>Antrenament pe capitole</p>
+            <h1 id="practice-lesson-title">{lessonTitle}</h1>
           </div>
+        </section>
+
+        <div className="practice-sets-page__section-heading">
+          <h2>Seturi disponibile</h2>
+          {!loading && <span>{sets.length} {sets.length === 1 ? 'set' : 'seturi'} · {totalQuestions} {totalQuestions === 1 ? 'grilă' : 'grile'}</span>}
         </div>
 
         {loading ? (
           <Loading message="Se încarcă seturile..." />
         ) : sets.length === 0 ? (
           <div className="card p-12 text-center text-stone-500">
-            <FileText size={40} className="mx-auto mb-4 text-stone-300" />
             <p className="text-lg font-medium">Nu există seturi publicate în această lecție.</p>
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {sets.map((set) => (
+          <div className="practice-sets-page__grid">
+            {sets.map((set, index) => (
               <PracticeSetCard
                 key={set.out_id}
                 set={set}
+                index={index}
+                attempts={attempts.filter((attempt) => attempt.set_id === set.out_id)}
+                initialHistoryOpen={openHistories.current[set.out_id] ?? false}
+                onHistoryOpenChange={(open) => { openHistories.current[set.out_id] = open; }}
                 focused={set.out_id === focusSetId}
                 hasActiveSub={hasActiveSub}
                 onStart={() => onStartSet(set.out_id)}
@@ -124,15 +148,19 @@ export default function PracticeSetsView({
             ))}
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }
 
 function PracticeSetCard({
-  set, focused, hasActiveSub, onStart, onViewResults, onBuySubscription, buyingSub, onReleaseReached,
+  set, index, attempts, initialHistoryOpen, onHistoryOpenChange, focused, hasActiveSub, onStart, onViewResults, onBuySubscription, buyingSub, onReleaseReached,
 }: {
   set: PracticeSetRPC;
+  index: number;
+  attempts: PracticeAttempt[];
+  initialHistoryOpen: boolean;
+  onHistoryOpenChange: (open: boolean) => void;
   focused: boolean;
   hasActiveSub: boolean;
   onStart: () => void;
@@ -146,96 +174,114 @@ function PracticeSetCard({
   const hasAttempts = set.out_attempt_count > 0;
   const limitReached = isPremium && set.out_attempt_count >= PREMIUM_ATTEMPT_LIMIT;
   const isScheduled = !!set.out_available_at && new Date(set.out_available_at).getTime() > Date.now();
+  const latestAttempt = attempts[attempts.length - 1];
+  const historySlotCount = isPremium
+    ? Math.max(PREMIUM_ATTEMPT_LIMIT, attempts.length)
+    : Math.max(3, attempts.length + 1);
+  const [historyOpen, setHistoryOpen] = useState(initialHistoryOpen);
+  const historyRef = useRef<HTMLOListElement>(null);
+
+  useEffect(() => {
+    const history = historyRef.current;
+    if (!historyOpen || !history || historySlotCount <= 3) return;
+    const frame = requestAnimationFrame(() => {
+      history.scrollLeft = history.scrollWidth - history.clientWidth;
+    });
+    const handleWheel = (event: WheelEvent) => {
+      if (event.ctrlKey || history.scrollWidth <= history.clientWidth) return;
+      const movement = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
+      const next = Math.max(0, Math.min(history.scrollWidth - history.clientWidth, history.scrollLeft + movement));
+      if (next === history.scrollLeft) return;
+      event.preventDefault();
+      history.scrollLeft = next;
+    };
+    history.addEventListener('wheel', handleWheel, { passive: false });
+    return () => {
+      cancelAnimationFrame(frame);
+      history.removeEventListener('wheel', handleWheel);
+    };
+  }, [historyOpen, historySlotCount]);
+
+  const toggleHistory = () => {
+    const nextOpen = !historyOpen;
+    onHistoryOpenChange(nextOpen);
+    setHistoryOpen(nextOpen);
+  };
 
   return (
-    <div id={`practice-set-${set.out_id}`} className={`card scroll-mt-24 p-5 flex flex-col ${focused ? 'ring-2 ring-emerald-500 ring-offset-2' : ''}`}>
-      {/* Content */}
-      <div className="flex flex-col gap-3 mb-4">
-        <div className="flex items-center gap-2 flex-wrap">
-          <h3 className="font-display text-base font-semibold text-stone-900">{set.out_title}</h3>
-          {isPremium ? (
-            <span className="badge bg-amber-100 text-amber-700">
-              <Crown size={12} /> Abonament
-            </span>
-          ) : (
-            <span className="badge bg-brand-100 text-brand-700">
-              <Sparkles size={12} /> Gratuit
-            </span>
-          )}
-        </div>
+    <article id={`practice-set-${set.out_id}`}
+      className={`simulation-library__card simulation-library__card--biology practice-set-card ${focused ? 'ring-2 ring-emerald-500 ring-offset-2' : ''}`}
+      aria-label={`${set.out_title}, ${set.out_question_count} grile`}>
+      <div className="simulation-library__biology-heading">
+        <h3>Set</h3>
+        <span className="simulation-library__biology-number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+      </div>
+      <div className="simulation-library__biology-meta">
+        <span><strong>{set.out_question_count}</strong> {set.out_question_count === 1 ? 'grilă' : 'grile'}</span>
+        <span aria-hidden="true">·</span>
+        <span className={isPremium ? 'simulation-library__biology-access--premium' : 'simulation-library__biology-access--free'}>
+          {isPremium ? 'Acces cu abonament' : 'Fără abonament'}
+        </span>
+      </div>
 
-        {set.out_description && (
-          <p className="text-sm text-stone-600 line-clamp-2">{set.out_description}</p>
-        )}
-
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-stone-500">
-          <span className="flex items-center gap-1">
-            <FileText size={13} />
-            {set.out_question_count} grile
-          </span>
-          {hasAttempts && (
-            <>
-              <span className="flex items-center gap-1">
-                <History size={13} />
-                {set.out_attempt_count} rezolvări
-              </span>
-              <span className="flex items-center gap-1 text-brand-600 font-medium">
-                <Trophy size={13} />
-                Cel mai bun: {set.out_best_score}/{set.out_question_count}
-              </span>
-            </>
-          )}
+      <div className="simulation-library__biology-history">
+        <h4>
+          <button type="button" className="simulation-library__biology-history-toggle"
+            onClick={toggleHistory} aria-expanded={historyOpen} aria-controls={`practice-history-${set.out_id}`}>
+            <span>Istoric rezolvări</span><ChevronDown size={21} aria-hidden="true" />
+          </button>
+        </h4>
+        <div id={`practice-history-${set.out_id}`}
+          className={`simulation-library__biology-history-panel ${historyOpen ? 'simulation-library__biology-history-panel--open' : ''}`}
+          aria-hidden={!historyOpen}>
+          <div className="simulation-library__biology-history-slider">
+            <ol ref={historyRef} tabIndex={historyOpen && historySlotCount > 3 ? 0 : undefined}
+              aria-label={historySlotCount > 3 ? 'Istoricul rezolvărilor; derulează orizontal pentru a le vedea pe toate' : 'Istoricul rezolvărilor'}>
+              {Array.from({ length: historySlotCount }, (_, attemptIndex) => {
+                const attempt = attempts[attemptIndex];
+                const nextIsComplete = !!attempts[attemptIndex + 1];
+                return (
+                  <li key={attempt?.id ?? `pending-${attemptIndex}`}>
+                    {attemptIndex < historySlotCount - 1 && (
+                      <span aria-hidden="true" className={`simulation-library__biology-history-link ${attempt && nextIsComplete ? 'simulation-library__biology-history-link--complete' : ''}`} />
+                    )}
+                    <span aria-hidden="true" className={`simulation-library__biology-history-node ${attempt ? 'simulation-library__biology-history-node--complete' : ''}`} />
+                    <span className="simulation-library__biology-history-label">Rezolvarea {attemptIndex + 1}</span>
+                    <strong>{attempt ? `${attempt.score}/${attempt.max_score}` : '-'}</strong>
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="mt-auto pt-3 border-t border-stone-100 flex flex-col gap-2">
+      <div className="simulation-library__biology-actions">
         {isScheduled && set.out_available_at ? (
-          <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-center text-sm font-semibold text-blue-800">
-            <span className="flex items-center justify-center gap-2">
-              <CalendarClock size={16} /> Accesibil în
-            </span>
+          <div className="simulation-library__biology-countdown">
+            <span className="inline-flex items-center gap-1"><CalendarClock size={15} aria-hidden="true" /> Accesibil în</span>
             <ReleaseCountdown target={set.out_available_at} onComplete={onReleaseReached} />
           </div>
-        ) : limitReached ? (
-          <>
-            <p className="py-2 text-center text-sm font-medium text-stone-600">Acest set a fost deja lucrat.</p>
-            <button onClick={() => onViewResults()} className="btn-secondary w-full">
-              <BookOpen size={16} /> Vezi rezultatele
-            </button>
-          </>
-        ) : isLocked ? (
-          <>
-            <button
-              onClick={onBuySubscription}
-              disabled={buyingSub}
-              className="btn-accent w-full"
-            >
-              {buyingSub ? <Loader2 size={16} className="animate-spin" /> : <Crown size={16} />}
-              Cumpără abonament pentru a accesa
-            </button>
-            <span className="text-xs text-stone-400 text-center">
-              Mod test – abonamentul se activează gratuit, fără plată.
-            </span>
-          </>
         ) : (
           <>
-            <button onClick={onStart} className="btn-primary w-full">
-              {hasAttempts ? (
-                <><RotateCcw size={16} /> Rezolvă din nou</>
-              ) : (
-                <><PlayCircle size={16} /> Începe setul</>
-              )}
-            </button>
             {hasAttempts && (
-              <button onClick={() => onViewResults()} className="btn-secondary w-full">
-                <BookOpen size={16} /> Vezi rezultatele
+              <button type="button" onClick={() => onViewResults(latestAttempt?.id)}
+                className="simulation-library__biology-secondary">Vezi detalii</button>
+            )}
+            {limitReached ? null : isLocked ? (
+              <button type="button" onClick={onBuySubscription} disabled={buyingSub}
+                className="simulation-library__biology-primary">
+                {buyingSub ? 'Se activează…' : 'Activează abonamentul'}
+              </button>
+            ) : (
+              <button type="button" onClick={onStart} className="simulation-library__biology-primary">
+                {hasAttempts ? 'Rezolvă din nou' : 'Rezolvă setul'}
               </button>
             )}
           </>
         )}
       </div>
-    </div>
+    </article>
   );
 }
 
