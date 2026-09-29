@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase, type PracticeResultRPC, type PracticeHistoryRPC, type Subscription, type ReviewQuestionRefRPC } from '@/lib/supabase';
+import { supabase, PREMIUM_ATTEMPT_LIMIT, type PracticeResultRPC, type PracticeHistoryRPC, type Subscription, type ReviewQuestionRefRPC } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import {
   ChevronLeft, Trophy, CheckCircle2, XCircle, RotateCcw, BookOpen, History,
@@ -23,6 +23,7 @@ export default function PracticeResultsView({ setId, attemptId, onExit, onRetake
   const [loading, setLoading] = useState(true);
   const [resultsLoading, setResultsLoading] = useState(false);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [isPremium, setIsPremium] = useState<boolean | null>(null);
   const [reviewQuestionIds, setReviewQuestionIds] = useState<Set<string>>(() => new Set());
   const [reviewBusyId, setReviewBusyId] = useState<string | null>(null);
 
@@ -32,6 +33,10 @@ export default function PracticeResultsView({ setId, attemptId, onExit, onRetake
       const { data: hist } = await supabase.rpc('get_practice_history', { p_set_id: setId });
       const histData = (hist || []) as unknown as PracticeHistoryRPC[];
       setHistory(histData);
+
+      const { data: setData } = await supabase.from('practice_sets')
+        .select('requires_subscription').eq('id', setId).maybeSingle();
+      setIsPremium(setData?.requires_subscription ?? null);
 
       if (attemptId) {
         setSelectedAttemptId(attemptId);
@@ -118,6 +123,8 @@ export default function PracticeResultsView({ setId, attemptId, onExit, onRetake
   const maxScore = results.length > 0 ? results[0].out_max_score : 0;
   const percentage = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
   const hasActiveSub = !!subscription;
+  const limitReached = isPremium === true && history.length >= PREMIUM_ATTEMPT_LIMIT;
+  const canRetake = isPremium === false || (isPremium === true && hasActiveSub && !limitReached);
   const currentAttempt = history.find((h) => h.out_id === selectedAttemptId);
 
   return (
@@ -195,9 +202,13 @@ export default function PracticeResultsView({ setId, attemptId, onExit, onRetake
           <div className="md:col-span-2 space-y-6">
             {/* Retake */}
             <div className="flex flex-col gap-2 sm:flex-row">
-              <button onClick={onRetake} className="btn-primary">
-                <RotateCcw size={16} /> Rezolvă din nou
-              </button>
+              {canRetake ? (
+                <button onClick={onRetake} className="btn-primary">
+                  <RotateCcw size={16} /> Rezolvă din nou
+                </button>
+              ) : limitReached ? (
+                <p className="self-center text-sm font-medium text-stone-600">Acest set a fost deja lucrat.</p>
+              ) : null}
               <button onClick={onExit} className="btn-secondary">
                 <BookOpen size={16} /> Înapoi la seturi
               </button>
