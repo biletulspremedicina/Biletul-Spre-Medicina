@@ -567,11 +567,11 @@ html.student-dark .simulation-library__card .btn-primary:hover { background: #23
 
 .simulation-library__biology-history-slider {
   min-width: 0;
-  margin-top: 9px;
-  padding: 11px 8px 10px;
-  border: 1px solid #e6ede7;
-  border-radius: 13px;
-  background: #fbfcfa;
+  margin-top: 10px;
+  padding: 14px 8px 13px;
+  border: 1px solid #e2e8dc;
+  border-radius: 15px;
+  background: #fffefa;
 }
 
 .simulation-library__biology-history ol {
@@ -604,41 +604,41 @@ html.student-dark .simulation-library__card .btn-primary:hover { background: #23
   width: 16px;
   height: 16px;
   flex: 0 0 16px;
-  border: 2px solid #6e9e7c;
+  border: 2px solid #347451;
   border-radius: 50%;
-  background: #fbfcfa;
+  background: #fffefa;
 }
 
-.simulation-library__biology-history-node--complete { background: #6e9e7c; }
+.simulation-library__biology-history-node--complete { background: #347451; }
 
 .simulation-library__biology-history-link {
   position: absolute;
   top: 7px;
   left: 50%;
   width: 100%;
-  border-top: 2px dotted #a7c7ad;
+  border-top: 1px dotted #8eaf98;
 }
 
-.simulation-library__biology-history-link--complete { border-top-style: solid; border-top-color: #83aa8e; }
+.simulation-library__biology-history-link--complete { border-top-style: solid; border-top-color: #8eaf98; }
 
 .simulation-library__biology-history-label {
   display: block;
   margin-top: 7px;
-  color: #315440;
-  font-family: Georgia, Cambria, "Times New Roman", serif;
-  font-size: clamp(11px, 1vw, 14px);
+  color: #1c4934;
+  font-family: Inter, "Plus Jakarta Sans", sans-serif;
+  font-size: clamp(11px, 1vw, 13px);
   font-weight: 600;
-  letter-spacing: -.025em;
+  letter-spacing: -.015em;
   white-space: nowrap;
 }
 
 .simulation-library__biology-history li strong {
   display: block;
   margin-top: 2px;
-  color: #234233;
+  color: #2c6848;
   font-family: Georgia, Cambria, "Times New Roman", serif;
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 17px;
+  font-weight: 400;
   line-height: 1.1;
   white-space: nowrap;
 }
