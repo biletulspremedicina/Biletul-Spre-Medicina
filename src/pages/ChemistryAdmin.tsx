@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ClipboardEvent } from 'react';
 import {
   ArrowDown, ArrowLeft, ArrowUp, Beaker, Edit2, Eye, EyeOff,
-  ImagePlus, Loader2, Plus, Save, Trash2, X,
+  Highlighter, ImagePlus, Loader2, Plus, Save, Subscript, Trash2, X,
 } from 'lucide-react';
 import { supabase, type ChemistryBlockType, type ChemistryLesson, type ChemistryLessonBlock } from '@/lib/supabase';
 import { ChemistryBlockRenderer } from '@/components/chemistry/ChemistryBlockRenderer';
@@ -21,6 +21,24 @@ const emptyBlock = (lessonId: string, position: number): ChemistryLessonBlock =>
   image_url: '', image_alt: '', caption: '', note_style: 'info', position,
   created_at: '', updated_at: '',
 });
+
+function cleanPastedText(value: string) {
+  return value
+    .replace(/\r\n?/g, '\n')
+    .replace(/\u00ad/g, '')
+    .replace(/\u00a0/g, ' ')
+    .replace(/([A-Za-zĂÂÎȘȚăâîșț])-\s*\n\s*(?=[a-zăâîșț])/g, '$1')
+    .split(/\n{2,}/)
+    .map((paragraph) => paragraph
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .join(' ')
+      .replace(/[ \t]{2,}/g, ' ')
+      .trim())
+    .filter(Boolean)
+    .join('\n\n');
+}
 
 export default function ChemistryAdmin() {
   const [lessons, setLessons] = useState<ChemistryLesson[]>([]);
@@ -237,7 +255,7 @@ function BlockEditor({ block, setBlock, saving, onSave, onUpload, onCancel }: {
       <div className="flex items-center justify-between"><h3 className="font-bold text-stone-900">{block.id ? 'Editează blocul' : `Adaugă: ${blockLabels[block.block_type]}`}</h3><button className="rounded-lg p-2 hover:bg-stone-100" onClick={onCancel}><X size={18} /></button></div>
       <label className="mt-4 block"><span className="label">Tipul blocului</span><select className="input" value={block.block_type} onChange={(e) => setBlock({ ...block, block_type: e.target.value as ChemistryBlockType })}>{(Object.keys(blockLabels) as ChemistryBlockType[]).map((type) => <option key={type} value={type}>{blockLabels[type]}</option>)}</select></label>
       {block.block_type === 'list' ? (
-        <label className="mt-4 block"><span className="label">Elementele listei, câte unul pe rând</span><textarea className="input min-h-40" value={block.items.join('\n')} onChange={(e) => setBlock({ ...block, items: e.target.value.split('\n') })} /></label>
+        <ListContentEditor block={block} setBlock={setBlock} />
       ) : block.block_type === 'image' ? (
         <div className="mt-4 space-y-4">
           <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-stone-300 px-5 py-8 text-sm font-semibold text-stone-600 hover:border-brand-400 hover:bg-brand-50"><ImagePlus size={22} /> Alege imaginea din calculator<input type="file" accept="image/*" className="sr-only" onChange={(e) => { const file = e.target.files?.[0]; if (file) void onUpload(file); }} /></label>
@@ -245,12 +263,149 @@ function BlockEditor({ block, setBlock, saving, onSave, onUpload, onCancel }: {
           <label><span className="label">Adresă imagine</span><input className="input" value={block.image_url} onChange={(e) => setBlock({ ...block, image_url: e.target.value })} placeholder="Se completează automat după încărcare" /></label>
           <div className="grid gap-4 md:grid-cols-2"><label><span className="label">Descriere pentru accesibilitate</span><input className="input" value={block.image_alt} onChange={(e) => setBlock({ ...block, image_alt: e.target.value })} /></label><label><span className="label">Text sub imagine</span><input className="input" value={block.caption} onChange={(e) => setBlock({ ...block, caption: e.target.value })} /></label></div>
         </div>
-      ) : (
-        <label className="mt-4 block"><span className="label">{block.block_type === 'formula' ? 'Formula (exemplu: CH3-CH2-OH + O2 → CO2 + H2O; pentru sarcină: Fe^3+)' : 'Conținut'}</span><textarea className="input min-h-32" value={block.content} onChange={(e) => setBlock({ ...block, content: e.target.value })} /><span className="mt-1 block text-xs text-stone-500">Poți scrie oricât. Textul se așază automat pe rânduri și rămâne în pagină.</span></label>
-      )}
+      ) : <TextContentEditor block={block} setBlock={setBlock} />}
       {block.block_type === 'note' && <label className="mt-4 block"><span className="label">Stilul casetei</span><select className="input" value={block.note_style} onChange={(e) => setBlock({ ...block, note_style: e.target.value as ChemistryLessonBlock['note_style'] })}><option value="info">De reținut</option><option value="important">Important</option><option value="example">Exemplu</option></select></label>}
-      {block.block_type === 'formula' && <div className="mt-4"><span className="label">Previzualizare</span><ChemistryBlockRenderer block={block} /></div>}
       <div className="mt-5 flex gap-2"><button className="btn-primary" disabled={saving} onClick={onSave}>{saving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />} Salvează blocul</button><button className="btn-ghost" onClick={onCancel}>Renunță</button></div>
+    </div>
+  );
+}
+
+function ListContentEditor({ block, setBlock }: {
+  block: ChemistryLessonBlock;
+  setBlock: (block: ChemistryLessonBlock) => void;
+}) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const value = block.items.join('\n');
+
+  const replaceSelection = (replacement: string, selectInnerText = false) => {
+    const textarea = textareaRef.current;
+    const start = textarea?.selectionStart ?? value.length;
+    const end = textarea?.selectionEnd ?? start;
+    const nextValue = `${value.slice(0, start)}${replacement}${value.slice(end)}`;
+    setBlock({ ...block, items: nextValue.split('\n') });
+    requestAnimationFrame(() => {
+      textareaRef.current?.focus();
+      if (selectInnerText) textareaRef.current?.setSelectionRange(start + 2, start + replacement.length - 2);
+      else textareaRef.current?.setSelectionRange(start + replacement.length, start + replacement.length);
+    });
+  };
+
+  const wrapSelection = (kind: 'important' | 'formula') => {
+    const textarea = textareaRef.current;
+    const start = textarea?.selectionStart ?? value.length;
+    const end = textarea?.selectionEnd ?? start;
+    const selectedText = value.slice(start, end) || (kind === 'formula' ? 'H2SO4' : 'text important');
+    replaceSelection(kind === 'formula' ? `{{${selectedText}}}` : `==${selectedText}==`, true);
+  };
+
+  return (
+    <div className="mt-4">
+      <div className="mb-2 flex flex-wrap items-end justify-between gap-2">
+        <span className="label mb-0">Elementele listei, câte unul pe rând</span>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-800 hover:bg-red-100" onClick={() => wrapSelection('important')}>
+            <Highlighter size={16} /> Marchează important
+          </button>
+          <button type="button" className="inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800 hover:bg-emerald-100" onClick={() => wrapSelection('formula')}>
+            <Subscript size={16} /> Formulă în text
+          </button>
+        </div>
+      </div>
+      <textarea ref={textareaRef} className="input min-h-48 text-base leading-7" value={value} onChange={(event) => setBlock({ ...block, items: event.target.value.split('\n') })} />
+      <p className="mt-2 text-xs leading-5 text-stone-600">Selectează orice fragment din listă și folosește unul dintre butoanele de mai sus.</p>
+      {block.items.some((item) => item.trim()) && (
+        <div className="mt-4 rounded-2xl border border-stone-200 bg-white p-5">
+          <p className="label mb-3">Așa va arăta în lecție</p>
+          <ChemistryBlockRenderer block={block} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TextContentEditor({ block, setBlock }: {
+  block: ChemistryLessonBlock;
+  setBlock: (block: ChemistryLessonBlock) => void;
+}) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const canHighlight = block.block_type !== 'formula';
+
+  const replaceSelection = (replacement: string, selectedLength = replacement.length) => {
+    const textarea = textareaRef.current;
+    const start = textarea?.selectionStart ?? block.content.length;
+    const end = textarea?.selectionEnd ?? start;
+    const nextValue = `${block.content.slice(0, start)}${replacement}${block.content.slice(end)}`;
+    setBlock({ ...block, content: nextValue });
+    requestAnimationFrame(() => {
+      textareaRef.current?.focus();
+      textareaRef.current?.setSelectionRange(start, start + selectedLength);
+    });
+  };
+
+  const markImportant = () => {
+    const textarea = textareaRef.current;
+    const start = textarea?.selectionStart ?? block.content.length;
+    const end = textarea?.selectionEnd ?? start;
+    const selectedText = block.content.slice(start, end);
+    const text = selectedText || 'text important';
+    replaceSelection(`==${text}==`, text.length ? text.length + 4 : 0);
+    requestAnimationFrame(() => {
+      const selectionStart = start + 2;
+      textareaRef.current?.setSelectionRange(selectionStart, selectionStart + text.length);
+    });
+  };
+
+  const markAsFormula = () => {
+    const textarea = textareaRef.current;
+    const start = textarea?.selectionStart ?? block.content.length;
+    const end = textarea?.selectionEnd ?? start;
+    const selectedText = block.content.slice(start, end);
+    const text = selectedText || 'H2SO4';
+    replaceSelection(`{{${text}}}`);
+    requestAnimationFrame(() => textareaRef.current?.setSelectionRange(start + 2, start + 2 + text.length));
+  };
+
+  const handlePaste = (event: ClipboardEvent<HTMLTextAreaElement>) => {
+    const pastedText = event.clipboardData.getData('text/plain');
+    if (!pastedText) return;
+    event.preventDefault();
+    replaceSelection(cleanPastedText(pastedText));
+  };
+
+  return (
+    <div className="mt-4">
+      <div className="mb-2 flex flex-wrap items-end justify-between gap-2">
+        <span className="label mb-0">{block.block_type === 'formula'
+          ? 'Formula chimică'
+          : 'Conținut'}</span>
+        {canHighlight && <div className="flex flex-wrap gap-2">
+          <button type="button" className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-800 hover:bg-red-100" onClick={markImportant}>
+            <Highlighter size={16} /> Marchează important
+          </button>
+          <button type="button" className="inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800 hover:bg-emerald-100" onClick={markAsFormula}>
+            <Subscript size={16} /> Formulă în text
+          </button>
+        </div>}
+      </div>
+      <textarea
+        ref={textareaRef}
+        className="input min-h-48 text-base leading-7"
+        value={block.content}
+        onChange={(event) => setBlock({ ...block, content: event.target.value })}
+        onPaste={handlePaste}
+        placeholder={block.block_type === 'formula' ? 'Exemplu: CH3-CH2-OH + O2 → CO2 + H2O; sarcină: Fe^3+' : 'Scrie sau lipește textul aici...'}
+      />
+      <div className="mt-2 rounded-xl bg-stone-50 px-3 py-2 text-xs leading-5 text-stone-600">
+        {block.block_type === 'formula'
+          ? 'Cifrele din formule sunt transformate automat în indici jos. Sarcinile copiate ca ³⁺/²⁻ se păstrează, iar manual poți scrie Fe^3+.'
+          : 'Textul lipit din PDF este curățat automat. Selectează un fragment și folosește „Marchează important” sau „Formulă în text”.'}
+      </div>
+      {block.content && (
+        <div className="mt-4 rounded-2xl border border-stone-200 bg-white p-5">
+          <p className="label mb-3">Așa va arăta în lecție</p>
+          <ChemistryBlockRenderer block={block} />
+        </div>
+      )}
     </div>
   );
 }
