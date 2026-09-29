@@ -497,7 +497,7 @@ html.student-dark .simulation-library__card .btn-primary:hover { background: #23
 .simulation-library__biology-heading {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  align-items: start;
+  align-items: center;
   gap: 10px;
   min-height: 68px;
 }
@@ -554,6 +554,7 @@ html.student-dark .simulation-library__card .btn-primary:hover { background: #23
   font-family: Georgia, Cambria, "Times New Roman", serif;
   font-size: 18px;
   font-weight: 700;
+  text-align: center;
 }
 
 .simulation-library__biology-history-slider {
@@ -597,6 +598,11 @@ html.student-dark .simulation-library__card .btn-primary:hover { background: #23
 
 .simulation-library__biology-history li button:hover,
 .simulation-library__biology-history li button:focus-visible { color: #136544; }
+.simulation-library__biology-history li button[aria-pressed="true"] {
+  border-color: #4b9870;
+  background: #eaf5ed;
+  color: #145d3e;
+}
 .simulation-library__biology-history li button:focus-visible { outline: 2px solid #208358; outline-offset: 2px; }
 .simulation-library__biology-history li strong { color: #153f31; font-weight: 700; white-space: nowrap; }
 .simulation-library__biology-history p { flex: 1; margin: 0; padding-left: 9px; color: #68766c; font-size: 12px; }
@@ -639,16 +645,6 @@ html.student-dark .simulation-library__card .btn-primary:hover { background: #23
 .simulation-library__biology-primary { flex: 1; color: #fff; background: #174c37; }
 .simulation-library__biology-primary:hover { background: #216044; }
 .simulation-library__biology-primary:disabled { cursor: wait; opacity: .7; }
-.simulation-library__biology-complete {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  justify-content: center;
-  color: #52685a;
-  text-align: center;
-  font-size: 13px;
-  font-weight: 600;
-}
 .simulation-library__biology-actions button:focus-visible { outline: 2px solid #208358; outline-offset: 3px; }
 .simulation-library__biology-countdown { width: 100%; text-align: center; color: #174c37; font-size: 13px; }
 
@@ -669,12 +665,12 @@ html.student-dark .simulation-library__biology-history li button { color: #c1d1c
 html.student-dark .simulation-library__biology-history { border-color: #45604f; }
 html.student-dark .simulation-library__biology-history-slider { background: #20392c; border-color: #45604f; }
 html.student-dark .simulation-library__biology-history li button { background: #294737; border-color: #45604f; }
+html.student-dark .simulation-library__biology-history li button[aria-pressed="true"] { background: #315e43; border-color: #8bcb9c; color: #e8f1e9; }
 html.student-dark .simulation-library__biology-history-arrow { color: #b1dec2; }
 html.student-dark .simulation-library__biology-history-arrow:hover { background: #315541; }
 html.student-dark .simulation-library__biology-secondary { color: #e8f1e9; background: #294737; border-color: #698a73; }
 html.student-dark .simulation-library__biology-secondary:hover { background: #345541; }
 html.student-dark .simulation-library__biology-countdown { color: #e8f1e9; }
-html.student-dark .simulation-library__biology-complete { color: #c1d1c5; }
 
 html.student-dark .simulation-library { background: #172923; color: #e8f1e9; border-color: #3b5949; }
 html.student-dark .simulation-library__hero { background: #123b31; border-color: #3b5949; }
