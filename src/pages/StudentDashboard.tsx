@@ -1322,11 +1322,11 @@
           </div>
 
           <div className="simulation-library__biology-history">
-            <h4>Istoric</h4>
+            <h4>Istoric rezolvări</h4>
             <div className="simulation-library__biology-history-slider">
               <ol ref={historyRef} className={historySlotCount > 3 ? 'simulation-library__biology-history-list--scrollable' : ''}
                 tabIndex={historySlotCount > 3 ? 0 : undefined}
-                aria-label={historySlotCount > 3 ? 'Istoricul încercărilor; derulează orizontal pentru a le vedea pe toate' : 'Istoricul încercărilor'}>
+                aria-label={historySlotCount > 3 ? 'Istoricul rezolvărilor; derulează orizontal pentru a le vedea pe toate' : 'Istoricul rezolvărilor'}>
                 {Array.from({ length: historySlotCount }, (_, attemptIndex) => {
                   const attempt = chronologicalAttempts[attemptIndex];
                   const nextIsComplete = !!chronologicalAttempts[attemptIndex + 1];
@@ -1336,8 +1336,8 @@
                         <span aria-hidden="true" className={`simulation-library__biology-history-link ${attempt && nextIsComplete ? 'simulation-library__biology-history-link--complete' : ''}`} />
                       )}
                       <span aria-hidden="true" className={`simulation-library__biology-history-node ${attempt ? 'simulation-library__biology-history-node--complete' : ''}`} />
-                      <span className="simulation-library__biology-history-label">Încercarea {attemptIndex + 1}</span>
-                      <strong>{attempt ? `${attempt.score}/${attempt.max_score}` : `-/${sim.questionCount}`}</strong>
+                      <span className="simulation-library__biology-history-label">Rezolvarea {attemptIndex + 1}</span>
+                      <strong>{attempt ? `${attempt.score}/${attempt.max_score}` : '-'}</strong>
                     </li>
                   );
                 })}
