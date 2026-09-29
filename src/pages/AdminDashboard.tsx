@@ -325,7 +325,7 @@ function SimAdminCard({ sim, order, total, savingOrder, onMoveTo, onReload, onEd
   };
 
   return (
-    <div className="card p-5">
+    <div className="card flex min-w-0 flex-col p-5">
       <label className="mb-3 flex items-center justify-between gap-3 border-b border-stone-100 pb-3 text-xs font-semibold text-stone-600">
         Poziția în secțiune
         <select aria-label={`Poziția simulării ${sim.title}`} value={order} disabled={savingOrder}
@@ -334,60 +334,47 @@ function SimAdminCard({ sim, order, total, savingOrder, onMoveTo, onReload, onEd
           {Array.from({ length: total }, (_, index) => <option key={index} value={index + 1}>{index + 1}</option>)}
         </select>
       </label>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-            <h3 className="font-display text-base font-semibold text-stone-900">{sim.title}</h3>
-            {sim.is_active && isScheduled ? (
-              <span className="badge bg-blue-100 text-blue-700">
-                <CalendarClock size={12} /> Programată
-              </span>
-            ) : sim.is_active ? (
-              <span className="badge bg-green-100 text-green-700">
-                <Eye size={12} /> Publicată
-              </span>
-            ) : (
-              <span className="badge bg-stone-100 text-stone-500">
-                <EyeOff size={12} /> Ciornă
-              </span>
-            )}
-          </div>
-          {sim.description && (
-            <p className="text-sm text-stone-600 mb-2 line-clamp-2">{sim.description}</p>
+      <div className="min-w-0 flex-1">
+        <h3 className="break-words font-display text-lg font-semibold leading-snug text-stone-900">{sim.title}</h3>
+        <div className="mt-2">
+          {sim.is_active && isScheduled ? (
+            <span className="badge bg-blue-100 text-blue-700"><CalendarClock size={12} /> Programată</span>
+          ) : sim.is_active ? (
+            <span className="badge bg-green-100 text-green-700"><Eye size={12} /> Publicată</span>
+          ) : (
+            <span className="badge bg-stone-100 text-stone-500"><EyeOff size={12} /> Ciornă</span>
           )}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-stone-500">
-            <span className="flex items-center gap-1"><Clock size={13} /> {sim.duration_minutes} min</span>
-            <span className="flex items-center gap-1"><CreditCard size={13} /> {sim.requires_subscription ? 'Cu abonament' : 'Fără abonament'}</span>
-            <span className="flex items-center gap-1"><BookOpen size={13} /> {questionCount} întrebări</span>
-            <span className="flex items-center gap-1">
-              {new Date(sim.created_at).toLocaleDateString('ro-RO', { day: 'numeric', month: 'short', year: 'numeric' })}
+        </div>
+        {sim.description && <p className="mt-3 line-clamp-2 text-sm text-stone-600">{sim.description}</p>}
+        <div className="mt-4 grid grid-cols-2 gap-x-3 gap-y-2 text-xs text-stone-500">
+          <span className="flex min-w-0 items-start gap-1.5"><Clock size={14} className="mt-0.5 shrink-0" />{sim.duration_minutes} min</span>
+          <span className="flex min-w-0 items-start gap-1.5"><CreditCard size={14} className="mt-0.5 shrink-0" />{sim.requires_subscription ? 'Cu abonament' : 'Fără abonament'}</span>
+          <span className="flex min-w-0 items-start gap-1.5"><BookOpen size={14} className="mt-0.5 shrink-0" />{questionCount} întrebări</span>
+          <span className="min-w-0">{new Date(sim.created_at).toLocaleDateString('ro-RO', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+          {isScheduled && sim.available_at && (
+            <span className="col-span-2 flex min-w-0 items-start gap-1.5 font-semibold text-blue-700">
+              <CalendarClock size={14} className="mt-0.5 shrink-0" />{formatReleaseDate(sim.available_at)}
             </span>
-            {isScheduled && sim.available_at && (
-              <span className="flex items-center gap-1 font-semibold text-blue-700">
-                <CalendarClock size={13} /> {formatReleaseDate(sim.available_at)}
-              </span>
-            )}
-          </div>
-          {publishError && (
-            <div className="mt-2 flex items-center gap-2 text-xs text-red-600">
-              <AlertTriangle size={12} />
-              {publishError}
-            </div>
           )}
         </div>
-        <div className="flex flex-wrap gap-2">
-          <button onClick={onEdit} className="btn-ghost"><Edit2 size={15} /> Editează</button>
-          <button onClick={toggleActive} className="btn-ghost">
-            {sim.is_active ? <EyeOff size={15} /> : <Eye size={15} />}
-            {sim.is_active ? (isScheduled ? 'Anulează programarea' : 'Ascunde') : (isScheduled ? 'Programează' : 'Publică')}
-          </button>
-          <button onClick={handleDelete} className="btn-ghost text-red-600 hover:bg-red-50">
-            <Trash2 size={15} /> Șterge
-          </button>
-          <button onClick={() => setShowQuestions(!showQuestions)} className="btn-secondary">
-            <BookOpen size={15} /> Întrebări
-          </button>
-        </div>
+        {publishError && (
+          <div role="alert" className="mt-3 flex items-start gap-2 text-xs text-red-600">
+            <AlertTriangle size={14} className="shrink-0" />{publishError}
+          </div>
+        )}
+      </div>
+      <div className="mt-5 grid grid-cols-2 gap-2 border-t border-stone-100 pt-4">
+        <button onClick={onEdit} className="btn-ghost min-h-11 min-w-0 px-2 text-center"><Edit2 size={15} className="shrink-0" /> Editează</button>
+        <button onClick={toggleActive} className="btn-ghost min-h-11 min-w-0 px-2 text-center leading-tight">
+          {sim.is_active ? <EyeOff size={15} className="shrink-0" /> : <Eye size={15} className="shrink-0" />}
+          {sim.is_active ? (isScheduled ? 'Anulează programarea' : 'Ascunde') : (isScheduled ? 'Programează' : 'Publică')}
+        </button>
+        <button onClick={handleDelete} className="btn-ghost min-h-11 min-w-0 px-2 text-center text-red-600 hover:bg-red-50">
+          <Trash2 size={15} className="shrink-0" /> Șterge
+        </button>
+        <button onClick={() => setShowQuestions(!showQuestions)} className="btn-secondary min-h-11 min-w-0 px-2 text-center">
+          <BookOpen size={15} className="shrink-0" /> Întrebări
+        </button>
       </div>
 
       {showQuestions && (
