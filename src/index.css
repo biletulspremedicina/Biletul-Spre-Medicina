@@ -831,6 +831,7 @@ html.student-dark .simulation-library--umfcd .border-dashed > div { background: 
 .practice-sets-page { animation: study-colour-fade .42s ease-out; }
 
 .practice-sets-page__topbar { color: #182f28; }
+.practice-sets-page__brand-word { color: #2a6b4e; }
 .practice-sets-page__nav-button {
   display: inline-flex;
   min-height: 42px;
@@ -838,16 +839,18 @@ html.student-dark .simulation-library--umfcd .border-dashed > div { background: 
   justify-content: center;
   gap: 7px;
   padding: 8px 13px;
-  border: 1px solid #dbe5df;
+  border: 1px solid #c7909d;
   border-radius: 11px;
-  background: #fff;
-  color: #1b4938;
+  background: #fff3f5;
+  color: #70263a;
   font-size: 13px;
   font-weight: 650;
   transition: border-color .2s ease, background-color .2s ease;
 }
-.practice-sets-page__nav-button:hover { border-color: #9fc4ae; background: #f3f8f4; }
-.practice-sets-page__nav-button:focus-visible { outline: 2px solid #347451; outline-offset: 2px; }
+.practice-sets-page__nav-button:hover { border-color: #8c3045; background: #fbe5e9; }
+.practice-sets-page__nav-button:focus-visible { outline: 2px solid #842d42; outline-offset: 2px; }
+.practice-sets-page__nav-button--home { border-color: #842d42; background: #842d42; color: #fff; }
+.practice-sets-page__nav-button--home:hover { border-color: #6f2438; background: #6f2438; }
 .practice-sets-page__nav-button img { display: block; width: 22px; height: 22px; object-fit: contain; }
 
 .practice-sets-page__hero {
@@ -902,7 +905,7 @@ html.student-dark .simulation-library--umfcd .border-dashed > div { background: 
   justify-content: space-between;
   gap: 12px;
   margin: 25px 2px 17px;
-  color: #17362b;
+  color: #692537;
 }
 .practice-sets-page__section-heading h2 {
   font-family: Georgia, Cambria, "Times New Roman", serif;
@@ -911,18 +914,44 @@ html.student-dark .simulation-library--umfcd .border-dashed > div { background: 
   letter-spacing: -.03em;
   line-height: 1.1;
 }
-.practice-sets-page__section-heading span { color: #607069; font-size: 13px; white-space: nowrap; }
+.practice-sets-page__section-heading span { color: #80636b; font-size: 13px; white-space: nowrap; }
 .practice-sets-page__grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: start;
   gap: 18px;
 }
-.practice-set-card { min-height: 0; }
+.practice-sets-page .practice-set-card {
+  min-height: 0;
+  border-color: #e3cbd0;
+  background: radial-gradient(circle at 85% 0, #fff6f7, #fff 50%);
+  box-shadow: 0 3px 14px rgba(105, 37, 55, .035);
+}
+.practice-sets-page .practice-set-card:hover,
+.practice-sets-page .practice-set-card:focus-within { border-color: #a95569; }
+.practice-sets-page .practice-set-card h3,
+.practice-sets-page .practice-set-card .simulation-library__biology-meta strong,
+.practice-sets-page .practice-set-card .simulation-library__biology-history h4 { color: #582638; }
 .practice-set-card .simulation-library__biology-heading { min-height: 69px; }
-.practice-set-card .simulation-library__biology-number { color: #1a6547; }
-.practice-set-card .simulation-library__biology-meta { min-height: 27px; }
+.practice-sets-page .practice-set-card .simulation-library__biology-number { color: #842d42; }
+.practice-set-card .simulation-library__biology-meta { min-height: 27px; color: #775963; }
+.practice-sets-page .practice-set-card .simulation-library__biology-access--free { color: #7c3548; }
+.practice-sets-page .practice-set-card .simulation-library__biology-access--premium { color: #ad7116; }
+.practice-sets-page .practice-set-card .simulation-library__biology-history { border-color: #ead9dd; }
+.practice-sets-page .practice-set-card .simulation-library__biology-history-slider { border-color: #ead9dd; background: #fffaf9; }
+.practice-sets-page .practice-set-card .simulation-library__biology-history-node { border-color: #a34b61; background: #fffaf9; }
+.practice-sets-page .practice-set-card .simulation-library__biology-history-node--complete { background: #a34b61; }
+.practice-sets-page .practice-set-card .simulation-library__biology-history-link { color: #bc8290; }
+.practice-sets-page .practice-set-card .simulation-library__biology-history-label,
+.practice-sets-page .practice-set-card .simulation-library__biology-history li strong { color: #763346; }
 .practice-set-card .simulation-library__biology-actions { padding-top: 17px; }
+.practice-sets-page .practice-set-card .simulation-library__biology-primary { background: #842d42; }
+.practice-sets-page .practice-set-card .simulation-library__biology-primary:hover { background: #6f2438; }
+.practice-sets-page .practice-set-card .simulation-library__biology-secondary { border-color: #cda9b2; color: #70263a; }
+.practice-sets-page .practice-set-card .simulation-library__biology-secondary:hover { border-color: #a95569; background: #fff3f5; }
+.practice-sets-page .practice-set-card .simulation-library__biology-history-toggle:focus-visible,
+.practice-sets-page .practice-set-card .simulation-library__biology-actions button:focus-visible { outline-color: #842d42; }
+.practice-sets-page .practice-set-card .simulation-library__biology-countdown { color: #70263a; }
 
 @media (max-width: 1100px) {
   .practice-sets-page__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -939,11 +968,34 @@ html.student-dark .simulation-library--umfcd .border-dashed > div { background: 
 }
 
 html.student-dark .practice-sets-page__topbar { color: #e8f2eb; background: #172923; border-color: #35554a; }
-html.student-dark .practice-sets-page__nav-button { background: #20392c; border-color: #45604f; color: #e8f2eb; }
-html.student-dark .practice-sets-page__nav-button:hover { background: #294737; }
+html.student-dark .practice-sets-page__brand-word { color: #8bd6ad; }
+html.student-dark .practice-sets-page__nav-button { background: #3d2730; border-color: #805263; color: #f5dce2; }
+html.student-dark .practice-sets-page__nav-button:hover { background: #52313e; }
+html.student-dark .practice-sets-page__nav-button--home { background: #842d42; border-color: #a95569; color: #fff; }
+html.student-dark .practice-sets-page__nav-button--home:hover { background: #9c3d54; }
 html.student-dark .practice-sets-page__hero { border-color: #5d3943; }
-html.student-dark .practice-sets-page__section-heading { color: #e8f2eb; }
-html.student-dark .practice-sets-page__section-heading span { color: #adc2b6; }
+html.student-dark .practice-sets-page__section-heading { color: #f5dce2; }
+html.student-dark .practice-sets-page__section-heading span { color: #c7aab3; }
+html.student-dark .practice-sets-page .practice-set-card { background: radial-gradient(circle at 50% 0, #442a35, #2d2228 55%); border-color: #6b4250; }
+html.student-dark .practice-sets-page .practice-set-card:hover,
+html.student-dark .practice-sets-page .practice-set-card:focus-within { border-color: #b57486; }
+html.student-dark .practice-sets-page .practice-set-card h3,
+html.student-dark .practice-sets-page .practice-set-card .simulation-library__biology-meta strong,
+html.student-dark .practice-sets-page .practice-set-card .simulation-library__biology-history h4 { color: #f5e5e9; }
+html.student-dark .practice-sets-page .practice-set-card .simulation-library__biology-number { color: #efa9ba; }
+html.student-dark .practice-sets-page .practice-set-card .simulation-library__biology-meta { color: #dac3c9; }
+html.student-dark .practice-sets-page .practice-set-card .simulation-library__biology-access--free { color: #edb6c4; }
+html.student-dark .practice-sets-page .practice-set-card .simulation-library__biology-access--premium { color: #f1c376; }
+html.student-dark .practice-sets-page .practice-set-card .simulation-library__biology-history { border-color: #684451; }
+html.student-dark .practice-sets-page .practice-set-card .simulation-library__biology-history-slider { background: #382832; border-color: #684451; }
+html.student-dark .practice-sets-page .practice-set-card .simulation-library__biology-history-node { background: #382832; border-color: #d08a9d; }
+html.student-dark .practice-sets-page .practice-set-card .simulation-library__biology-history-node--complete { background: #d08a9d; }
+html.student-dark .practice-sets-page .practice-set-card .simulation-library__biology-history-link { color: #aa7082; }
+html.student-dark .practice-sets-page .practice-set-card .simulation-library__biology-history-label,
+html.student-dark .practice-sets-page .practice-set-card .simulation-library__biology-history li strong { color: #f0d5dd; }
+html.student-dark .practice-sets-page .practice-set-card .simulation-library__biology-secondary { background: #392932; border-color: #906072; color: #f5e5e9; }
+html.student-dark .practice-sets-page .practice-set-card .simulation-library__biology-secondary:hover { background: #4b303b; }
+html.student-dark .practice-sets-page .practice-set-card .simulation-library__biology-countdown { color: #f5e5e9; }
 
 /* Chapter training keeps the same editorial layout, in a warm medical burgundy. */
 .practice-library { border-color: #eadbdc; background: #fffdfb; }
