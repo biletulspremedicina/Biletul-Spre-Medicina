@@ -1330,7 +1330,7 @@
             <span><strong>{sim.duration_minutes}</strong> min</span>
             <span aria-hidden="true">·</span>
             <span className={isFree ? 'simulation-library__biology-access--free' : 'simulation-library__biology-access--premium'}>
-              {isFree ? 'Fără abonament' : 'Abonament necesar'}
+              {isFree ? 'Fără abonament' : 'Cu abonament'}
             </span>
           </div>
 
