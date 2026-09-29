@@ -1269,11 +1269,37 @@
     const submitted = sim.attempts
       .filter((attempt) => !!attempt.submitted_at)
       .sort((a, b) => new Date(b.submitted_at!).getTime() - new Date(a.submitted_at!).getTime());
+    const chronologicalAttempts = [...submitted].reverse();
+    const historySlotCount = isFree
+      ? Math.max(3, chronologicalAttempts.length + 1)
+      : Math.max(PREMIUM_ATTEMPT_LIMIT, chronologicalAttempts.length);
     const hasSubmitted = submitted.length > 0;
     const latestAttempt = submitted[0];
     const paidLimitReached = !isFree && submitted.filter((attempt) => !attempt.is_archive_retake).length >= PREMIUM_ATTEMPT_LIMIT && !sim.hasInProgress;
     const isScheduled = !!sim.available_at && new Date(sim.available_at).getTime() > Date.now();
+    const historyRef = useRef<HTMLOListElement>(null);
     const biologyTitle = sim.title.replace(/^(Simulare(?:\s+Biologie)?)\s*#\s*\d+\s*$/i, '$1');
+
+    useEffect(() => {
+      const history = historyRef.current;
+      if (!history || historySlotCount <= 3) return;
+      const frame = requestAnimationFrame(() => {
+        history.scrollLeft = history.scrollWidth - history.clientWidth;
+      });
+      const handleWheel = (event: WheelEvent) => {
+        if (event.ctrlKey || history.scrollWidth <= history.clientWidth) return;
+        const movement = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
+        const next = Math.max(0, Math.min(history.scrollWidth - history.clientWidth, history.scrollLeft + movement));
+        if (next === history.scrollLeft) return;
+        event.preventDefault();
+        history.scrollLeft = next;
+      };
+      history.addEventListener('wheel', handleWheel, { passive: false });
+      return () => {
+        cancelAnimationFrame(frame);
+        history.removeEventListener('wheel', handleWheel);
+      };
+    }, [historySlotCount]);
 
     if (editorial && !isUmfcd) {
       return (
@@ -1298,18 +1324,24 @@
           <div className="simulation-library__biology-history">
             <h4>Istoric</h4>
             <div className="simulation-library__biology-history-slider">
-              {hasSubmitted ? (
-                <ol tabIndex={submitted.length > 1 ? 0 : undefined} aria-label="Încercări anterioare; derulează orizontal pentru a le vedea pe toate">
-                  {submitted.map((attempt, attemptIndex) => (
-                    <li key={attempt.id}>
-                      <div>
-                        <span>Încercarea {submitted.length - attemptIndex}</span>
-                        <strong>{attempt.score}/{attempt.max_score}</strong>
-                      </div>
+              <ol ref={historyRef} className={historySlotCount > 3 ? 'simulation-library__biology-history-list--scrollable' : ''}
+                tabIndex={historySlotCount > 3 ? 0 : undefined}
+                aria-label={historySlotCount > 3 ? 'Istoricul încercărilor; derulează orizontal pentru a le vedea pe toate' : 'Istoricul încercărilor'}>
+                {Array.from({ length: historySlotCount }, (_, attemptIndex) => {
+                  const attempt = chronologicalAttempts[attemptIndex];
+                  const nextIsComplete = !!chronologicalAttempts[attemptIndex + 1];
+                  return (
+                    <li key={attempt?.id ?? `pending-${attemptIndex}`}>
+                      {attemptIndex < historySlotCount - 1 && (
+                        <span aria-hidden="true" className={`simulation-library__biology-history-link ${attempt && nextIsComplete ? 'simulation-library__biology-history-link--complete' : ''}`} />
+                      )}
+                      <span aria-hidden="true" className={`simulation-library__biology-history-node ${attempt ? 'simulation-library__biology-history-node--complete' : ''}`} />
+                      <span className="simulation-library__biology-history-label">Încercarea {attemptIndex + 1}</span>
+                      <strong>{attempt ? `${attempt.score}/${attempt.max_score}` : `-/${sim.questionCount}`}</strong>
                     </li>
-                  ))}
-                </ol>
-              ) : <p>Nicio încercare încă</p>}
+                  );
+                })}
+              </ol>
             </div>
           </div>
 
