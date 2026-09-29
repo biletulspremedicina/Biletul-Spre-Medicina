@@ -583,7 +583,7 @@ html.student-dark .simulation-library__card .btn-primary:hover { background: #23
 
 .simulation-library__biology-history-toggle svg {
   flex: none;
-  transition: transform .3s ease;
+  transition: transform .55s ease;
 }
 
 .simulation-library__biology-history-toggle[aria-expanded="false"] svg { transform: rotate(-90deg); }
@@ -594,14 +594,14 @@ html.student-dark .simulation-library__card .btn-primary:hover { background: #23
   overflow: hidden;
   opacity: 0;
   visibility: hidden;
-  transition: max-height .38s cubic-bezier(.2, .7, .2, 1), opacity .22s ease, visibility 0s linear .38s;
+  transition: max-height .36s cubic-bezier(.2, .7, .2, 1), opacity .22s ease, visibility 0s linear .36s;
 }
 
 .simulation-library__biology-history-panel--open {
-  max-height: 180px;
+  max-height: 130px;
   opacity: 1;
   visibility: visible;
-  transition: max-height .38s cubic-bezier(.2, .7, .2, 1), opacity .3s ease, visibility 0s;
+  transition: max-height .7s cubic-bezier(.2, .7, .2, 1), opacity .5s ease, visibility 0s;
 }
 
 .simulation-library__biology-history-slider {
@@ -902,3 +902,4 @@ html.student-dark .practice-sets-page .text-brand-700 { color: #f0a8b7; }
   .simulation-library,
   .practice-sets-page { animation: none; }
 }
+s
