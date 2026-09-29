@@ -214,6 +214,7 @@ if (route === 'practice-sets' && activePracticeLessonId) {
           onStartSet={handleStartPracticeSet}
           onViewResults={handleViewPracticeResults}
           onBack={() => { setStudentInitialTab('practice'); setRoute('student-dashboard'); }}
+          onHome={() => { setStudentInitialTab('dashboard'); setRoute('student-dashboard'); }}
           onBuySubscription={handleBuySubscription}
           buyingSub={practiceBuyingSub}
         />
