@@ -869,7 +869,7 @@
                   <div className="simulation-library__grid">
                     {filteredSims.map((sim, index) => (
                       <ArchiveSimCard key={sim.id} sim={sim} index={index} editorial focused={sim.id === focusedSimulationId} hasActiveSub={hasActiveSub}
-                        initialHistoryOpen={openSimulationHistories.current[sim.id] ?? true}
+                        initialHistoryOpen={openSimulationHistories.current[sim.id] ?? false}
                         onHistoryOpenChange={(open) => { openSimulationHistories.current[sim.id] = open; }}
                         onStart={() => onStartSimulation(sim.id)}
                         onViewResults={(attemptId) => onViewResults(sim.id, attemptId)}
