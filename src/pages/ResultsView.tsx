@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase, type Simulation, type Attempt, type AttemptResult, type Subscription, type ReviewQuestionRefRPC } from '@/lib/supabase';
+import { supabase, PREMIUM_ATTEMPT_LIMIT, type Simulation, type Attempt, type AttemptResult, type Subscription, type ReviewQuestionRefRPC } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import { Lock, Trophy, CheckCircle2, XCircle, ChevronLeft, Clock, Crown, RotateCcw, History, Loader2 } from 'lucide-react';
 import Logo from '@/components/Logo';
@@ -135,6 +135,8 @@ export default function ResultsView({ simulationId, attemptId, onExit, onRetake 
   }
 
   const completedAttempts = attempts.filter((a) => a.submitted_at);
+  const paidAttemptsUsed = completedAttempts.filter((a) => !a.is_archive_retake).length;
+  const canRetake = isFree || (hasActiveSub && paidAttemptsUsed < PREMIUM_ATTEMPT_LIMIT);
   const currentAttempt = attempts.find((a) => a.id === selectedAttemptId);
   const score = currentAttempt?.score ?? 0;
   const maxScore = currentAttempt?.max_score ?? 0;
@@ -181,8 +183,7 @@ export default function ResultsView({ simulationId, attemptId, onExit, onRetake 
 
         {canViewDetails && (
           <>
-            {/* Attempt selector for free sims */}
-            {isFree && completedAttempts.length > 1 && (
+            {completedAttempts.length > 1 && (
               <div className="card p-5 mb-6">
                 <div className="flex items-center gap-2 mb-3">
                   <History size={18} className="text-stone-500" />
@@ -251,13 +252,15 @@ export default function ResultsView({ simulationId, attemptId, onExit, onRetake 
 
             {/* Side panel: retake + attempt history on desktop */}
             <div className="md:col-span-2 space-y-6">
-            {/* Retake button for free sims */}
-            {isFree && onRetake && (
+            {canRetake && onRetake && (
               <div className="flex justify-center md:justify-start">
                 <button onClick={() => onRetake(simulationId)} className="btn-primary">
                   <RotateCcw size={16} /> Rezolvă din nou
                 </button>
               </div>
+            )}
+            {!isFree && paidAttemptsUsed >= PREMIUM_ATTEMPT_LIMIT && (
+              <p className="text-sm font-medium text-stone-600">Această simulare a fost deja lucrată.</p>
             )}
 
             {/* Detailed answers with explanations */}
