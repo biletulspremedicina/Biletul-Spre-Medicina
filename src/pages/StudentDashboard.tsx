@@ -1273,23 +1273,7 @@
     const latestAttempt = submitted[0];
     const paidLimitReached = !isFree && submitted.filter((attempt) => !attempt.is_archive_retake).length >= PREMIUM_ATTEMPT_LIMIT && !sim.hasInProgress;
     const isScheduled = !!sim.available_at && new Date(sim.available_at).getTime() > Date.now();
-    const historyRef = useRef<HTMLOListElement>(null);
     const biologyTitle = sim.title.replace(/^(Simulare(?:\s+Biologie)?)\s*#\s*\d+\s*$/i, '$1');
-
-    useEffect(() => {
-      const history = historyRef.current;
-      if (!history) return;
-      const handleWheel = (event: WheelEvent) => {
-        if (event.ctrlKey || history.scrollWidth <= history.clientWidth) return;
-        const movement = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
-        const next = Math.max(0, Math.min(history.scrollWidth - history.clientWidth, history.scrollLeft + movement));
-        if (next === history.scrollLeft) return;
-        event.preventDefault();
-        history.scrollLeft = next;
-      };
-      history.addEventListener('wheel', handleWheel, { passive: false });
-      return () => history.removeEventListener('wheel', handleWheel);
-    }, [submitted.length]);
 
     if (editorial && !isUmfcd) {
       return (
@@ -1313,9 +1297,9 @@
 
           <div className="simulation-library__biology-history">
             <h4>Istoric</h4>
-            <div className={`simulation-library__biology-history-slider ${hasSubmitted ? 'simulation-library__biology-history-slider--timeline' : ''}`}>
+            <div className="simulation-library__biology-history-slider">
               {hasSubmitted ? (
-                <ol ref={historyRef} tabIndex={submitted.length > 1 ? 0 : undefined} aria-label="Încercări anterioare; derulează orizontal pentru a le vedea pe toate">
+                <ol tabIndex={submitted.length > 1 ? 0 : undefined} aria-label="Încercări anterioare; derulează orizontal pentru a le vedea pe toate">
                   {submitted.map((attempt, attemptIndex) => (
                     <li key={attempt.id}>
                       <div>
