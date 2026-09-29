@@ -1275,6 +1275,8 @@ function ArchiveSimCard({
   const paidLimitReached = !isFree && submitted.filter((attempt) => !attempt.is_archive_retake).length >= PREMIUM_ATTEMPT_LIMIT && !sim.hasInProgress;
   const isScheduled = !!sim.available_at && new Date(sim.available_at).getTime() > Date.now();
   const historyRef = useRef<HTMLOListElement>(null);
+  const [selectedAttemptId, setSelectedAttemptId] = useState<string | null>(null);
+  const selectedAttempt = submitted.find((attempt) => attempt.id === selectedAttemptId) ?? latestAttempt;
   const biologyTitle = sim.title.replace(/^(Simulare(?:\s+Biologie)?)\s*#\s*\d+\s*$/i, '$1');
 
   if (editorial && !isUmfcd) {
@@ -1307,11 +1309,12 @@ function ArchiveSimCard({
             )}
             {hasSubmitted ? (
               <ol ref={historyRef} aria-label="Încercări anterioare">
-                {[...submitted].reverse().map((attempt, attemptIndex) => (
+                {submitted.map((attempt, attemptIndex) => (
                   <li key={attempt.id}>
-                    <button type="button" onClick={() => onViewResults(attempt.id)}
-                      aria-label={`Vezi detaliile încercării ${attemptIndex + 1}, scor ${attempt.score} din ${attempt.max_score}`}>
-                      <span>Încercarea {attemptIndex + 1}</span>
+                    <button type="button" onClick={() => setSelectedAttemptId(attempt.id)}
+                      aria-pressed={selectedAttempt?.id === attempt.id}
+                      aria-label={`Selectează încercarea ${submitted.length - attemptIndex}, scor ${attempt.score} din ${attempt.max_score}`}>
+                      <span>Încercarea {submitted.length - attemptIndex}</span>
                       <strong>{attempt.score}/{attempt.max_score}</strong>
                     </button>
                   </li>
@@ -1335,12 +1338,10 @@ function ArchiveSimCard({
           ) : (
             <>
               {hasSubmitted && (
-                <button type="button" onClick={() => onViewResults(latestAttempt?.id)}
+                <button type="button" onClick={() => onViewResults(selectedAttempt?.id)}
                   className="simulation-library__biology-secondary">Vezi detalii</button>
               )}
-              {paidLimitReached ? (
-                <p className="simulation-library__biology-complete">Această simulare a fost deja lucrată.</p>
-              ) : isFree || hasActiveSub ? (
+              {paidLimitReached ? null : isFree || hasActiveSub ? (
                 <button type="button" onClick={onStart} className="simulation-library__biology-primary">
                   {sim.hasInProgress ? 'Continuă simularea' : 'Rezolvă simularea'}
                 </button>
