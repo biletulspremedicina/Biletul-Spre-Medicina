@@ -148,7 +148,6 @@ export default function AdminDashboard({ onExit }: Props) {
     </div>
   );
 }
-
 function TabButton({ active, onClick, icon, children }: { active: boolean; onClick: () => void; icon: React.ReactNode; children: React.ReactNode }) {
   return (
     <button
@@ -182,8 +181,32 @@ function SimulationsTab({
   studentSection: 'all' | 'umfcd';
   heading: string;
 }) {
+  const [savingOrder, setSavingOrder] = useState(false);
+  const [orderError, setOrderError] = useState<string | null>(null);
+  const orderedSimulations = [...simulations].sort((first, second) =>
+    (first.display_order ?? Number.MAX_SAFE_INTEGER) - (second.display_order ?? Number.MAX_SAFE_INTEGER)
+    || new Date(second.created_at).getTime() - new Date(first.created_at).getTime()
+    || first.id.localeCompare(second.id)
+  );
+
+  const moveSimulation = async (from: number, to: number) => {
+    if (savingOrder || from === to || to < 0 || to >= orderedSimulations.length) return;
+    const reordered = [...orderedSimulations];
+    reordered.splice(to, 0, ...reordered.splice(from, 1));
+    setSavingOrder(true);
+    setOrderError(null);
+    const { error } = await supabase.rpc('admin_reorder_simulations', {
+      p_section: studentSection,
+      p_ordered_ids: reordered.map((item) => item.id),
+    });
+    if (error) setOrderError(`Ordinea nu a putut fi salvată: ${error.message}`);
+    else onReload();
+    setSavingOrder(false);
+  };
+
   if (creatingSim) {
-    return <SimForm studentSection={studentSection} onSaved={() => { setCreatingSim(false); onReload(); }} onCancel={() => setCreatingSim(false)} />;
+    const nextOrder = Math.max(0, ...orderedSimulations.map((sim) => sim.display_order ?? 0)) + 1;
+    return <SimForm studentSection={studentSection} nextOrder={nextOrder} onSaved={() => { setCreatingSim(false); onReload(); }} onCancel={() => setCreatingSim(false)} />;
   }
 
   if (editingSim) {
@@ -206,6 +229,8 @@ function SimulationsTab({
         </button>
       </div>
 
+      {orderError && <div role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{orderError}</div>}
+
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {simulations.length === 0 && (
           <div className="card p-12 text-center text-stone-500">
@@ -214,15 +239,25 @@ function SimulationsTab({
             <p className="text-sm mt-1">Creează prima simulare pentru a începe.</p>
           </div>
         )}
-        {simulations.map((sim) => (
-          <SimAdminCard key={sim.id} sim={sim} onReload={onReload} onEdit={() => setEditingSim(sim)} />
+        {orderedSimulations.map((sim, index) => (
+          <SimAdminCard key={sim.id} sim={sim} order={index + 1} total={orderedSimulations.length}
+            savingOrder={savingOrder} onMoveTo={(target) => void moveSimulation(index, target)}
+            onReload={onReload} onEdit={() => setEditingSim(sim)} />
         ))}
       </div>
     </div>
   );
 }
 
-function SimAdminCard({ sim, onReload, onEdit }: { sim: Simulation; onReload: () => void; onEdit: () => void }) {
+function SimAdminCard({ sim, order, total, savingOrder, onMoveTo, onReload, onEdit }: {
+  sim: Simulation;
+  order: number;
+  total: number;
+  savingOrder: boolean;
+  onMoveTo: (target: number) => void;
+  onReload: () => void;
+  onEdit: () => void;
+}) {
   const [showQuestions, setShowQuestions] = useState(false);
   const [questionCount, setQuestionCount] = useState(0);
   const [publishError, setPublishError] = useState<string | null>(null);
@@ -291,6 +326,14 @@ function SimAdminCard({ sim, onReload, onEdit }: { sim: Simulation; onReload: ()
 
   return (
     <div className="card p-5">
+      <label className="mb-3 flex items-center justify-between gap-3 border-b border-stone-100 pb-3 text-xs font-semibold text-stone-600">
+        Poziția în secțiune
+        <select aria-label={`Poziția simulării ${sim.title}`} value={order} disabled={savingOrder}
+          onChange={(event) => onMoveTo(Number(event.target.value) - 1)}
+          className="rounded-lg border border-stone-200 bg-white px-2 py-1 text-sm font-bold text-brand-800 focus:border-brand-500 focus:outline-none disabled:opacity-50">
+          {Array.from({ length: total }, (_, index) => <option key={index} value={index + 1}>{index + 1}</option>)}
+        </select>
+      </label>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1.5 flex-wrap">
@@ -356,7 +399,7 @@ function SimAdminCard({ sim, onReload, onEdit }: { sim: Simulation; onReload: ()
   );
 }
 
-function SimForm({ sim, studentSection, onSaved, onCancel }: { sim?: Simulation; studentSection: 'all' | 'umfcd'; onSaved: () => void; onCancel: () => void }) {
+function SimForm({ sim, studentSection, nextOrder, onSaved, onCancel }: { sim?: Simulation; studentSection: 'all' | 'umfcd'; nextOrder?: number; onSaved: () => void; onCancel: () => void }) {
   const [title, setTitle] = useState(sim?.title || '');
   const [description, setDescription] = useState(sim?.description || '');
   const [duration, setDuration] = useState(sim?.duration_minutes?.toString() || '120');
@@ -394,6 +437,7 @@ function SimForm({ sim, studentSection, onSaved, onCancel }: { sim?: Simulation;
         : (sim?.available_at && new Date(sim.available_at).getTime() <= Date.now() ? sim.available_at : null),
       is_active: isActive,
       student_section: existingSection,
+      ...(!sim ? { display_order: nextOrder ?? 1 } : {}),
     };
 
     let saveError: string | null = null;
@@ -1020,4 +1064,3 @@ function SettingsTab() {
     </div>
   );
 }
-
