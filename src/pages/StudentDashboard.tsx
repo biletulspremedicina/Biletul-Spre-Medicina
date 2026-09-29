@@ -5,6 +5,7 @@
     BookOpen,
     Bookmark,
     CheckCircle2,
+    ChevronDown,
     ChevronRight,
     Clock3,
     Crown,
@@ -227,6 +228,7 @@
     const [removingReviewId, setRemovingReviewId] = useState<string | null>(null);
     const [materialRelease, setMaterialRelease] = useState<MaterialReleaseRPC | null>(null);
     const [focusedSimulationId, setFocusedSimulationId] = useState<string | null>(null);
+    const openSimulationHistories = useRef<Record<string, boolean>>({});
 
     const confirmSignOut = async () => {
       setSigningOut(true);
@@ -867,6 +869,8 @@
                   <div className="simulation-library__grid">
                     {filteredSims.map((sim, index) => (
                       <ArchiveSimCard key={sim.id} sim={sim} index={index} editorial focused={sim.id === focusedSimulationId} hasActiveSub={hasActiveSub}
+                        initialHistoryOpen={openSimulationHistories.current[sim.id] ?? true}
+                        onHistoryOpenChange={(open) => { openSimulationHistories.current[sim.id] = open; }}
                         onStart={() => onStartSimulation(sim.id)}
                         onViewResults={(attemptId) => onViewResults(sim.id, attemptId)}
                         onBuySubscription={handleBuySubscription} buyingSub={buyingSub}
@@ -1251,13 +1255,15 @@
   }
 
   function ArchiveSimCard({
-    sim, index = 0, editorial = false, focused, hasActiveSub, onStart, onViewResults, onBuySubscription, buyingSub, onReleaseReached,
+    sim, index = 0, editorial = false, focused, hasActiveSub, initialHistoryOpen, onHistoryOpenChange, onStart, onViewResults, onBuySubscription, buyingSub, onReleaseReached,
   }: {
     sim: SimWithStatus;
     index?: number;
     editorial?: boolean;
     focused: boolean;
     hasActiveSub: boolean;
+    initialHistoryOpen: boolean;
+    onHistoryOpenChange: (open: boolean) => void;
     onStart: () => void;
     onViewResults: (attemptId?: string) => void;
     onBuySubscription: () => void;
@@ -1278,11 +1284,18 @@
     const paidLimitReached = !isFree && submitted.filter((attempt) => !attempt.is_archive_retake).length >= PREMIUM_ATTEMPT_LIMIT && !sim.hasInProgress;
     const isScheduled = !!sim.available_at && new Date(sim.available_at).getTime() > Date.now();
     const historyRef = useRef<HTMLOListElement>(null);
+    const [historyOpen, setHistoryOpen] = useState(initialHistoryOpen);
     const biologyTitle = sim.title.replace(/^(Simulare(?:\s+Biologie)?)\s*#\s*\d+\s*$/i, '$1');
+
+    const toggleHistory = () => {
+      const nextOpen = !historyOpen;
+      onHistoryOpenChange(nextOpen);
+      setHistoryOpen(nextOpen);
+    };
 
     useEffect(() => {
       const history = historyRef.current;
-      if (!history || historySlotCount <= 3) return;
+      if (!historyOpen || !history || historySlotCount <= 3) return;
       const frame = requestAnimationFrame(() => {
         history.scrollLeft = history.scrollWidth - history.clientWidth;
       });
@@ -1299,7 +1312,7 @@
         cancelAnimationFrame(frame);
         history.removeEventListener('wheel', handleWheel);
       };
-    }, [historySlotCount]);
+    }, [historyOpen, historySlotCount]);
 
     if (editorial && !isUmfcd) {
       return (
@@ -1322,10 +1335,19 @@
           </div>
 
           <div className="simulation-library__biology-history">
-            <h4>Istoric rezolvări</h4>
-            <div className="simulation-library__biology-history-slider">
+            <h4>
+              <button type="button" className="simulation-library__biology-history-toggle"
+                onClick={toggleHistory} aria-expanded={historyOpen} aria-controls={`simulation-history-${sim.id}`}>
+                <span>Istoric rezolvări</span>
+                <ChevronDown size={21} aria-hidden="true" />
+              </button>
+            </h4>
+            <div id={`simulation-history-${sim.id}`}
+              className={`simulation-library__biology-history-panel ${historyOpen ? 'simulation-library__biology-history-panel--open' : ''}`}
+              aria-hidden={!historyOpen}>
+              <div className="simulation-library__biology-history-slider">
               <ol ref={historyRef} className={historySlotCount > 3 ? 'simulation-library__biology-history-list--scrollable' : ''}
-                tabIndex={historySlotCount > 3 ? 0 : undefined}
+                tabIndex={historyOpen && historySlotCount > 3 ? 0 : undefined}
                 aria-label={historySlotCount > 3 ? 'Istoricul rezolvărilor; derulează orizontal pentru a le vedea pe toate' : 'Istoricul rezolvărilor'}>
                 {Array.from({ length: historySlotCount }, (_, attemptIndex) => {
                   const attempt = chronologicalAttempts[attemptIndex];
@@ -1342,6 +1364,7 @@
                   );
                 })}
               </ol>
+              </div>
             </div>
           </div>
 
