@@ -99,6 +99,8 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
       const msg = startError.message || '';
       if (msg.includes('Abonament necesar')) {
         setError('Ai nevoie de un abonament activ pentru a accesa această simulare.');
+      } else if (msg.includes('Limita de 3 încercări')) {
+        setError('Această simulare a fost deja lucrată. Ai folosit toate cele 3 încercări.');
       } else if (msg.includes('nu este disponibil')) {
         setError('Simularea nu este disponibilă momentan.');
       } else {
@@ -348,7 +350,7 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
                 {isPremium ? (
                   <>
                     <strong>Atenție:</strong> Aceasta este o simulare cu abonament și se poate susține
-                    o <strong>singură dată</strong>. Cronometrul pornește la apăsarea butonului
+                    de <strong>trei ori</strong>. Cronometrul pornește la apăsarea butonului
                     „Start" și nu poate fi oprit. La expirarea timpului, răspunsurile se trimit automat.
                     Dacă închizi pagina, poți continua cu timpul rămas.
                   </>
