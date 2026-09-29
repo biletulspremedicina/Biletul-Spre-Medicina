@@ -639,9 +639,9 @@ export default function StudentDashboard({
           {page === 'home' ? (
             <>
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-[1.45fr_0.96fr_1.12fr]">
-                <section className="relative flex min-h-[310px] flex-col overflow-hidden rounded-[12px] border border-[#cde9df] bg-[linear-gradient(125deg,#fbfffd_0%,#f2fbf8_100%)] p-4 sm:p-5 md:col-span-2 md:min-h-[250px] xl:col-span-1 xl:min-h-[356px]">
+                <section className="relative flex min-h-[310px] flex-col overflow-hidden rounded-[12px] border border-[#cde9df] bg-[linear-gradient(125deg,#fbfffd_0%,#f2fbf8_100%)] p-4 sm:p-5 md:col-span-2 md:grid md:min-h-[250px] md:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)] md:items-center md:gap-5 xl:col-span-1 xl:flex xl:min-h-[356px] xl:flex-col xl:items-stretch xl:gap-0">
                   <div className="pointer-events-none absolute -right-8 top-14 h-52 w-52 rounded-full border-[30px] border-[#ddf5eb]/55" aria-hidden="true" />
-                  <div className="relative flex items-start gap-5">
+                  <div className="relative flex min-w-0 items-start gap-5 md:gap-3 xl:gap-5">
                     {isEvening ? (
                       <Moon size={44} className="mt-1 shrink-0 text-[#6877a9]" strokeWidth={1.7} />
                     ) : (
@@ -659,11 +659,11 @@ export default function StudentDashboard({
                     </div>
                   </div>
 
-                  <div className="relative mt-auto grid gap-2 rounded-[34px] border border-[#e6f0ed] bg-white px-4 py-5 shadow-[0_12px_36px_rgba(22,71,57,0.04)] sm:grid-cols-2 sm:gap-0 sm:px-5">
-                    <div className="flex items-center gap-3 sm:border-r sm:border-[#dbe9e5] sm:pr-4">
-                      <div className="flex h-[86px] w-[86px] shrink-0 items-center justify-center rounded-full p-[7px]"
+                  <div className="relative mt-auto grid min-w-0 gap-2 rounded-[34px] border border-[#e6f0ed] bg-white px-4 py-5 shadow-[0_12px_36px_rgba(22,71,57,0.04)] sm:grid-cols-2 sm:gap-0 sm:px-5 md:mt-0 md:grid-cols-1 md:rounded-[22px] md:px-4 md:py-3 xl:mt-auto xl:grid-cols-2 xl:rounded-[34px] xl:px-5 xl:py-5">
+                    <div className="flex items-center gap-3 sm:border-r sm:border-[#dbe9e5] sm:pr-4 md:border-b md:border-r-0 md:pb-3 md:pr-0 xl:border-b-0 xl:border-r xl:pb-0 xl:pr-4">
+                      <div className="flex h-[86px] w-[86px] shrink-0 items-center justify-center rounded-full p-[7px] md:h-[64px] md:w-[64px] md:p-[5px] xl:h-[86px] xl:w-[86px] xl:p-[7px]"
                         style={{ background: `conic-gradient(#188765 ${communityPercent}%, #e0f2ea 0)` }}>
-                        <div className="flex h-full w-full items-center justify-center rounded-full bg-white text-[24px] font-extrabold text-[#113d32]">
+                        <div className="flex h-full w-full items-center justify-center rounded-full bg-white text-[24px] font-extrabold text-[#113d32] md:text-[18px] xl:text-[24px]">
                           {communityPercent}%
                         </div>
                       </div>
@@ -674,7 +674,7 @@ export default function StudentDashboard({
                         </p>
                       </div>
                     </div>
-                    <div className="flex min-w-0 flex-col justify-center pt-3 text-center sm:pl-5 sm:pt-0">
+                    <div className="flex min-w-0 flex-col justify-center pt-3 text-center sm:pl-5 sm:pt-0 md:pl-0 md:pt-3 xl:pl-5 xl:pt-0">
                       <p className="text-[13px] font-bold leading-snug">Grile lucrate în ultimele 7 zile</p>
                       <div className="mt-2 overflow-x-auto">
                         <table className="w-full table-fixed text-center" aria-label="Grile lucrate în fiecare dintre ultimele șapte zile">
