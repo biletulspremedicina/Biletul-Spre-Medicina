@@ -41,16 +41,20 @@ export default function PracticeSetView({ setId, onExit, onComplete }: Props) {
       const msg = startError.message || '';
       if (msg.includes('Abonament necesar')) {
         setError('Ai nevoie de un abonament activ pentru a accesa acest set.');
+      } else if (msg.includes('Limita de 3 încercări')) {
+        setError('Acest set a fost deja lucrat. Ai folosit toate cele 3 încercări.');
       } else if (msg.includes('nu este disponibil')) {
         setError('Acest set nu este disponibil momentan.');
       } else {
         setError('Nu s-a putut porni setul. Încearcă din nou.');
       }
+      setLoading(false);
       return;
     }
 
     if (!data || data.length === 0) {
       setError('Nu s-a putut crea încercarea.');
+      setLoading(false);
       return;
     }
 
@@ -82,6 +86,7 @@ export default function PracticeSetView({ setId, onExit, onComplete }: Props) {
       });
       if (qError) {
         setError('Nu s-au putut încărca întrebările.');
+        setLoading(false);
         return;
       }
       setQuestions((qs || []) as unknown as PracticeQuestionRPC[]);
