@@ -209,7 +209,7 @@
 
 .simulation-intro__wish-mult {
   font-size: .6em;
-  transform: translate(0px, 0px);
+  transform: translate(10px, 0px);
 }
 
 .simulation-intro__wish-succes {
