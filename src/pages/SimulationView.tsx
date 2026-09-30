@@ -325,7 +325,8 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
         <header className="simulation-intro__header">
           <div className="simulation-intro__header-inner">
             <div className="simulation-intro__brand">
-              <Logo size="sm" />
+              <div className="simulation-intro__brand-mobile"><Logo size="sm" /></div>
+              <div className="simulation-intro__brand-desktop"><Logo /></div>
               <span className="simulation-intro__brand-name" aria-hidden="true">
                 <span>Biletul</span>
                 <span>Spre</span>
