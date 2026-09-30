@@ -147,7 +147,7 @@
 .simulation-intro__card {
   max-width: 500px;
   margin-top: 110px;
-  margin-left: 300px;
+  margin-left: 150px;
   padding: clamp(20px, 2.2vw, 30px);
   border: 1px solid #dce2dc;
   border-radius: 19px;
