@@ -209,11 +209,12 @@
 }
 
 .simulation-intro__wish-mult {
-  transform: translate(0px, -10px);
+  transform: translate(0px, 0px);
 }
 
 .simulation-intro__wish-succes {
-  transform: translate(120px, -20px);
+  font-size: 1.08em;
+  transform: translate(0px, 0px);
 }
 
 .simulation-intro__actions { display: flex; flex-direction: column; align-items: center; gap: 9px; }
