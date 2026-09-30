@@ -356,7 +356,7 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
           <div className="simulation-intro__right">
             <p className="simulation-intro__wish">
               <span className="simulation-intro__wish-mult">Mult</span>
-              <span className="simulation-intro__wish-succes">Succes!</span>
+              <span className="simulation-intro__wish-succes">succes!</span>
             </p>
             <section className="simulation-intro__card" aria-labelledby="simulation-intro-summary">
               <h2 id="simulation-intro-summary">{displayName}</h2>
