@@ -87,7 +87,7 @@ export default function PracticeSetsView({
   return (
     <div className="practice-sets-page min-h-screen bg-stone-50">
       <header className="practice-sets-page__topbar sticky top-0 z-10 border-b border-stone-200 bg-white/90 backdrop-blur-sm">
-        <div className="flex w-full items-center justify-between gap-4 px-3 py-3 sm:px-4 lg:px-5">
+        <div className="flex w-full items-center justify-between gap-4 px-5 py-3 sm:px-7 lg:px-8">
           <div className="flex origin-left scale-[0.9] items-center gap-1 sm:scale-100 sm:gap-1.5">
             <div className="sm:hidden"><Logo size="sm" /></div>
             <div className="hidden sm:block"><Logo /></div>
