@@ -35,7 +35,7 @@ import AdminChatTab from '@/components/admin/AdminChatTab';
 import ChemistryAdmin from '@/pages/ChemistryAdmin';
 import { MessageSquare } from 'lucide-react';
 
-type Tab = 'simulations' | 'umfcd2' | 'practice' | 'bank' | 'chemistry' | 'chat' | 'monitoring' | 'settings';
+type Tab = 'simulations' | 'practice' | 'chemistry' | 'umfcd' | 'bank' | 'chat' | 'monitoring' | 'settings';
 
 export default function AdminDashboard({ onExit }: Props) {
   const { profile, signOut } = useAuth();
@@ -83,19 +83,19 @@ export default function AdminDashboard({ onExit }: Props) {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6 flex flex-wrap gap-1 rounded-xl bg-stone-100 p-1 overflow-x-auto">
           <TabButton active={tab === 'simulations'} onClick={() => setTab('simulations')} icon={<LayoutDashboard size={16} />}>
-            Examene și simulări UMFCD
-          </TabButton>
-          <TabButton active={tab === 'umfcd2'} onClick={() => setTab('umfcd2')} icon={<LayoutDashboard size={16} />}>
-            Examene și simulări UMFCD 2
+            Simulări biologie
           </TabButton>
           <TabButton active={tab === 'practice'} onClick={() => setTab('practice')} icon={<GraduationCap size={16} />}>
-            Lecții & Seturi
-          </TabButton>
-          <TabButton active={tab === 'bank'} onClick={() => setTab('bank')} icon={<BookOpen size={16} />}>
-            Banca de grile
+            Antrenament pe capitole
           </TabButton>
           <TabButton active={tab === 'chemistry'} onClick={() => setTab('chemistry')} icon={<FlaskConical size={16} />}>
             Lecții de chimie
+          </TabButton>
+          <TabButton active={tab === 'umfcd'} onClick={() => setTab('umfcd')} icon={<LayoutDashboard size={16} />}>
+            Examene UMFCD
+          </TabButton>
+          <TabButton active={tab === 'bank'} onClick={() => setTab('bank')} icon={<BookOpen size={16} />}>
+            Banca de grile
           </TabButton>
           <TabButton active={tab === 'chat'} onClick={() => setTab('chat')} icon={<MessageSquare size={16} />}>
             Chat asistență
@@ -117,11 +117,11 @@ export default function AdminDashboard({ onExit }: Props) {
             creatingSim={creatingSim}
             setCreatingSim={setCreatingSim}
             studentSection="all"
-            heading="Examene și simulări UMFCD"
+            heading="Simulări biologie"
           />
         )}
 
-        {tab === 'umfcd2' && (
+        {tab === 'umfcd' && (
           <SimulationsTab
             simulations={simulations.filter((s) => s.student_section === 'umfcd')}
             onReload={loadSimulations}
@@ -130,7 +130,7 @@ export default function AdminDashboard({ onExit }: Props) {
             creatingSim={creatingSim}
             setCreatingSim={setCreatingSim}
             studentSection="umfcd"
-            heading="Examene și simulări UMFCD 2"
+            heading="Examene UMFCD"
           />
         )}
 
@@ -398,7 +398,7 @@ function SimForm({ sim, studentSection, nextOrder, onSaved, onCancel }: { sim?: 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const sectionLabel = studentSection === 'umfcd' ? 'Examene și simulări UMFCD' : 'Toate simulările';
+  const sectionLabel = studentSection === 'umfcd' ? 'Examene UMFCD' : 'Simulări biologie';
 
   const handleSave = async () => {
     setError(null);
