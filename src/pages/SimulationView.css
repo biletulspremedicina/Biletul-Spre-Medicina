@@ -215,7 +215,7 @@
 
 .simulation-intro__wish-succes {
   font-size: 1.08em;
-  transform: translate(280px, -60px) rotate(-10deg);
+  transform: translate(280px, -60px) rotate(-9deg);
 }
 
 .simulation-intro__actions { display: flex; flex-direction: column; align-items: center; gap: 9px; }
