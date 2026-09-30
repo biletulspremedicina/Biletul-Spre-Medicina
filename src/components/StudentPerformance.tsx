@@ -35,6 +35,14 @@ const secondsLabel = (seconds: number | null) => {
   const remainder = Math.round(seconds % 60);
   return remainder ? `${minutes} min ${remainder} sec` : `${minutes} min`;
 };
+const simulationTimeLabel = (seconds: number | null) => {
+  if (seconds === null) return '—';
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return `${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+  return remainingMinutes ? `${hours} h ${remainingMinutes} min` : `${hours} h`;
+};
 const percentLabel = (value: number | null) => value === null ? '—' : `${value}%`;
 
 type ChartPoint = { key: string; value: number };
@@ -152,6 +160,14 @@ export default function StudentPerformance({ simulations, practiceAttempts, prac
     const previousTimedAnswers = previousTimes.reduce((sum, item) => sum + item.answers, 0);
     const previousSeconds = previousTimedAnswers ? previousTimes.reduce((sum, item) => sum + item.seconds, 0) / previousTimedAnswers : null;
     const timeDelta = avgSeconds !== null && previousSeconds !== null ? Math.round(avgSeconds - previousSeconds) : null;
+    const simulationDurations = sim.map(({ attempt, simulation }) => {
+      const elapsed = new Date(attempt.submitted_at!).getTime() - new Date(attempt.started_at).getTime();
+      if (!Number.isFinite(elapsed) || elapsed < 0) return null;
+      return Math.min(elapsed / 1000, Math.max(0, simulation.duration_minutes * 60));
+    }).filter((seconds): seconds is number => seconds !== null);
+    const avgSimulationSeconds = simulationDurations.length
+      ? simulationDurations.reduce((sum, seconds) => sum + seconds, 0) / simulationDurations.length
+      : null;
     const onTime = sim.filter(({ attempt, simulation }) => {
       const elapsed = new Date(attempt.submitted_at!).getTime() - new Date(attempt.started_at).getTime();
       return !attempt.expired && Number.isFinite(elapsed) && elapsed >= 0 && elapsed <= simulation.duration_minutes * 60_000;
@@ -180,7 +196,7 @@ export default function StudentPerformance({ simulations, practiceAttempts, prac
     });
     const timePoints = [...timeDaily.entries()].sort(([a], [b]) => a.localeCompare(b))
       .map(([key, row]) => ({ key, value: row.seconds / row.answers }));
-    return { accuracy, accuracyDelta, totalAnswers, best, latest, average, streak, heatDays, avgSeconds, timeDelta, onTime,
+    return { accuracy, accuracyDelta, totalAnswers, best, latest, average, streak, heatDays, avgSeconds, timeDelta, avgSimulationSeconds, onTime,
       totalSim: sim.length, started: started.size, totalLessons: practiceLessons.length, accuracyPoints, timePoints };
   }, [period, todayMs, simulations, practiceAttempts, practiceLessons, practiceSets]);
 
@@ -253,6 +269,10 @@ export default function StudentPerformance({ simulations, practiceAttempts, prac
           {Array.from({ length: Math.min(data.totalSim, 12) }, (_, index) => <span key={index}
             className={index / Math.min(data.totalSim, 12) < data.onTime / data.totalSim ? 'is-active' : ''} />)}</div>
         <div className="performance-legend"><i /> Finalizată în timp <i /> Depășit timpul</div></>}
+        <div className="performance-ontime-average">
+          <span>Timp mediu per simulare</span>
+          <strong>{simulationTimeLabel(data.avgSimulationSeconds)}</strong>
+        </div>
       </div>
     </div>
     <div className="performance-chapters performance-panel"><div className="performance-chapters-copy"><h3>Capitole începute</h3>
