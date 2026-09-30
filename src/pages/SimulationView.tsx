@@ -316,10 +316,6 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
   }
 
   if (!started) {
-    const isPremium = simulation.requires_subscription;
-    const durationLabel = simulation.duration_minutes === 1
-      ? '1 minut'
-      : `${simulation.duration_minutes} ${simulation.duration_minutes >= 20 ? 'de minute' : 'minute'}`;
     return (
       <div className={`simulation-intro ${simulation.student_section === 'umfcd' ? 'simulation-intro--umfcd' : ''}`}>
         <header className="simulation-intro__header">
@@ -333,8 +329,8 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
                 <span>Medicină</span>
               </span>
             </div>
-            <button onClick={onExit} className="simulation-intro__home" type="button">
-              Acasă
+            <button onClick={onExit} className="simulation-intro__home" type="button" aria-label="Acasă">
+              <img src="/Home.png" alt="" width={22} height={22} /><span>Acasă</span>
             </button>
           </div>
         </header>
@@ -344,11 +340,11 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
             <h1 id="simulation-intro-title">Înainte să începi</h1>
             <p className="simulation-intro__lead">Rezervă-ți timpul și intră în ritmul de examen.</p>
             <div className="simulation-intro__rule" />
-            <h2>Cum funcționează</h2>
+            <h2>De știut înainte de start</h2>
             <ol className="simulation-intro__steps">
-              <li><span className="simulation-intro__step-number">01</span><span>Ai <strong>{durationLabel}</strong> la dispoziție.</span></li>
-              <li><span className="simulation-intro__step-number">02</span><span>Cronometrul <strong>nu poate fi pus pe pauză.</strong></span></li>
-              <li><span className="simulation-intro__step-number">03</span><span>La expirare, răspunsurile <strong>se trimit automat.</strong></span></li>
+              <li><span className="simulation-intro__step-number">1</span><span>Cronometrul <strong>nu poate fi pus pe pauză.</strong></span></li>
+              <li><span className="simulation-intro__step-number">2</span><span>Dacă închizi pagina, poți reveni cu timpul rămas.</span></li>
+              <li><span className="simulation-intro__step-number">3</span><span>La expirare, răspunsurile <strong>se trimit automat.</strong></span></li>
             </ol>
           </section>
 
@@ -359,12 +355,7 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
               <p><strong>{questionCount}</strong> {questionCount === 1 ? 'grilă' : 'grile'}</p>
               <p><strong>{simulation.duration_minutes}</strong> min</p>
             </div>
-            <p className={`simulation-intro__access ${isPremium ? 'simulation-intro__access--premium' : ''}`}>
-              {isPremium ? 'Acces cu abonament' : 'Fără abonament'}
-            </p>
             <div className="simulation-intro__notes">
-              <h3>De știut înainte de start</h3>
-              <p>Dacă închizi pagina, poți reveni cu timpul rămas.</p>
               <p className="simulation-intro__wish">Succes!</p>
             </div>
             <div className="simulation-intro__actions">
