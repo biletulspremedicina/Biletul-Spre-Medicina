@@ -10,6 +10,7 @@ import {
 import Logo from '@/components/Logo';
 import Loading from '@/components/Loading';
 import ContentTools from '@/components/admin/ContentTools';
+import { biologySimulationName } from '@/lib/materialDisplayNames';
 
 type Props = {
   onExit: () => void;
@@ -241,6 +242,7 @@ function SimulationsTab({
         )}
         {orderedSimulations.map((sim, index) => (
           <SimAdminCard key={sim.id} sim={sim} order={index + 1} total={orderedSimulations.length}
+            studentSection={studentSection}
             savingOrder={savingOrder} onMoveTo={(target) => void moveSimulation(index, target)}
             onReload={onReload} onEdit={() => setEditingSim(sim)} />
         ))}
@@ -249,10 +251,11 @@ function SimulationsTab({
   );
 }
 
-function SimAdminCard({ sim, order, total, savingOrder, onMoveTo, onReload, onEdit }: {
+function SimAdminCard({ sim, order, total, studentSection, savingOrder, onMoveTo, onReload, onEdit }: {
   sim: Simulation;
   order: number;
   total: number;
+  studentSection: 'all' | 'umfcd';
   savingOrder: boolean;
   onMoveTo: (target: number) => void;
   onReload: () => void;
@@ -262,6 +265,7 @@ function SimAdminCard({ sim, order, total, savingOrder, onMoveTo, onReload, onEd
   const [questionCount, setQuestionCount] = useState(0);
   const [publishError, setPublishError] = useState<string | null>(null);
   const isScheduled = !!sim.available_at && new Date(sim.available_at).getTime() > Date.now();
+  const displayName = studentSection === 'all' ? biologySimulationName(order) : sim.title;
 
   useEffect(() => {
     (async () => {
@@ -319,7 +323,7 @@ function SimAdminCard({ sim, order, total, savingOrder, onMoveTo, onReload, onEd
   };
 
   const handleDelete = async () => {
-    if (!confirm(`Sigur vrei să ștergi simularea „${sim.title}"? Această acțiune va șterge și toate întrebările asociate.`)) return;
+    if (!confirm(`Sigur vrei să ștergi simularea „${displayName}"? Această acțiune va șterge și toate întrebările asociate.`)) return;
     await supabase.from('simulations').delete().eq('id', sim.id);
     onReload();
   };
@@ -328,14 +332,14 @@ function SimAdminCard({ sim, order, total, savingOrder, onMoveTo, onReload, onEd
     <div className="card flex min-w-0 flex-col p-5">
       <label className="mb-3 flex items-center justify-between gap-3 border-b border-stone-100 pb-3 text-xs font-semibold text-stone-600">
         Poziția în secțiune
-        <select aria-label={`Poziția simulării ${sim.title}`} value={order} disabled={savingOrder}
+        <select aria-label={`Poziția simulării ${displayName}`} value={order} disabled={savingOrder}
           onChange={(event) => onMoveTo(Number(event.target.value) - 1)}
           className="rounded-lg border border-stone-200 bg-white px-2 py-1 text-sm font-bold text-brand-800 focus:border-brand-500 focus:outline-none disabled:opacity-50">
           {Array.from({ length: total }, (_, index) => <option key={index} value={index + 1}>{index + 1}</option>)}
         </select>
       </label>
       <div className="min-w-0 flex-1">
-        <h3 className="break-words font-display text-lg font-semibold leading-snug text-stone-900">{sim.title}</h3>
+        <h3 className="break-words font-display text-lg font-semibold leading-snug text-stone-900">{displayName}</h3>
         <div className="mt-2">
           {sim.is_active && isScheduled ? (
             <span className="badge bg-blue-100 text-blue-700"><CalendarClock size={12} /> Programată</span>
@@ -345,7 +349,7 @@ function SimAdminCard({ sim, order, total, savingOrder, onMoveTo, onReload, onEd
             <span className="badge bg-stone-100 text-stone-500"><EyeOff size={12} /> Ciornă</span>
           )}
         </div>
-        {sim.description && <p className="mt-3 line-clamp-2 text-sm text-stone-600">{sim.description}</p>}
+        {studentSection === 'umfcd' && sim.description && <p className="mt-3 line-clamp-2 text-sm text-stone-600">{sim.description}</p>}
         <div className="mt-4 grid grid-cols-2 gap-x-3 gap-y-2 text-xs text-stone-500">
           <span className="flex min-w-0 items-start gap-1.5"><Clock size={14} className="mt-0.5 shrink-0" />{sim.duration_minutes} min</span>
           <span className="flex min-w-0 items-start gap-1.5"><CreditCard size={14} className="mt-0.5 shrink-0" />{sim.requires_subscription ? 'Cu abonament' : 'Fără abonament'}</span>
@@ -379,7 +383,7 @@ function SimAdminCard({ sim, order, total, savingOrder, onMoveTo, onReload, onEd
 
       {showQuestions && (
         <div className="mt-4 border-t border-stone-200 pt-4">
-          <QuestionsManager simulationId={sim.id} simulationTitle={sim.title} isPublished={sim.is_active} />
+          <QuestionsManager simulationId={sim.id} simulationTitle={displayName} isPublished={sim.is_active} />
         </div>
       )}
     </div>
@@ -402,7 +406,7 @@ function SimForm({ sim, studentSection, nextOrder, onSaved, onCancel }: { sim?: 
 
   const handleSave = async () => {
     setError(null);
-    if (!title.trim()) { setError('Titlul este obligatoriu.'); return; }
+    if (studentSection === 'umfcd' && !title.trim()) { setError('Titlul este obligatoriu.'); return; }
     const dur = parseInt(duration) || 0;
     if (dur <= 0) { setError('Durata trebuie să fie un număr valid de minute.'); return; }
     if (timedPost && !availableAt) { setError('Alege ziua și ora publicării programate.'); return; }
@@ -415,8 +419,8 @@ function SimForm({ sim, studentSection, nextOrder, onSaved, onCancel }: { sim?: 
     setSaving(true);
     const existingSection = sim?.student_section || studentSection;
     const payload = {
-      title: title.trim(),
-      description: description.trim(),
+      title: studentSection === 'all' ? 'Simulare' : title.trim(),
+      description: studentSection === 'all' ? '' : description.trim(),
       duration_minutes: dur,
       requires_subscription: requiresSub,
       available_at: timedPost
@@ -471,14 +475,18 @@ function SimForm({ sim, studentSection, nextOrder, onSaved, onCancel }: { sim?: 
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="sm:col-span-2">
-          <label className="label">Titlu</label>
-          <input className="input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Simulare Biologie —..." />
-        </div>
-        <div className="sm:col-span-2">
-          <label className="label">Descriere</label>
-          <textarea className="input min-h-[80px]" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Descriere scurtă a simulării..." />
-        </div>
+        {studentSection === 'umfcd' && (
+          <>
+            <div className="sm:col-span-2">
+              <label className="label">Titlu</label>
+              <input className="input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Examen UMFCD..." />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="label">Descriere</label>
+              <textarea className="input min-h-[80px]" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Descriere scurtă a examenului..." />
+            </div>
+          </>
+        )}
         <div>
           <label className="label">Durata testului (minute)</label>
           <input type="number" className="input" value={duration} onChange={(e) => setDuration(e.target.value)} min={1} />
