@@ -209,7 +209,7 @@
 }
 
 .simulation-intro__wish-mult {
-  transform: translate(-70px, -10px);
+  transform: translate(70px, -10px);
 }
 
 .simulation-intro__wish-succes {
