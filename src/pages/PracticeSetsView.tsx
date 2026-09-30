@@ -7,6 +7,7 @@ import {
 import Logo from '@/components/Logo';
 import Loading from '@/components/Loading';
 import { practiceChapterImageFor } from '@/lib/practiceChapterImages';
+import { practiceSetName, shortPracticeChapterTitle, twoDigitNumber } from '@/lib/materialDisplayNames';
 
 type Props = {
   lessonId: string;
@@ -133,6 +134,7 @@ export default function PracticeSetsView({
               <PracticeSetCard
                 key={set.out_id}
                 set={set}
+                lessonTitle={lessonTitle}
                 index={index}
                 attempts={attempts.filter((attempt) => attempt.set_id === set.out_id)}
                 initialHistoryOpen={openHistories.current[set.out_id] ?? false}
@@ -154,9 +156,10 @@ export default function PracticeSetsView({
 }
 
 function PracticeSetCard({
-  set, index, attempts, initialHistoryOpen, onHistoryOpenChange, focused, hasActiveSub, onStart, onViewResults, onBuySubscription, buyingSub, onReleaseReached,
+  set, lessonTitle, index, attempts, initialHistoryOpen, onHistoryOpenChange, focused, hasActiveSub, onStart, onViewResults, onBuySubscription, buyingSub, onReleaseReached,
 }: {
   set: PracticeSetRPC;
+  lessonTitle: string;
   index: number;
   attempts: PracticeAttempt[];
   initialHistoryOpen: boolean;
@@ -180,6 +183,7 @@ function PracticeSetCard({
     : Math.max(3, attempts.length + 1);
   const [historyOpen, setHistoryOpen] = useState(initialHistoryOpen);
   const historyRef = useRef<HTMLOListElement>(null);
+  const shortTitle = shortPracticeChapterTitle(lessonTitle);
 
   useEffect(() => {
     const history = historyRef.current;
@@ -210,11 +214,11 @@ function PracticeSetCard({
 
   return (
     <article id={`practice-set-${set.out_id}`}
-      className={`simulation-library__card simulation-library__card--biology practice-set-card ${focused ? 'ring-2 ring-rose-700 ring-offset-2' : ''}`}
-      aria-label={`${set.out_title}, ${set.out_question_count} grile`}>
+      className={`simulation-library__card simulation-library__card--biology practice-set-card ${shortTitle.length > 20 ? 'practice-set-card--long-title' : ''} ${focused ? 'ring-2 ring-rose-700 ring-offset-2' : ''}`}
+      aria-label={`${practiceSetName(lessonTitle, index + 1)}, ${set.out_question_count} grile`}>
       <div className="simulation-library__biology-heading">
-        <h3>Set</h3>
-        <span className="simulation-library__biology-number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+        <h3 title={lessonTitle}>{shortTitle}</h3>
+        <span className="simulation-library__biology-number" aria-hidden="true">{twoDigitNumber(index + 1)}</span>
       </div>
       <div className="simulation-library__biology-meta">
         <span><strong>{set.out_question_count}</strong> {set.out_question_count === 1 ? 'grilă' : 'grile'}</span>
