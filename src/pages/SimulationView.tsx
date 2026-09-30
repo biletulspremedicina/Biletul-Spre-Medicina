@@ -1,9 +1,10 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase, type Simulation, type ExamQuestion, type Attempt } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
-import { Clock, Send, AlertTriangle, Loader2, ChevronLeft, PlayCircle, FileText, Save, CheckCircle2, XCircle } from 'lucide-react';
+import { Clock, Send, AlertTriangle, Loader2, ChevronLeft, FileText, Save, CheckCircle2, XCircle } from 'lucide-react';
 import Logo from '@/components/Logo';
 import Loading from '@/components/Loading';
+import './SimulationView.css';
 
 type Props = {
   simulationId: string;
@@ -316,59 +317,65 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
 
   if (!started) {
     const isPremium = simulation.requires_subscription;
+    const durationLabel = simulation.duration_minutes === 1
+      ? '1 minut'
+      : `${simulation.duration_minutes} ${simulation.duration_minutes >= 20 ? 'de minute' : 'minute'}`;
     return (
-      <div className="min-h-screen bg-stone-50">
-        <header className="border-b border-stone-200 bg-white">
-          <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 py-4">
-            <Logo size="sm" />
-            <button onClick={onExit} className="btn-ghost">
-              <ChevronLeft size={16} /> Ieși
+      <div className={`simulation-intro ${simulation.student_section === 'umfcd' ? 'simulation-intro--umfcd' : ''}`}>
+        <header className="simulation-intro__header">
+          <div className="simulation-intro__header-inner">
+            <div className="simulation-intro__brand">
+              <Logo size="sm" />
+              <span className="simulation-intro__brand-name" aria-hidden="true">
+                <span>Biletul</span>
+                <span>Spre</span>
+                <span>Medicină</span>
+              </span>
+            </div>
+            <button onClick={onExit} className="simulation-intro__home" type="button">
+              Acasă
             </button>
           </div>
         </header>
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-16 text-center">
-          <div className="mb-6 flex justify-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-100 text-brand-600">
-              <Clock size={32} />
-            </div>
-          </div>
-          <h1 className="font-display text-2xl font-bold text-stone-900 mb-3">{simulation.title}</h1>
-          {simulation.description && (
-            <p className="text-stone-600 mb-8">{simulation.description}</p>
-          )}
+        <main className="simulation-intro__main">
+          <section className="simulation-intro__editorial" aria-labelledby="simulation-intro-title">
+            <p className="simulation-intro__eyebrow">{simulation.student_section === 'umfcd' ? 'EXAMENE UMFCD' : 'SIMULARE BIOLOGIE'}</p>
+            <h1 id="simulation-intro-title">Înainte să începi</h1>
+            <p className="simulation-intro__lead">Rezervă-ți timpul și intră în ritmul de examen.</p>
+            <div className="simulation-intro__rule" />
+            <h2>Cum funcționează</h2>
+            <ol className="simulation-intro__steps">
+              <li><span className="simulation-intro__step-number">01</span><span>Ai <strong>{durationLabel}</strong> la dispoziție.</span></li>
+              <li><span className="simulation-intro__step-number">02</span><span>Cronometrul <strong>nu poate fi pus pe pauză.</strong></span></li>
+              <li><span className="simulation-intro__step-number">03</span><span>La expirare, răspunsurile <strong>se trimit automat.</strong></span></li>
+            </ol>
+          </section>
 
-          <div className="card p-6 mb-8 text-left">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <InfoRow label="Timp alocat" value={`${simulation.duration_minutes} minute`} />
-              <InfoRow label="Număr grile" value={`${questionCount} grile`} />
-              <InfoRow label="Tip acces" value={isPremium ? 'Necesită abonament' : 'Fără abonament'} />
-              <InfoRow label="Punctaj" value="Totul sau nimic (1 punct / grilă)" />
+          <section className="simulation-intro__card" aria-labelledby="simulation-intro-summary">
+            <h2 id="simulation-intro-summary">{simulation.title}</h2>
+            {simulation.description && <p className="simulation-intro__description">{simulation.description}</p>}
+            <div className="simulation-intro__stats">
+              <p><strong>{questionCount}</strong> {questionCount === 1 ? 'grilă' : 'grile'}</p>
+              <p><strong>{simulation.duration_minutes}</strong> min</p>
             </div>
-            <div className="mt-4 rounded-lg bg-amber-50 border border-amber-200 p-4 text-sm text-amber-800 flex gap-3">
-              <AlertTriangle size={18} className="flex-shrink-0 mt-0.5" />
-              <div>
-                {isPremium ? (
-                  <>
-                    <strong>Atenție:</strong> Aceasta este o simulare cu abonament și se poate susține
-                    de <strong>trei ori</strong>. Cronometrul pornește la apăsarea butonului
-                    „Start" și nu poate fi oprit. La expirarea timpului, răspunsurile se trimit automat.
-                    Dacă închizi pagina, poți continua cu timpul rămas.
-                  </>
-                ) : (
-                  <>
-                    <strong>Atenție:</strong> Cronometrul pornește la apăsarea butonului „Start" și
-                    nu poate fi oprit. La expirarea timpului, răspunsurile se trimit automat.
-                    După finalizare, poți rezolva din nou de câte ori dorești.
-                  </>
-                )}
-              </div>
+            <p className={`simulation-intro__access ${isPremium ? 'simulation-intro__access--premium' : ''}`}>
+              {isPremium ? 'Acces cu abonament' : 'Fără abonament'}
+            </p>
+            <div className="simulation-intro__notes">
+              <h3>De știut înainte de start</h3>
+              <p>Dacă închizi pagina, poți reveni cu timpul rămas.</p>
+              <p className="simulation-intro__wish">Succes!</p>
             </div>
-          </div>
-
-          <button onClick={startAttempt} className="btn-primary text-base">
-            <PlayCircle size={20} /> Start simulare
-          </button>
-        </div>
+            <div className="simulation-intro__actions">
+              <button onClick={startAttempt} className="simulation-intro__start" type="button">
+                Începe simularea
+              </button>
+              <button onClick={onExit} className="simulation-intro__later" type="button">
+                Nu acum
+              </button>
+            </div>
+          </section>
+        </main>
       </div>
     );
   }
@@ -462,15 +469,6 @@ function formatTime(seconds: number) {
   const s = seconds % 60;
   if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   return `${m}:${s.toString().padStart(2, '0')}`;
-}
-
-function InfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <p className="text-xs text-stone-500 mb-0.5">{label}</p>
-      <p className="text-sm font-semibold text-stone-900">{value}</p>
-    </div>
-  );
 }
 
 function QuestionCard({
