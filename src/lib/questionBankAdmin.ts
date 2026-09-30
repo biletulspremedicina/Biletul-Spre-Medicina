@@ -1,4 +1,5 @@
 import { supabase, type BankQuestion } from '@/lib/supabase';
+import { practiceSetName } from '@/lib/materialDisplayNames';
 
 export type QuestionSet = { id: string; title: string };
 export type QuestionSetMemberships = Map<string, QuestionSet[]>;
@@ -52,13 +53,31 @@ export async function loadQuestionSetMemberships(questionIds: string[]): Promise
 
   const setIds = [...new Set(junctions.map((item) => item.set_id))];
   const sets = new Map<string, QuestionSet>();
+  const setRows: { id: string; title: string; lesson_id: string; position: number }[] = [];
   for (let start = 0; start < setIds.length; start += ID_BATCH_SIZE) {
     const { data, error } = await supabase
       .from('practice_sets')
-      .select('id, title')
+      .select('id, title, lesson_id, position')
       .in('id', setIds.slice(start, start + ID_BATCH_SIZE));
     if (error) throw error;
-    for (const set of data || []) sets.set(set.id, set);
+    setRows.push(...(data || []));
+  }
+
+  const lessonIds = [...new Set(setRows.map((set) => set.lesson_id))];
+  const lessons = new Map<string, string>();
+  for (let start = 0; start < lessonIds.length; start += ID_BATCH_SIZE) {
+    const { data, error } = await supabase
+      .from('practice_lessons')
+      .select('id, title')
+      .in('id', lessonIds.slice(start, start + ID_BATCH_SIZE));
+    if (error) throw error;
+    for (const lesson of data || []) lessons.set(lesson.id, lesson.title);
+  }
+  for (const set of setRows) {
+    sets.set(set.id, {
+      id: set.id,
+      title: practiceSetName(lessons.get(set.lesson_id) || set.title, set.position + 1),
+    });
   }
 
   for (const item of junctions) {
