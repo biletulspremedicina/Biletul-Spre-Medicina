@@ -206,15 +206,16 @@
 .simulation-intro__wish-mult,
 .simulation-intro__wish-succes {
   display: block;
+  width: max-content;
 }
 
 .simulation-intro__wish-mult {
-  transform: translate(200px, -25px);
+  transform: translate(200px, -25px) rotate(-25deg);
 }
 
 .simulation-intro__wish-succes {
   font-size: 1.08em;
-  transform: translate(325px, -50px);
+  transform: translate(325px, -50px) rotate(-25deg);
 }
 
 .simulation-intro__actions { display: flex; flex-direction: column; align-items: center; gap: 9px; }
