@@ -13,6 +13,7 @@ import {
 } from '@/lib/newQuestionsImport';
 import NewQuestionsImportPreviewDialog from '@/components/admin/NewQuestionsImportPreviewDialog';
 import { loadBankQuestions, loadQuestionSetMemberships, type QuestionSet, type QuestionSetMemberships } from '@/lib/questionBankAdmin';
+import { practiceSetName } from '@/lib/materialDisplayNames';
 
 export default function QuestionBankAdmin() {
   const [lessons, setLessons] = useState<PracticeLesson[]>([]);
@@ -484,6 +485,7 @@ function BankLessonView({ lesson, onBack }: { lesson: PracticeLesson; onBack: ()
       {showAddToSet && (
         <AddToSetDialog
           lessonId={lesson.id}
+          lessonTitle={lesson.title}
           selectedQuestionIds={Array.from(selectedIds)}
           onDone={(count) => {
             setShowAddToSet(false);
@@ -499,7 +501,6 @@ function BankLessonView({ lesson, onBack }: { lesson: PracticeLesson; onBack: ()
         <CreateSetFromSelectionDialog
           lesson={lesson}
           selectedQuestionIds={Array.from(selectedIds)}
-          position={0}
           onDone={() => {
             setShowCreateSet(false);
             setSelectedIds(new Set());
@@ -800,14 +801,15 @@ export function BankQuestionForm({
 // ── Add To Set Dialog ───────────────────────────────────────────────────
 
 function AddToSetDialog({
-  lessonId, selectedQuestionIds, onDone, onCancel,
+  lessonId, lessonTitle, selectedQuestionIds, onDone, onCancel,
 }: {
   lessonId: string;
+  lessonTitle: string;
   selectedQuestionIds: string[];
   onDone: (count: number) => void;
   onCancel: () => void;
 }) {
-  const [sets, setSets] = useState<{ id: string; title: string }[]>([]);
+  const [sets, setSets] = useState<{ id: string; title: string; position: number }[]>([]);
   const [selectedSetId, setSelectedSetId] = useState('');
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
@@ -817,10 +819,10 @@ function AddToSetDialog({
     (async () => {
       const { data } = await supabase
         .from('practice_sets')
-        .select('id, title')
+        .select('id, title, position')
         .eq('lesson_id', lessonId)
         .order('position', { ascending: true });
-      setSets((data || []) as { id: string; title: string }[]);
+      setSets((data || []) as { id: string; title: string; position: number }[]);
       setLoading(false);
     })();
   }, [lessonId]);
@@ -855,8 +857,8 @@ function AddToSetDialog({
         ) : (
           <select className="input" value={selectedSetId} onChange={(e) => setSelectedSetId(e.target.value)}>
             <option value="">Selectează un set...</option>
-            {sets.map((s) => (
-              <option key={s.id} value={s.id}>{s.title}</option>
+            {sets.map((s, index) => (
+              <option key={s.id} value={s.id}>{practiceSetName(lessonTitle, index + 1)}</option>
             ))}
           </select>
         )}
@@ -878,16 +880,13 @@ function AddToSetDialog({
 // ── Create Set From Selection Dialog ────────────────────────────────────
 
 function CreateSetFromSelectionDialog({
-  lesson, selectedQuestionIds, position, onDone, onCancel,
+  lesson, selectedQuestionIds, onDone, onCancel,
 }: {
   lesson: PracticeLesson;
   selectedQuestionIds: string[];
-  position: number;
   onDone: () => void;
   onCancel: () => void;
 }) {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
   const [targetCount, setTargetCount] = useState(selectedQuestionIds.length.toString());
   const [requiresSub, setRequiresSub] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -895,19 +894,26 @@ function CreateSetFromSelectionDialog({
 
   const handleCreate = async () => {
     setError(null);
-    if (!title.trim()) { setError('Titlul este obligatoriu.'); return; }
     const tc = parseInt(targetCount) || 0;
     if (tc <= 0) { setError('Numărul de grile trebuie să fie pozitiv.'); return; }
 
     setSaving(true);
     try {
+      const { data: lastSet, error: positionError } = await supabase
+        .from('practice_sets')
+        .select('position')
+        .eq('lesson_id', lesson.id)
+        .order('position', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (positionError) throw positionError;
       const { error: rpcError } = await supabase.rpc('admin_create_set_from_questions', {
         p_lesson_id: lesson.id,
-        p_title: title.trim(),
-        p_description: description.trim(),
+        p_title: 'Set',
+        p_description: '',
         p_target_count: tc,
         p_requires_subscription: requiresSub,
-        p_position: position,
+        p_position: (lastSet?.position ?? -1) + 1,
         p_question_ids: selectedQuestionIds,
       });
       if (rpcError) throw rpcError;
@@ -926,14 +932,6 @@ function CreateSetFromSelectionDialog({
         </h3>
 
         <div className="grid gap-4">
-          <div>
-            <label className="label">Titlu</label>
-            <input className="input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Set 1 — Celula..." />
-          </div>
-          <div>
-            <label className="label">Descriere</label>
-            <textarea className="input min-h-[60px]" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Descriere scurtă..." />
-          </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="label">Număr țintă grile</label>
