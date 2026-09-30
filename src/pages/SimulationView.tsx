@@ -4,6 +4,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Clock, Send, AlertTriangle, Loader2, ChevronLeft, FileText, Save, CheckCircle2, XCircle } from 'lucide-react';
 import Logo from '@/components/Logo';
 import Loading from '@/components/Loading';
+import { biologySimulationName } from '@/lib/materialDisplayNames';
 import './SimulationView.css';
 
 type Props = {
@@ -300,6 +301,10 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
     );
   }
 
+  const displayName = simulation.student_section === 'all'
+    ? biologySimulationName(simulation.display_order ?? 1)
+    : simulation.title;
+
   if (error) {
     return (
       <div className="min-h-screen bg-stone-50 flex items-center justify-center">
@@ -349,8 +354,8 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
           </section>
 
           <section className="simulation-intro__card" aria-labelledby="simulation-intro-summary">
-            <h2 id="simulation-intro-summary">{simulation.title}</h2>
-            {simulation.description && <p className="simulation-intro__description">{simulation.description}</p>}
+            <h2 id="simulation-intro-summary">{displayName}</h2>
+            {simulation.student_section === 'umfcd' && simulation.description && <p className="simulation-intro__description">{simulation.description}</p>}
             <div className="simulation-intro__stats">
               <p><strong>{questionCount}</strong> {questionCount === 1 ? 'grilă' : 'grile'}</p>
               <p><strong>{simulation.duration_minutes}</strong> min</p>
@@ -380,7 +385,7 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center gap-3">
             <Logo size="sm" showText={false} />
-            <span className="text-sm font-medium text-stone-700 hidden sm:inline">{simulation.title}</span>
+            <span className="text-sm font-medium text-stone-700 hidden sm:inline">{displayName}</span>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
             {saveState !== 'idle' && (
