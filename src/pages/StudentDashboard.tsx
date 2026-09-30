@@ -36,6 +36,7 @@
   import StudentPerformance from '@/components/StudentPerformance';
   import PracticeLibrary from '@/components/PracticeLibrary';
   import { medicalFactForDate } from '@/lib/dailyMedicalFacts';
+  import { biologySimulationName } from '@/lib/materialDisplayNames';
 
   type IncomingTab = 'all' | 'practice' | 'umfcd' | 'chemistry' | 'dashboard';
   type PageId = 'home' | 'all' | 'practice' | 'umfcd' | 'chemistry' | 'review' | 'settings';
@@ -1297,7 +1298,7 @@
     const isScheduled = !!sim.available_at && new Date(sim.available_at).getTime() > Date.now();
     const historyRef = useRef<HTMLOListElement>(null);
     const [historyOpen, setHistoryOpen] = useState(initialHistoryOpen);
-    const biologyTitle = sim.title.replace(/^(Simulare(?:\s+Biologie)?)\s*#\s*\d+\s*$/i, '$1');
+    const biologyTitle = 'Simulare';
 
     const toggleHistory = () => {
       const nextOpen = !historyOpen;
@@ -1426,7 +1427,7 @@
         )}
         <div className="mb-3 flex flex-wrap items-start gap-2">
           <h3 className="line-clamp-2 min-w-0 flex-1 font-display text-base font-semibold leading-snug text-stone-900">
-            {sim.title}
+            {isUmfcd ? sim.title : biologySimulationName(index + 1)}
           </h3>
           {hasSubmitted ? (
             <span className="badge shrink-0 bg-brand-100 text-brand-700">
