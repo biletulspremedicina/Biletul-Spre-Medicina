@@ -354,7 +354,10 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
           </section>
 
           <div className="simulation-intro__right">
-            <p className="simulation-intro__wish">Succes!</p>
+            <p className="simulation-intro__wish">
+              <span className="simulation-intro__wish-mult">Mult</span>
+              <span className="simulation-intro__wish-succes">Succes!</span>
+            </p>
             <section className="simulation-intro__card" aria-labelledby="simulation-intro-summary">
               <h2 id="simulation-intro-summary">{displayName}</h2>
               {simulation.student_section === 'umfcd' && simulation.description && <p className="simulation-intro__description">{simulation.description}</p>}
