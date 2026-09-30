@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { BankQuestionForm } from '@/components/admin/QuestionBankAdmin';
 import { loadBankQuestions, loadQuestionSetMemberships, type QuestionSetMemberships } from '@/lib/questionBankAdmin';
+import { practiceSetName } from '@/lib/materialDisplayNames';
 
 function toDateTimeLocal(value: string | null | undefined) {
   if (!value) return '';
@@ -465,7 +466,8 @@ function SetsManager({ lesson, onBack }: { lesson: PracticeLesson; onBack: () =>
     return (
       <SetForm
         lessonId={lesson.id}
-        position={sets.length}
+        lessonTitle={lesson.title}
+        position={Math.max(-1, ...sets.map((set) => set.position)) + 1}
         onSaved={() => { setCreatingSet(false); loadSets(); }}
         onCancel={() => setCreatingSet(false)}
       />
@@ -480,6 +482,7 @@ function SetsManager({ lesson, onBack }: { lesson: PracticeLesson; onBack: () =>
         </button>
         <SetForm
           lessonId={lesson.id}
+          lessonTitle={lesson.title}
           set={editingSet}
           position={editingSet.position}
           onSaved={() => { setEditingSet(null); loadSets(); }}
@@ -547,6 +550,7 @@ function SetsManager({ lesson, onBack }: { lesson: PracticeLesson; onBack: () =>
             >
               <SetAdminCard
                 set={set}
+                lessonTitle={lesson.title}
                 order={idx + 1}
                 total={sets.length}
                 savingOrder={savingOrder}
@@ -575,9 +579,10 @@ function SetsManager({ lesson, onBack }: { lesson: PracticeLesson; onBack: () =>
 // ── Set Card ────────────────────────────────────────────────────────────
 
 function SetAdminCard({
-  set, order, total, savingOrder, canMoveUp, canMoveDown, onEdit, onReload, onOpen, onMove, onMoveTo, onDragStart, onDragEnd,
+  set, lessonTitle, order, total, savingOrder, canMoveUp, canMoveDown, onEdit, onReload, onOpen, onMove, onMoveTo, onDragStart, onDragEnd,
 }: {
   set: PracticeSet;
+  lessonTitle: string;
   order: number;
   total: number;
   savingOrder: boolean;
@@ -594,6 +599,7 @@ function SetAdminCard({
   const [questionCount, setQuestionCount] = useState(0);
   const [publishError, setPublishError] = useState<string | null>(null);
   const isScheduled = !!set.available_at && new Date(set.available_at).getTime() > Date.now();
+  const displayName = practiceSetName(lessonTitle, order);
 
   useEffect(() => {
     (async () => {
@@ -644,16 +650,23 @@ function SetAdminCard({
   };
 
   const handleDuplicate = async () => {
-    const newTitle = `${set.title} (copie)`;
+    const { data: lastSet, error: positionError } = await supabase
+      .from('practice_sets')
+      .select('position')
+      .eq('lesson_id', set.lesson_id)
+      .order('position', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (positionError) return;
     const { data: newSet, error: insertError } = await supabase
       .from('practice_sets')
       .insert({
         lesson_id: set.lesson_id,
-        title: newTitle,
-        description: set.description,
+        title: 'Set',
+        description: '',
         target_question_count: set.target_question_count,
         requires_subscription: set.requires_subscription,
-        position: set.position + 1,
+        position: (lastSet?.position ?? -1) + 1,
         is_active: false,
       })
       .select()
@@ -679,7 +692,7 @@ function SetAdminCard({
   };
 
   const handleDelete = async () => {
-    if (!confirm(`Sigur vrei să ștergi setul „${set.title}"? Se vor șterge toate întrebările asociate.`)) return;
+    if (!confirm(`Sigur vrei să ștergi setul „${displayName}"? Se vor șterge toate întrebările asociate.`)) return;
     await supabase.from('practice_sets').delete().eq('id', set.id);
     onReload();
   };
@@ -697,20 +710,20 @@ function SetAdminCard({
               disabled={savingOrder}
               className="cursor-grab text-stone-400 hover:text-brand-600 active:cursor-grabbing disabled:opacity-30"
               title="Trage pentru a schimba ordinea setului"
-              aria-label={`Trage setul ${set.title}`}
+              aria-label={`Trage setul ${displayName}`}
             >
               <GripVertical size={17} />
             </button>
-            <button onClick={() => onMove('up')} disabled={savingOrder || !canMoveUp} className="text-stone-400 hover:text-stone-700 disabled:opacity-30" aria-label={`Mută setul ${set.title} mai sus`}>
+            <button onClick={() => onMove('up')} disabled={savingOrder || !canMoveUp} className="text-stone-400 hover:text-stone-700 disabled:opacity-30" aria-label={`Mută setul ${displayName} mai sus`}>
               <ArrowUp size={14} />
             </button>
-            <button onClick={() => onMove('down')} disabled={savingOrder || !canMoveDown} className="text-stone-400 hover:text-stone-700 disabled:opacity-30" aria-label={`Mută setul ${set.title} mai jos`}>
+            <button onClick={() => onMove('down')} disabled={savingOrder || !canMoveDown} className="text-stone-400 hover:text-stone-700 disabled:opacity-30" aria-label={`Mută setul ${displayName} mai jos`}>
               <ArrowDown size={14} />
             </button>
           </div>
-          <PositionInput position={order} total={total} onMove={onMoveTo} label={`Poziția setului ${set.title}`} disabled={savingOrder} />
+          <PositionInput position={order} total={total} onMove={onMoveTo} label={`Poziția setului ${displayName}`} disabled={savingOrder} />
           <div className="flex-1 min-w-0">
-            <h3 className="font-display text-base font-semibold text-stone-900">{set.title}</h3>
+            <h3 className="font-display text-base font-semibold text-stone-900">{displayName}</h3>
           </div>
           {set.is_active && isScheduled ? (
             <span className="badge bg-blue-100 text-blue-700"><CalendarClock size={12} /> Programat</span>
@@ -721,7 +734,6 @@ function SetAdminCard({
           )}
         </div>
 
-        {set.description && <p className="text-sm text-stone-600 line-clamp-2">{set.description}</p>}
 
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-stone-500">
           <span className="flex items-center gap-1">
@@ -769,15 +781,14 @@ function SetAdminCard({
 
 // ── Set Form ────────────────────────────────────────────────────────────
 
-function SetForm({ lessonId, set, position, onSaved, onCancel }: {
+function SetForm({ lessonId, lessonTitle, set, position, onSaved, onCancel }: {
   lessonId: string;
+  lessonTitle: string;
   set?: PracticeSet;
   position: number;
   onSaved: () => void;
   onCancel: () => void;
 }) {
-  const [title, setTitle] = useState(set?.title || '');
-  const [description, setDescription] = useState(set?.description || '');
   const [targetCount, setTargetCount] = useState(set?.target_question_count?.toString() || '10');
   const [requiresSub, setRequiresSub] = useState(set ? set.requires_subscription : false);
   const existingFutureRelease = !!set?.available_at && new Date(set.available_at).getTime() > Date.now();
@@ -788,7 +799,6 @@ function SetForm({ lessonId, set, position, onSaved, onCancel }: {
 
   const handleSave = async () => {
     setError(null);
-    if (!title.trim()) { setError('Titlul este obligatoriu.'); return; }
     const tc = parseInt(targetCount) || 0;
     if (tc <= 0) { setError('Numărul de grile trebuie să fie mai mare decât zero.'); return; }
     if (timedPost && !availableAt) { setError('Alege ziua și ora publicării programate.'); return; }
@@ -802,8 +812,8 @@ function SetForm({ lessonId, set, position, onSaved, onCancel }: {
     let saveError: string | null = null;
     const payload = {
       lesson_id: lessonId,
-      title: title.trim(),
-      description: description.trim(),
+      title: 'Set',
+      description: '',
       target_question_count: tc,
       requires_subscription: requiresSub,
       available_at: timedPost
@@ -854,15 +864,8 @@ function SetForm({ lessonId, set, position, onSaved, onCancel }: {
       <h2 className="font-display text-xl font-bold text-stone-900 mb-6">
         {set ? 'Editează setul' : 'Creează set nou'}
       </h2>
+      <p className="mb-5 text-sm text-stone-600">{practiceSetName(lessonTitle, position + 1)}</p>
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="sm:col-span-2">
-          <label className="label">Titlu</label>
-          <input className="input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Set 1 — Celula..." />
-        </div>
-        <div className="sm:col-span-2">
-          <label className="label">Descriere</label>
-          <textarea className="input min-h-[80px]" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Descriere scurtă..." />
-        </div>
         <div>
           <label className="label">Număr de grile</label>
           <input type="number" className="input" value={targetCount} onChange={(e) => setTargetCount(e.target.value)} min={1} />
@@ -1010,7 +1013,7 @@ function QuestionsManagerAdmin({ set, lesson, onBack }: { set: PracticeSet; less
 
       <div className="mb-4 flex items-center justify-between">
         <div>
-          <h2 className="font-display text-xl font-bold text-stone-900">{set.title}</h2>
+          <h2 className="font-display text-xl font-bold text-stone-900">{practiceSetName(lesson.title, set.position + 1)}</h2>
           <p className="text-sm text-stone-500 mt-1">
             Grile în set: <strong className="text-stone-700">{questions.length} din {set.target_question_count}</strong>
           </p>
