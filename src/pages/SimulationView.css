@@ -194,6 +194,7 @@
 .simulation-intro__stats strong { font-weight: 700; }
 
 .simulation-intro__wish {
+  height: clamp(44px, 5.25vw, 63px);
   margin: 0 0 34px;
   color: var(--intro-accent);
   font-family: Georgia, Cambria, 'Times New Roman', serif;
@@ -264,7 +265,7 @@
   .simulation-intro__editorial { padding-left: 0; }
   .simulation-intro__right { padding-top: 10px; }
   .simulation-intro__card { margin-left: 15px; }
-  .simulation-intro__wish { margin-bottom: 18px; font-size: 50px; }
+  .simulation-intro__wish { height: 44px; margin-bottom: 18px; font-size: 50px; }
   .simulation-intro__editorial h1 { font-size: 35px; }
   .simulation-intro__lead { font-size: 17px; }
   .simulation-intro__card { padding: 20px; }
@@ -294,7 +295,7 @@
   .simulation-intro__description { margin-top: 4px; font-size: 12px; line-height: 1.3; }
   .simulation-intro__stats { margin: 12px 0; }
   .simulation-intro__stats p { font-size: 19px; }
-  .simulation-intro__wish { margin: 0 0 8px 9px; font-size: 34px; }
+  .simulation-intro__wish { height: 32px; margin: 0 0 8px 9px; font-size: 34px; }
   .simulation-intro__actions { gap: 7px; }
   .simulation-intro__start { min-height: 44px; font-size: 17px; }
   .simulation-intro__later { font-size: 12px; }
@@ -323,7 +324,7 @@
   .simulation-intro__card h2 { font-size: 27px; }
   .simulation-intro__stats { margin: 12px 0; }
   .simulation-intro__stats p { font-size: 20px; }
-  .simulation-intro__wish { margin: 0 0 8px 12px; font-size: 28px; }
+  .simulation-intro__wish { height: 25px; margin: 0 0 8px 12px; font-size: 28px; }
   .simulation-intro__actions { gap: 7px; }
   .simulation-intro__start { min-height: 42px; font-size: 17px; }
   .simulation-intro__later { font-size: 13px; }
@@ -341,6 +342,6 @@
   .simulation-intro__card h2 { font-size: 24px; }
   .simulation-intro__stats { margin: 7px 0; }
   .simulation-intro__stats p { font-size: 17px; }
-  .simulation-intro__wish { margin: 0 0 5px 8px; font-size: 25px; }
+  .simulation-intro__wish { height: 23px; margin: 0 0 5px 8px; font-size: 25px; }
   .simulation-intro__start { min-height: 37px; font-size: 16px; }
 }
