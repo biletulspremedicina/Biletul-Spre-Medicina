@@ -657,10 +657,15 @@ html.student-dark .simulation-library__card .btn-primary:hover { background: #23
   width: 100%;
   height: 2px;
   color: #8eaf98;
-  background-image: repeating-linear-gradient(to right, currentColor 0 5px, transparent 5px 13px);
+  background-image: repeating-linear-gradient(to right, currentColor 0 5px, transparent 5px 14px);
 }
 
 .simulation-library__biology-history-link--complete { background: currentColor; }
+
+.simulation-library__biology-history-link:not(.simulation-library__biology-history-link--complete) {
+  left: calc(50% + 10px);
+  width: calc(100% - 20px);
+}
 
 .simulation-library__biology-history-label {
   display: block;
