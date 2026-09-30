@@ -941,6 +941,15 @@ html.student-dark .simulation-library--umfcd .border-dashed > div { background: 
 .practice-sets-page .practice-set-card .simulation-library__biology-meta strong,
 .practice-sets-page .practice-set-card .simulation-library__biology-history h4 { color: #582638; }
 .practice-set-card .simulation-library__biology-heading { min-height: 69px; }
+.practice-sets-page .practice-set-card h3 {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: clamp(22px, 2vw, 29px);
+  line-height: 1.1;
+}
+.practice-sets-page .practice-set-card--long-title h3 { font-size: clamp(20px, 1.7vw, 25px); }
 .practice-sets-page .practice-set-card .simulation-library__biology-number { color: #842d42; }
 .practice-set-card .simulation-library__biology-meta { min-height: 27px; color: #775963; }
 .practice-sets-page .practice-set-card .simulation-library__biology-access--free { color: #7c3548; }
