@@ -679,14 +679,14 @@
                     </div>
 
                     <div className="relative mt-auto grid min-w-0 gap-2 rounded-[34px] border border-[#e6f0ed] bg-white px-4 py-5 shadow-[0_12px_36px_rgba(22,71,57,0.04)] sm:grid-cols-2 sm:gap-0 sm:px-5 md:mt-0 md:grid-cols-1 md:rounded-[22px] md:px-4 md:py-3 xl:mt-auto xl:grid-cols-2 xl:rounded-[34px] xl:px-5 xl:py-5">
-                      <div className="flex items-center gap-3 sm:border-r sm:border-[#dbe9e5] sm:pr-4 md:border-b md:border-r-0 md:pb-3 md:pr-0 xl:border-b-0 xl:border-r xl:pb-0 xl:pr-4">
+                      <div className="flex items-center justify-center gap-3 sm:border-r sm:border-[#dbe9e5] sm:pr-4 md:border-b md:border-r-0 md:pb-3 md:pr-0 xl:justify-start xl:border-b-0 xl:border-r xl:pb-0 xl:pr-4">
                         <div className="flex h-[86px] w-[86px] shrink-0 items-center justify-center rounded-full p-[7px] md:h-[64px] md:w-[64px] md:p-[5px] xl:h-[86px] xl:w-[86px] xl:p-[7px]"
                           style={{ background: `conic-gradient(#188765 ${communityPercent}%, #e0f2ea 0)` }}>
                           <div className="flex h-full w-full items-center justify-center rounded-full bg-white text-[24px] font-extrabold text-[#113d32] md:text-[18px] xl:text-[24px]">
                             {communityPercent}%
                           </div>
                         </div>
-                        <div className="min-w-0">
+                        <div className="min-w-0 text-center xl:text-left">
                           <p className="text-[13px] font-bold leading-snug">Activitatea comunității azi</p>
                           <p className="mt-2 text-[11px] leading-relaxed text-[#607587]">
                             Procent demonstrativ al abonaților activi astăzi
@@ -722,8 +722,8 @@
                   </section>
 
                   <section className="flex min-h-[290px] flex-col rounded-[12px] border border-[#dfe6ec] bg-white p-5 xl:min-h-[356px]">
-                    <h2 className="text-[27px] font-bold leading-tight" style={serif}>Progres global</h2>
-                    <p className="mt-1 text-[13px] leading-relaxed text-[#5d6e85]">
+                    <h2 className="text-center text-[27px] font-bold leading-tight" style={serif}>Progres global</h2>
+                    <p className="mt-1 text-center text-[13px] leading-relaxed text-[#5d6e85]">
                       Întrebări distincte rezolvate cel puțin o dată din totalul disponibil pe platformă.
                     </p>
                     <div className="my-auto flex justify-center py-3">
