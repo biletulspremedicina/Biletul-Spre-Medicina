@@ -4,7 +4,7 @@
 .performance-heading { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 24px; }
 .performance h2, .performance h3, .performance-sim-copy strong,
 .performance-big-number, .performance-sim-measure strong, .performance-streak strong,
-.performance-mid-number, .performance-ring strong, .performance-chapters-number {
+.performance-mid-number, .performance-chapters-number {
   font-family: Georgia, Cambria, 'Times New Roman', serif;
 }
 .performance h2 { margin: 0; font-size: clamp(29px, 3.2vw, 46px); font-weight: 700; line-height: 1.1; }
@@ -63,8 +63,6 @@
 .performance-time .performance-chart-label { fill: #81929c; }.performance-time .performance-chart-grid { stroke: #a7b8b3; }.performance-time .performance-chart-dot { fill: #0b755b; }
 .performance-time .performance-empty { height: 90px; min-height: 0; color: #71848b; }
 .performance-ontime-content { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; }
-.performance-ring { display: flex; width: 86px; height: 86px; flex: 0 0 86px; align-items: center; justify-content: center; border-radius: 50%; background: conic-gradient(#0c7058 var(--progress), #e6ece9 var(--progress)); }
-.performance-ring::before { content: ''; position: absolute; width: 64px; height: 64px; border-radius: 50%; background: #fff; }.performance-ring strong { position: relative; font-size: 21px; font-weight: 700; }
 .performance-ontime-bar, .performance-chapter-bar { display: flex; gap: 7px; align-items: center; }.performance-ontime-bar { margin-top: 12px; }.performance-ontime-bar span, .performance-chapter-bar span { flex: 1; height: 25px; border-radius: 3px; background: #e6eaec; }.performance-ontime-bar span.is-active, .performance-chapter-bar span.is-active { background: #127258; }.performance-ontime-bar span.is-empty, .performance-chapter-bar span.is-empty { opacity: .5; }
 .performance-chapters { display: flex; align-items: center; gap: 25px; min-height: 76px; margin-top: 18px; padding: 13px 25px; }.performance-chapters h3 { font-size: 21px; }.performance-chapters p { font-size: 11px; }
 .performance-chapters-copy { min-width: 225px; }.performance-chapters-number { color: #142b35; font-size: 31px; font-weight: 700; white-space: nowrap; }.performance-chapters-number span { color: #657885; font-size: 20px; }
@@ -94,9 +92,6 @@
   .performance-time .performance-mid-number { margin-top: 13px; }
   .performance-ontime { grid-area: ontime; }
   .performance-ontime-content { justify-content: flex-start; gap: 16px; margin-top: 10px; }
-  .performance-ontime .performance-ring { width: 64px; height: 64px; flex-basis: 64px; }
-  .performance-ontime .performance-ring::before { width: 48px; height: 48px; }
-  .performance-ontime .performance-ring strong { font-size: 17px; }
   .performance-ontime .performance-ontime-bar { margin-top: 9px; }
   .performance-ontime .performance-ontime-bar span { height: 14px; }
   .performance-ontime.is-empty .performance-ontime-content { margin-top: 15px; }
@@ -116,5 +111,4 @@ html.student-dark .performance-period button, html.student-dark .performance-dat
 html.student-dark .performance-period button.is-active { color: #fff; }
 html.student-dark .performance-sim-row { border-color: #3a5b4c; } html.student-dark .performance-sim-head button { background: #315443; color: #e8f2eb; }
 html.student-dark .performance-bar, html.student-dark .performance-heatmap span:not(.is-active), html.student-dark .performance-ontime-bar span:not(.is-active), html.student-dark .performance-chapter-bar span:not(.is-active), html.student-dark .performance-legend i:nth-of-type(2) { background: #3a5047; }
-html.student-dark .performance-ring::before { background: #182e27; }
 html.student-dark .performance-time .performance-chart-label { fill: #b1c8bc; }
