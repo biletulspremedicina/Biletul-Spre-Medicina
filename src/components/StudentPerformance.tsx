@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Attempt, PracticeAttempt, PracticeLessonRPC, Simulation } from '@/lib/supabase';
 import './StudentPerformance.css';
 
@@ -248,9 +248,7 @@ export default function StudentPerformance({ simulations, practiceAttempts, prac
         {data.timePoints.length > 0 && <TrendChart points={data.timePoints} max={timeTickMax} ticks={[`${timeTickMax}`, `${timeTickMax / 2}`, '0']} id="time" />}
       </div>
       <div className={`performance-ontime performance-panel ${data.totalSim ? '' : 'is-empty'}`}><h3>În timpul alocat</h3>
-        <div className="performance-ontime-content"><strong className="performance-mid-number">{data.onTime} din {data.totalSim}</strong>
-          {data.totalSim > 0 && <div className="performance-ring" style={{ '--progress': `${(data.onTime / data.totalSim) * 100}%` } as CSSProperties}>
-            <strong>{Math.round((data.onTime / data.totalSim) * 100)}%</strong></div>}</div>
+        <div className="performance-ontime-content"><strong className="performance-mid-number">{data.onTime} din {data.totalSim}</strong></div>
         {data.totalSim > 0 && <><div className="performance-ontime-bar" aria-label={`${data.onTime} din ${data.totalSim} simulări finalizate în timp`}>
           {Array.from({ length: Math.min(data.totalSim, 12) }, (_, index) => <span key={index}
             className={index / Math.min(data.totalSim, 12) < data.onTime / data.totalSim ? 'is-active' : ''} />)}</div>
