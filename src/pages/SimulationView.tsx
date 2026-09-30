@@ -353,25 +353,25 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
             </ol>
           </section>
 
-          <section className="simulation-intro__card" aria-labelledby="simulation-intro-summary">
-            <h2 id="simulation-intro-summary">{displayName}</h2>
-            {simulation.student_section === 'umfcd' && simulation.description && <p className="simulation-intro__description">{simulation.description}</p>}
-            <div className="simulation-intro__stats">
-              <p><strong>{questionCount}</strong> {questionCount === 1 ? 'grilă' : 'grile'}</p>
-              <p><strong>{simulation.duration_minutes}</strong> min</p>
-            </div>
-            <div className="simulation-intro__notes">
-              <p className="simulation-intro__wish">Succes!</p>
-            </div>
-            <div className="simulation-intro__actions">
-              <button onClick={startAttempt} className="simulation-intro__start" type="button">
-                Începe simularea
-              </button>
-              <button onClick={onExit} className="simulation-intro__later" type="button">
-                Nu acum
-              </button>
-            </div>
-          </section>
+          <div className="simulation-intro__right">
+            <p className="simulation-intro__wish">Succes!</p>
+            <section className="simulation-intro__card" aria-labelledby="simulation-intro-summary">
+              <h2 id="simulation-intro-summary">{displayName}</h2>
+              {simulation.student_section === 'umfcd' && simulation.description && <p className="simulation-intro__description">{simulation.description}</p>}
+              <div className="simulation-intro__stats">
+                <p><strong>{questionCount}</strong> {questionCount === 1 ? 'grilă' : 'grile'}</p>
+                <p><strong>{simulation.duration_minutes}</strong> min</p>
+              </div>
+              <div className="simulation-intro__actions">
+                <button onClick={startAttempt} className="simulation-intro__start" type="button">
+                  Începe simularea
+                </button>
+                <button onClick={onExit} className="simulation-intro__later" type="button">
+                  Nu acum
+                </button>
+              </div>
+            </section>
+          </div>
         </main>
       </div>
     );
