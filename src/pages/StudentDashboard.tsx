@@ -231,6 +231,8 @@
     const [removingReviewId, setRemovingReviewId] = useState<string | null>(null);
     const [materialRelease, setMaterialRelease] = useState<MaterialReleaseRPC | null>(null);
     const [focusedSimulationId, setFocusedSimulationId] = useState<string | null>(null);
+    const [umfcdKindFilter, setUmfcdKindFilter] = useState<'all' | 'Examen' | 'Simulare'>('all');
+    const [umfcdYearFilter, setUmfcdYearFilter] = useState<number | null>(null);
     const openSimulationHistories = useRef<Record<string, boolean>>({});
 
     const confirmSignOut = async () => {
@@ -599,7 +601,17 @@
       </aside>
     );
 
-    const filteredSims = simulations.filter((sim) => sim.student_section === page);
+    const sectionSims = simulations.filter((sim) => sim.student_section === page);
+    const umfcdTypeSims = page === 'umfcd'
+      ? sectionSims.filter((sim) => umfcdKindFilter === 'all' || umfcdSimulationKind(sim) === umfcdKindFilter)
+      : [];
+    const availableUmfcdYears = [...new Set(umfcdTypeSims.map(umfcdSimulationYear).filter((year): year is number => year !== null))]
+      .sort((first, second) => second - first);
+    const selectedUmfcdYear = umfcdYearFilter !== null && availableUmfcdYears.includes(umfcdYearFilter)
+      ? umfcdYearFilter : null;
+    const filteredSims = page === 'umfcd'
+      ? umfcdTypeSims.filter((sim) => selectedUmfcdYear === null || umfcdSimulationYear(sim) === selectedUmfcdYear)
+      : sectionSims;
     const completedInCategory = filteredSims.filter((sim) => sim.hasSubmitted).length;
     const simulationProgress = filteredSims.length
       ? Math.round((completedInCategory / filteredSims.length) * 100)
@@ -864,6 +876,38 @@
                 </div>
                 <div className="simulation-library__section-heading">
                   <h2>{page === 'all' ? 'Simulări disponibile' : 'Examene disponibile'}</h2>
+                  {page === 'umfcd' && (
+                    <div className="simulation-library__filters" role="group" aria-label="Filtrează examenele UMFCD">
+                      <label className="simulation-library__filter">
+                        <span>Tip</span>
+                        <span className="simulation-library__filter-control">
+                          <select value={umfcdKindFilter} onChange={(event) => {
+                            const nextKind = event.target.value as 'all' | 'Examen' | 'Simulare';
+                            setUmfcdKindFilter(nextKind);
+                            if (umfcdYearFilter !== null && !sectionSims.some((sim) =>
+                              (nextKind === 'all' || umfcdSimulationKind(sim) === nextKind)
+                              && umfcdSimulationYear(sim) === umfcdYearFilter)) setUmfcdYearFilter(null);
+                          }}>
+                            <option value="all">Toate</option>
+                            <option value="Examen">Examene</option>
+                            <option value="Simulare">Simulări</option>
+                          </select>
+                          <ChevronDown size={15} aria-hidden="true" />
+                        </span>
+                      </label>
+                      <label className="simulation-library__filter">
+                        <span>An</span>
+                        <span className="simulation-library__filter-control">
+                          <select value={selectedUmfcdYear ?? ''} onChange={(event) =>
+                            setUmfcdYearFilter(event.target.value ? Number(event.target.value) : null)}>
+                            <option value="">Toți anii</option>
+                            {availableUmfcdYears.map((year) => <option key={year} value={year}>{year}</option>)}
+                          </select>
+                          <ChevronDown size={15} aria-hidden="true" />
+                        </span>
+                      </label>
+                    </div>
+                  )}
                   <div className="simulation-library__progress" aria-label={`${completedInCategory} din ${filteredSims.length} ${page === 'all' ? 'simulări' : 'examene'} rezolvate`}>
                     <span>{completedInCategory} din {filteredSims.length} rezolvate</span>
                     <div className="simulation-library__progress-track" role="progressbar"
@@ -875,8 +919,8 @@
                 {filteredSims.length === 0 ? (
                   <div className="px-6 pb-8">
                     <EmptyState icon={<Archive size={36} />}
-                      title={page === 'all' ? 'Nu există simulări în această categorie.' : 'Nu există examene UMFCD disponibile.'}
-                      text="Revino mai târziu pentru materiale noi." />
+                      title={page === 'all' ? 'Nu există simulări în această categorie.' : (sectionSims.length ? 'Nu există materiale pentru filtrele alese.' : 'Nu există examene UMFCD disponibile.')}
+                      text={page === 'umfcd' && sectionSims.length ? 'Încearcă alt tip sau alt an.' : 'Revino mai târziu pentru materiale noi.'} />
                   </div>
                 ) : (
                   <div className="simulation-library__grid">
@@ -1396,7 +1440,7 @@
                 )}
                 {paidLimitReached ? null : isFree || hasActiveSub ? (
                   <button type="button" onClick={onStart} className="simulation-library__biology-primary">
-                    {sim.hasInProgress ? `Continuă ${isUmfcd ? 'examenul' : 'simularea'}` : `Rezolvă ${isUmfcd ? 'examenul' : 'simularea'}`}
+                    {sim.hasInProgress ? `Continuă ${cardTitle === 'Examen' ? 'examenul' : 'simularea'}` : `Rezolvă ${cardTitle === 'Examen' ? 'examenul' : 'simularea'}`}
                   </button>
                 ) : (
                   <button type="button" onClick={onBuySubscription} disabled={buyingSub}
