@@ -771,6 +771,44 @@ html.student-dark .simulation-library__card-meta { color: #c1d1c5; border-color:
 }
 .simulation-library--umfcd .simulation-library__eyebrow { color: #cee2ef; }
 .simulation-library--umfcd .simulation-library__subtitle { color: #e0edf4; }
+.simulation-library--umfcd .simulation-library__section-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: end;
+  gap: 18px;
+}
+.simulation-library__filters { display: flex; align-items: end; gap: 10px; }
+.simulation-library__filter { display: grid; gap: 6px; min-width: 0; }
+.simulation-library__filter > span:first-child {
+  color: #5b7180;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: .02em;
+}
+.simulation-library__filter-control { position: relative; display: block; }
+.simulation-library__filter select {
+  width: 150px;
+  height: 38px;
+  appearance: none;
+  padding: 0 34px 0 12px;
+  border: 1px solid #d5e1e9;
+  border-radius: 8px;
+  background: #fff;
+  color: #1d435c;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.simulation-library__filter select:hover { border-color: #87a9bd; }
+.simulation-library__filter select:focus-visible { outline: 2px solid #286b96; outline-offset: 2px; }
+.simulation-library__filter-control svg {
+  position: absolute;
+  top: 50%;
+  right: 11px;
+  color: #50748a;
+  pointer-events: none;
+  transform: translateY(-50%);
+}
 .simulation-library--umfcd .simulation-library__progress-track { background: #dce7ee; }
 .simulation-library--umfcd .simulation-library__progress-track div { background: #286b96; }
 .simulation-library--umfcd .simulation-library__grid { border-color: #e8eef2; }
@@ -790,10 +828,10 @@ html.student-dark .simulation-library__card-meta { color: #c1d1c5; border-color:
   transform: translateX(var(--umfcd-heading-offset-x));
 }
 .simulation-library--umfcd .simulation-library__biology-heading h3[data-umfcd-kind="Examen"] {
-  --umfcd-heading-offset-x: 20px;
+  --umfcd-heading-offset-x: 30px;
 }
 .simulation-library--umfcd .simulation-library__biology-heading h3[data-umfcd-kind="Simulare"] {
-  --umfcd-heading-offset-x: 0px;
+  --umfcd-heading-offset-x: 15px;
 }
 .simulation-library--umfcd .simulation-library__biology-number {
   --umfcd-year-tilt: 15deg; /* Schimbă aici unghiul pentru a înclina anul. */
@@ -844,6 +882,9 @@ html.student-dark .simulation-library--umfcd .simulation-library__hero-photo {
     url('https://old.umfcd.ro/wp-content/uploads/css_medicina.jpg');
 }
 html.student-dark .simulation-library--umfcd .simulation-library__grid { background: #1a303e; border-color: #3c596b; }
+html.student-dark .simulation-library__filter > span:first-child { color: #b8ccda; }
+html.student-dark .simulation-library__filter select { background: #203d4e; border-color: #537185; color: #e8f1f7; }
+html.student-dark .simulation-library__filter-control svg { color: #c3d5e1; }
 html.student-dark .simulation-library--umfcd .simulation-library__card { background: #1d3645; border-color: #476475; }
 html.student-dark .simulation-library--umfcd .simulation-library__card--biology { background: radial-gradient(circle at 50% 0, #29485a, #1d3645 46%); }
 html.student-dark .simulation-library--umfcd .simulation-library__card--biology h3,
@@ -872,10 +913,20 @@ html.student-dark .simulation-library--umfcd .border-dashed > div { background: 
   .simulation-library__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
+@media (max-width: 1350px) {
+  .simulation-library--umfcd .simulation-library__section-heading { grid-template-columns: minmax(0, 1fr) auto; }
+  .simulation-library--umfcd .simulation-library__filters { grid-column: 1 / -1; grid-row: 2; }
+}
+
 @media (max-width: 700px) {
   .simulation-library__hero-copy { width: 100%; }
   .simulation-library__hero-photo { inset: 0; opacity: .34; }
   .simulation-library__section-heading { align-items: start; flex-direction: column; gap: 12px; }
+  .simulation-library--umfcd .simulation-library__section-heading { grid-template-columns: 1fr; }
+  .simulation-library--umfcd .simulation-library__filters { grid-column: 1; grid-row: auto; width: 100%; }
+  .simulation-library--umfcd .simulation-library__progress { grid-column: 1; }
+  .simulation-library__filter { flex: 1; }
+  .simulation-library__filter select { width: 100%; }
   .simulation-library__grid { grid-template-columns: 1fr; }
   .simulation-library__card--biology { min-height: 0; }
 }
