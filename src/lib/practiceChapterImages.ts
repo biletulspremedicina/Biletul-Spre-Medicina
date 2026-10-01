@@ -8,7 +8,7 @@ const PHOTO = {
   senses: 'https://commons.wikimedia.org/wiki/Special:FilePath/030608_Pupil.jpg?width=360',
 };
 
-export const PRACTICE_LIBRARY_HERO_IMAGE = 'https://previews.123rf.com/images/nikahgeh/nikahgeh2305/nikahgeh230502271/205463228-old-books-on-a-table-in-a-library-with-bookshelves-in-the-background.jpg';
+export const PRACTICE_LIBRARY_HERO_IMAGE = 'https://static.vecteezy.com/system/resources/thumbnails/023/123/056/small/a-stack-of-antique-leather-books-in-a-vintage-library-generative-ai-photo.jpg';
 
 export function practiceChapterImageFor(title: string, large = false) {
   const name = title.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('ro-RO');
