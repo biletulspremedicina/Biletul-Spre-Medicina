@@ -918,6 +918,24 @@ html.student-dark .simulation-library--umfcd .border-dashed > div { background: 
   .simulation-library__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
+@media (min-width: 701px) and (max-width: 1200px) {
+  .simulation-library:not(.simulation-library--umfcd) .simulation-library__card--biology h3 { font-size: 40px; }
+  .simulation-library:not(.simulation-library--umfcd) .simulation-library__biology-number { font-size: 66px; }
+  .simulation-library:not(.simulation-library--umfcd) .simulation-library__biology-meta {
+    flex-wrap: nowrap;
+    gap: 4px 5px;
+    white-space: nowrap;
+    font-size: 11px;
+  }
+  .simulation-library:not(.simulation-library--umfcd) .simulation-library__biology-meta strong { font-size: 18px; }
+}
+
+@media (min-width: 481px) and (max-width: 700px) {
+  .simulation-library:not(.simulation-library--umfcd) .simulation-library__card--biology h3 { font-size: 40px; }
+  .simulation-library:not(.simulation-library--umfcd) .simulation-library__biology-number { font-size: 66px; }
+  .simulation-library:not(.simulation-library--umfcd) .simulation-library__biology-meta { flex-wrap: nowrap; white-space: nowrap; }
+}
+
 @media (max-width: 1350px) {
   .simulation-library--umfcd .simulation-library__section-heading { grid-template-columns: minmax(0, 1fr) auto; }
   .simulation-library--umfcd .simulation-library__filters { grid-column: 1 / -1; grid-row: 2; }
