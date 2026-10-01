@@ -784,7 +784,7 @@ html.student-dark .simulation-library__card-meta { color: #c1d1c5; border-color:
 .simulation-library--umfcd .simulation-library__biology-meta strong,
 .simulation-library--umfcd .simulation-library__biology-history h4 { color: #173c57; }
 .simulation-library--umfcd .simulation-library__biology-heading h3 {
-  --umfcd-heading-offset-x: 8px; /* Valoare mai mare = mai la dreapta. */
+  --umfcd-heading-offset-x: 10px; /* Valoare mai mare = mai la dreapta. */
   transform: translateX(var(--umfcd-heading-offset-x));
 }
 .simulation-library--umfcd .simulation-library__biology-number {
