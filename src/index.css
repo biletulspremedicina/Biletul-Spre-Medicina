@@ -974,6 +974,21 @@ html.student-dark .simulation-library--umfcd .border-dashed > div { background: 
   .simulation-library--umfcd .simulation-library__progress-track { width: clamp(42px, 5vw, 70px); }
 }
 
+@media (min-width: 701px) and (max-width: 1200px) {
+  .simulation-library--umfcd .simulation-library__section-heading {
+    grid-template-columns: max-content minmax(0, 1fr) max-content;
+  }
+  .simulation-library--umfcd .simulation-library__section-heading h2 {
+    font-size: clamp(25px, 2.9vw, 33px);
+  }
+  .simulation-library--umfcd .simulation-library__filters {
+    justify-self: center;
+  }
+  .simulation-library--umfcd .simulation-library__filter select {
+    width: clamp(88px, 9.6vw, 122px);
+  }
+}
+
 @media (min-width: 681px) and (max-width: 1200px) {
   .practice-sets-page__grid { gap: 14px; }
   .practice-sets-page .practice-set-card { padding: 16px 14px; }
