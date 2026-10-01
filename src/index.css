@@ -784,11 +784,16 @@ html.student-dark .simulation-library__card-meta { color: #c1d1c5; border-color:
 .simulation-library--umfcd .simulation-library__biology-meta strong,
 .simulation-library--umfcd .simulation-library__biology-history h4 { color: #173c57; }
 .simulation-library--umfcd .simulation-library__biology-heading h3 {
-  --umfcd-heading-offset-x: 5px; /* Valoare mai mare = mai la dreapta. */
   font-size: clamp(34px, 2.9vw, 46px);
   line-height: 1;
   letter-spacing: -.05em;
   transform: translateX(var(--umfcd-heading-offset-x));
+}
+.simulation-library--umfcd .simulation-library__biology-heading h3[data-umfcd-kind="Examen"] {
+  --umfcd-heading-offset-x: 30px;
+}
+.simulation-library--umfcd .simulation-library__biology-heading h3[data-umfcd-kind="Simulare"] {
+  --umfcd-heading-offset-x: 15px;
 }
 .simulation-library--umfcd .simulation-library__biology-number {
   --umfcd-year-tilt: 15deg; /* Schimbă aici unghiul pentru a înclina anul. */
@@ -877,8 +882,10 @@ html.student-dark .simulation-library--umfcd .border-dashed > div { background: 
 
 @media (max-width: 480px) {
   .simulation-library--umfcd .simulation-library__biology-heading { gap: 4px; }
-  .simulation-library--umfcd .simulation-library__biology-heading h3 {
+  .simulation-library--umfcd .simulation-library__biology-heading h3[data-umfcd-kind] {
     --umfcd-heading-offset-x: 0px;
+  }
+  .simulation-library--umfcd .simulation-library__biology-heading h3 {
     font-size: clamp(30px, 9vw, 36px);
     white-space: nowrap;
   }
