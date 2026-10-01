@@ -73,7 +73,7 @@
     practice: '/Capitole.png', // Aici pui sursa imaginii ANTRENAMENT PE CAPITOLE
     umfcd: '', // Aici pui sursa imaginii EXAMENE UMFCD
     review: '/Revizie2.png', // Aici pui sursa imaginii INTREBARI DE REVIZUIT
-    chemistry: '/Chimie.png',
+    chemistry: '',
   };
 
   const serif = { fontFamily: 'Georgia, Cambria, "Times New Roman", serif' };
@@ -1333,7 +1333,7 @@
         <article id={`released-simulation-${sim.id}`}
           className={`simulation-library__card simulation-library__card--biology ${focused ? `ring-2 ${isUmfcd ? 'ring-blue-500' : 'ring-emerald-500'} ring-offset-2` : ''}`}>
           <div className="simulation-library__biology-heading">
-            <h3>{cardTitle}</h3>
+            <h3 data-umfcd-kind={isUmfcd ? cardTitle : undefined}>{cardTitle}</h3>
             <span className="simulation-library__biology-number" aria-label={isUmfcd ? `Anul ${umfcdYear ?? 'nesetat'}` : `Simularea ${Number(index ?? 0) + 1}`}>
               {isUmfcd ? (umfcdYear ?? '—') : String(Number(index ?? 0) + 1).padStart(2, '0')}
             </span>
