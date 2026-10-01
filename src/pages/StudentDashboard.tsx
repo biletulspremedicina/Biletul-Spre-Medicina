@@ -1120,7 +1120,9 @@
         </div>
         <div className="mx-auto my-2.5 h-px w-4/5 bg-white/15" />
         <p className="break-words text-center text-[clamp(17px,1.4vw,22px)] font-bold leading-tight text-white" style={serif}>
-          {release.out_title}
+          {release.out_source_type === 'practice'
+            ? (release.out_chapter_title?.trim() || release.out_title)
+            : release.out_title}
         </p>
       </div>
     );
