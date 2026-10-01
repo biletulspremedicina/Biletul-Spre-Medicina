@@ -1,14 +1,17 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { supabase, type PracticeQuestionRPC } from '@/lib/supabase';
+import { supabase, type PracticeQuestionRPC, type PracticeSetRPC } from '@/lib/supabase';
 import {
   ChevronLeft, Send, AlertTriangle, Loader2, FileText, Save, CheckCircle2, XCircle,
 } from 'lucide-react';
 import Logo from '@/components/Logo';
 import Loading from '@/components/Loading';
+import { practiceSetName } from '@/lib/materialDisplayNames';
+import './SimulationView.css';
 
 type Props = {
   setId: string;
   onExit: () => void;
+  onHome: () => void;
   onComplete: (attemptId: string) => void;
 };
 
@@ -16,7 +19,13 @@ const LETTERS = ['A', 'B', 'C', 'D', 'E'] as const;
 
 type SaveState = 'idle' | 'saving' | 'saved' | 'error';
 
-export default function PracticeSetView({ setId, onExit, onComplete }: Props) {
+type IntroMeta = {
+  lessonTitle: string;
+  position: number;
+  questionCount: number;
+};
+
+export default function PracticeSetView({ setId, onExit, onHome, onComplete }: Props) {
   const [questions, setQuestions] = useState<PracticeQuestionRPC[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
@@ -24,15 +33,53 @@ export default function PracticeSetView({ setId, onExit, onComplete }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<SaveState>('idle');
   const [started, setStarted] = useState(false);
+  const [introMeta, setIntroMeta] = useState<IntroMeta | null>(null);
 
   const answersRef = useRef<Record<string, string>>({});
   const attemptIdRef = useRef<string | null>(null);
   const submittedRef = useRef(false);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const { data: set, error: setLookupError } = await supabase
+        .from('practice_sets')
+        .select('lesson_id')
+        .eq('id', setId)
+        .maybeSingle();
+      if (!active) return;
+      if (setLookupError || !set) {
+        setError('Setul nu a fost găsit.');
+        setLoading(false);
+        return;
+      }
+
+      const [lessonResult, setsResult] = await Promise.all([
+        supabase.from('practice_lessons').select('title').eq('id', set.lesson_id).maybeSingle(),
+        supabase.rpc('get_practice_sets', { p_lesson_id: set.lesson_id }),
+      ]);
+      if (!active) return;
+      const selectedSet = ((setsResult.data || []) as PracticeSetRPC[])
+        .find((item) => item.out_id === setId);
+      if (lessonResult.error || !lessonResult.data || setsResult.error || !selectedSet) {
+        setError('Nu s-au putut încărca detaliile setului.');
+      } else {
+        setIntroMeta({
+          lessonTitle: lessonResult.data.title,
+          position: selectedSet.out_position,
+          questionCount: selectedSet.out_question_count,
+        });
+      }
+      setLoading(false);
+    })();
+    return () => { active = false; };
+  }, [setId]);
+
   // Start or resume attempt
   const startAttempt = useCallback(async () => {
     setError(null);
+    setLoading(true);
     const { data, error: startError } = await supabase.rpc('start_practice_attempt', {
       p_set_id: setId,
     });
@@ -72,10 +119,6 @@ export default function PracticeSetView({ setId, onExit, onComplete }: Props) {
     }
     setStarted(true);
   }, [setId, onComplete]);
-
-  useEffect(() => {
-    startAttempt();
-  }, [startAttempt]);
 
   // Load questions once started
   useEffect(() => {
@@ -208,6 +251,63 @@ export default function PracticeSetView({ setId, onExit, onComplete }: Props) {
             <ChevronLeft size={16} /> Înapoi
           </button>
         </div>
+      </div>
+    );
+  }
+
+  if (!started && introMeta) {
+    const displayName = practiceSetName(introMeta.lessonTitle, introMeta.position);
+    return (
+      <div className="simulation-intro simulation-intro--practice">
+        <header className="simulation-intro__header">
+          <div className="simulation-intro__header-inner">
+            <div className="simulation-intro__brand">
+              <div className="simulation-intro__brand-mobile"><Logo size="sm" /></div>
+              <div className="simulation-intro__brand-desktop"><Logo /></div>
+              <span className="simulation-intro__brand-name" aria-hidden="true">
+                <span>Biletul</span><span>Spre</span><span>Medicină</span>
+              </span>
+            </div>
+            <button onClick={onHome} className="simulation-intro__home" type="button" aria-label="Acasă">
+              <img src="/Home.png" alt="" width={22} height={22} /><span>Acasă</span>
+            </button>
+          </div>
+        </header>
+        <main className="simulation-intro__main">
+          <section className="simulation-intro__editorial" aria-labelledby="practice-intro-title">
+            <p className="simulation-intro__eyebrow">ANTRENAMENT PE CAPITOLE</p>
+            <h1 id="practice-intro-title">Înainte să începi</h1>
+            <p className="simulation-intro__lead">Lucrează setul în ritmul tău.</p>
+            <div className="simulation-intro__rule" />
+            <h2>De știut înainte de start</h2>
+            <ol className="simulation-intro__steps">
+              <li><span className="simulation-intro__step-number">1</span><span>Setul <strong>nu are cronometru.</strong></span></li>
+              <li><span className="simulation-intro__step-number">2</span><span>Poți reveni la set; răspunsurile salvate rămân disponibile.</span></li>
+              <li><span className="simulation-intro__step-number">3</span><span>Trimite răspunsurile la final pentru a vedea <strong>rezultatul și explicațiile.</strong></span></li>
+            </ol>
+          </section>
+
+          <div className="simulation-intro__right">
+            <p className="simulation-intro__wish">
+              <span className="simulation-intro__wish-mult">Mult</span>
+              <span className="simulation-intro__wish-succes">succes!</span>
+            </p>
+            <section className="simulation-intro__card" aria-labelledby="practice-intro-summary">
+              <h2 id="practice-intro-summary">{displayName}</h2>
+              {displayName !== `${introMeta.lessonTitle} ${String(introMeta.position).padStart(2, '0')}` && (
+                <p className="simulation-intro__description">{introMeta.lessonTitle}</p>
+              )}
+              <div className="simulation-intro__stats">
+                <p><strong>{introMeta.questionCount}</strong> {introMeta.questionCount === 1 ? 'grilă' : 'grile'}</p>
+                <p className="simulation-intro__stats-untimed">Fără cronometru</p>
+              </div>
+              <div className="simulation-intro__actions">
+                <button onClick={startAttempt} className="simulation-intro__start" type="button">Începe setul</button>
+                <button onClick={onExit} className="simulation-intro__later" type="button">Nu acum</button>
+              </div>
+            </section>
+          </div>
+        </main>
       </div>
     );
   }
