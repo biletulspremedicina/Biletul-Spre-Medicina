@@ -8,7 +8,7 @@ const PHOTO = {
   senses: 'https://commons.wikimedia.org/wiki/Special:FilePath/030608_Pupil.jpg?width=360',
 };
 
-export const PRACTICE_LIBRARY_HERO_IMAGE = 'https://images.unsplash.com/photo-1532153470116-e8c2088b8ac1?auto=format&fit=crop&w=1100&q=82';
+export const PRACTICE_LIBRARY_HERO_IMAGE = 'https://www.currentaffairs.org/hubfs/Imported_Blog_Media/Screen-Shot-2020-06-28-at-8_43_34-AM-1024x620-1.jpg';
 
 export function practiceChapterImageFor(title: string, large = false) {
   const name = title.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('ro-RO');
