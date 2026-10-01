@@ -788,7 +788,7 @@ html.student-dark .simulation-library__card-meta { color: #c1d1c5; border-color:
   transform: translateX(var(--umfcd-heading-offset-x));
 }
 .simulation-library--umfcd .simulation-library__biology-number {
-  --umfcd-year-tilt: 0deg; /* Schimbă aici în -10deg, 10deg etc. pentru a înclina anul. */
+  --umfcd-year-tilt: 15deg; /* Schimbă aici în -10deg, 10deg etc. pentru a înclina anul. */
   color: #245b85;
   font-size: clamp(31px, 3.1vw, 46px);
   letter-spacing: -.045em;
