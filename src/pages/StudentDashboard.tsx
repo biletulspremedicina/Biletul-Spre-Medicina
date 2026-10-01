@@ -1286,6 +1286,16 @@
             <div className="review-workspace__actions">
               <button
                 type="button"
+                className="review-workspace__remove"
+                onClick={() => onRemove(selected)}
+                disabled={removingId === selected.out_review_id}
+                aria-label="Elimină grila din lista de revizuit"
+              >
+                {removingId === selected.out_review_id ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />}
+                Elimină
+              </button>
+              <button
+                type="button"
                 className="review-workspace__source-link"
                 onClick={() => onOpenSource(selected)}
                 disabled={openingSourceId === selected.out_review_id}
@@ -1294,16 +1304,6 @@
                 {openingSourceId === selected.out_review_id && <Loader2 size={14} className="animate-spin" />}
                 <span>{reviewSourceName(selected)}</span>
                 <ChevronRight size={15} aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                className="review-workspace__remove"
-                onClick={() => onRemove(selected)}
-                disabled={removingId === selected.out_review_id}
-                aria-label="Elimină grila din lista de revizuit"
-              >
-                {removingId === selected.out_review_id ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />}
-                Elimină
               </button>
             </div>
           </div>
