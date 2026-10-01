@@ -718,13 +718,13 @@ html.student-dark .simulation-library__card .btn-primary:hover { background: #23
 .simulation-library__biology-primary { flex: 1; color: #fff; background: #174c37; }
 .simulation-library__biology-primary:hover { background: #216044; }
 .simulation-library__biology-primary:disabled { cursor: wait; opacity: .7; }
-.simulation-library__biology-primary--locked,
-.simulation-library__biology-primary--locked:hover {
+.simulation-library__biology-primary--locked:disabled,
+.simulation-library__biology-primary--locked:disabled:hover {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: #64796f;
+  background: #4b7e65;
   cursor: not-allowed;
   opacity: 1;
 }
@@ -858,8 +858,8 @@ html.student-dark .simulation-library__card-meta { color: #c1d1c5; border-color:
 .simulation-library--umfcd .simulation-library__biology-secondary:hover { background: #f1f7fa; border-color: #39799c; }
 .simulation-library--umfcd .simulation-library__biology-primary { background: #174d70; }
 .simulation-library--umfcd .simulation-library__biology-primary:hover { background: #256486; }
-.simulation-library--umfcd .simulation-library__biology-primary--locked,
-.simulation-library--umfcd .simulation-library__biology-primary--locked:hover { background: #657d8b; }
+.simulation-library--umfcd .simulation-library__biology-primary--locked:disabled,
+.simulation-library--umfcd .simulation-library__biology-primary--locked:disabled:hover { background: #4e7891; }
 .simulation-library--umfcd .simulation-library__biology-history-toggle:focus-visible,
 .simulation-library--umfcd .simulation-library__biology-history ol:focus-visible,
 .simulation-library--umfcd .simulation-library__biology-actions button:focus-visible { outline-color: #286b96; }
