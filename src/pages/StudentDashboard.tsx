@@ -36,7 +36,7 @@
   import StudentPerformance from '@/components/StudentPerformance';
   import PracticeLibrary from '@/components/PracticeLibrary';
   import { medicalFactForDate } from '@/lib/dailyMedicalFacts';
-  import { biologySimulationName, umfcdSimulationKind, umfcdSimulationName, umfcdSimulationYear } from '@/lib/materialDisplayNames';
+  import { biologySimulationName, practiceSetName, umfcdSimulationKind, umfcdSimulationName, umfcdSimulationYear } from '@/lib/materialDisplayNames';
   import './StudentDashboard.review.css';
 
   type IncomingTab = 'all' | 'practice' | 'umfcd' | 'chemistry' | 'dashboard';
@@ -1172,6 +1172,14 @@
     );
   }
 
+  function reviewSourceName(question: ReviewQuestionRPC): string {
+    const storedTitle = question.out_source_title.trim();
+    if (question.out_source_type !== 'practice') return storedTitle;
+
+    const numberedSet = storedTitle.match(/^(.*?)\s*#\s*(\d+)$/);
+    return numberedSet ? practiceSetName(numberedSet[1], Number(numberedSet[2])) : storedTitle;
+  }
+
   function ReviewWorkspace({ questions, selectedId, onSelect, removingId, onRemove }: {
     questions: ReviewQuestionRPC[];
     selectedId: string | null;
@@ -1182,7 +1190,6 @@
     const selected = questions.find((question) => question.out_review_id === selectedId) || questions[0];
     const isCG = selected.out_q_type === 'CG';
     const answerIsCorrect = selected.out_user_answer === selected.out_correct_answer;
-    const sourceLabel = selected.out_source_type === 'simulation' ? 'Simulare' : 'Antrenament';
 
     return (
       <div className="review-workspace__layout">
@@ -1205,7 +1212,7 @@
                   <span className="review-workspace__index-type">{question.out_q_type === 'CG' ? 'Complement grupat' : 'Complement simplu'}</span>
                   <span className="review-workspace__index-question">{question.out_question_text}</span>
                   <span className="review-workspace__index-source">
-                    {question.out_source_type === 'simulation' ? 'Simulare' : 'Antrenament'} · {question.out_source_title}
+                    {reviewSourceName(question)}
                   </span>
                 </span>
                 <ChevronRight size={17} aria-hidden="true" />
@@ -1219,7 +1226,7 @@
             <div className="review-workspace__meta">
               <span>{isCG ? 'Complement grupat' : 'Complement simplu'}</span>
               <span aria-hidden="true">/</span>
-              <span>{sourceLabel} · {selected.out_source_title}</span>
+              <span>{reviewSourceName(selected)}</span>
               {selected.out_requires_subscription && <span className="review-workspace__premium">Cu abonament</span>}
             </div>
             <button
