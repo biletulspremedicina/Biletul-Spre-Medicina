@@ -73,7 +73,7 @@
     practice: '/Capitole.png', // Aici pui sursa imaginii ANTRENAMENT PE CAPITOLE
     umfcd: '', // Aici pui sursa imaginii EXAMENE UMFCD
     review: '/Revizie2.png', // Aici pui sursa imaginii INTREBARI DE REVIZUIT
-    chemistry: '/Chimie.png',
+    chemistry: '',
   };
 
   const serif = { fontFamily: 'Georgia, Cambria, "Times New Roman", serif' };
@@ -1298,7 +1298,7 @@
     const isScheduled = !!sim.available_at && new Date(sim.available_at).getTime() > Date.now();
     const historyRef = useRef<HTMLOListElement>(null);
     const [historyOpen, setHistoryOpen] = useState(initialHistoryOpen);
-    const biologyTitle = 'Simulare';
+    const cardTitle = isUmfcd ? 'Examen' : 'Simulare';
 
     const toggleHistory = () => {
       const nextOpen = !historyOpen;
@@ -1327,16 +1327,17 @@
       };
     }, [historyOpen, historySlotCount]);
 
-    if (editorial && !isUmfcd) {
+    if (editorial) {
       return (
         <article id={`released-simulation-${sim.id}`}
-          className={`simulation-library__card simulation-library__card--biology ${focused ? 'ring-2 ring-emerald-500 ring-offset-2' : ''}`}>
+          className={`simulation-library__card simulation-library__card--biology ${focused ? `ring-2 ${isUmfcd ? 'ring-blue-500' : 'ring-emerald-500'} ring-offset-2` : ''}`}>
           <div className="simulation-library__biology-heading">
-            <h3>{biologyTitle}</h3>
-            <span className="simulation-library__biology-number" aria-label={`Simularea ${Number(index ?? 0) + 1}`}>
+            <h3>{cardTitle}</h3>
+            <span className="simulation-library__biology-number" aria-label={`${isUmfcd ? 'Examenul' : 'Simularea'} ${Number(index ?? 0) + 1}`}>
               {String(Number(index ?? 0) + 1).padStart(2, '0')}
             </span>
           </div>
+          {isUmfcd && sim.title && <p className="simulation-library__umfcd-title" title={sim.title}>{sim.title}</p>}
           <div className="simulation-library__biology-meta">
             <span><strong>{sim.questionCount}</strong> grile</span>
             <span aria-hidden="true">·</span>
@@ -1395,7 +1396,7 @@
                 )}
                 {paidLimitReached ? null : isFree || hasActiveSub ? (
                   <button type="button" onClick={onStart} className="simulation-library__biology-primary">
-                    {sim.hasInProgress ? 'Continuă simularea' : 'Rezolvă simularea'}
+                    {sim.hasInProgress ? `Continuă ${isUmfcd ? 'examenul' : 'simularea'}` : `Rezolvă ${isUmfcd ? 'examenul' : 'simularea'}`}
                   </button>
                 ) : (
                   <button type="button" onClick={onBuySubscription} disabled={buyingSub}
