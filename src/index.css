@@ -784,16 +784,7 @@ html.student-dark .simulation-library__card-meta { color: #c1d1c5; border-color:
 .simulation-library--umfcd .simulation-library__biology-meta strong,
 .simulation-library--umfcd .simulation-library__biology-history h4 { color: #173c57; }
 .simulation-library--umfcd .simulation-library__biology-number { color: #245b85; }
-.simulation-library__umfcd-title {
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  margin: 0 0 5px;
-  color: #526b7a;
-  font-size: 12px;
-  line-height: 1.35;
-}
+.simulation-library--umfcd .simulation-library__biology-number { font-size: clamp(31px, 3.1vw, 46px); letter-spacing: -.045em; }
 .simulation-library--umfcd .simulation-library__biology-meta { color: #526b7a; }
 .simulation-library--umfcd .simulation-library__biology-access--free { color: #286b96; }
 .simulation-library--umfcd .simulation-library__biology-history { border-color: #dce7ee; }
@@ -842,7 +833,6 @@ html.student-dark .simulation-library--umfcd .simulation-library__biology-meta s
 html.student-dark .simulation-library--umfcd .simulation-library__biology-history h4,
 html.student-dark .simulation-library--umfcd .simulation-library__biology-history li strong { color: #e8f1f7; }
 html.student-dark .simulation-library--umfcd .simulation-library__biology-number { color: #a6cee4; }
-html.student-dark .simulation-library--umfcd .simulation-library__umfcd-title,
 html.student-dark .simulation-library--umfcd .simulation-library__biology-meta { color: #c3d5e1; }
 html.student-dark .simulation-library--umfcd .simulation-library__biology-access--free { color: #a6cee4; }
 html.student-dark .simulation-library--umfcd .simulation-library__biology-history { border-color: #476475; }
