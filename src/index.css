@@ -831,7 +831,7 @@ html.student-dark .simulation-library__card-meta { color: #c1d1c5; border-color:
   transform: translateX(var(--umfcd-heading-offset-x));
 }
 .simulation-library--umfcd .simulation-library__biology-heading h3[data-umfcd-kind="Examen"] {
-  --umfcd-heading-offset-x: 21px;
+  --umfcd-heading-offset-x: 20px;
 }
 .simulation-library--umfcd .simulation-library__biology-heading h3[data-umfcd-kind="Simulare"] {
   --umfcd-heading-offset-x: 0px;
