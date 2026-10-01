@@ -36,7 +36,7 @@
   import StudentPerformance from '@/components/StudentPerformance';
   import PracticeLibrary from '@/components/PracticeLibrary';
   import { medicalFactForDate } from '@/lib/dailyMedicalFacts';
-  import { biologySimulationName } from '@/lib/materialDisplayNames';
+  import { biologySimulationName, umfcdSimulationKind, umfcdSimulationName, umfcdSimulationYear } from '@/lib/materialDisplayNames';
 
   type IncomingTab = 'all' | 'practice' | 'umfcd' | 'chemistry' | 'dashboard';
   type PageId = 'home' | 'all' | 'practice' | 'umfcd' | 'chemistry' | 'review' | 'settings';
@@ -1298,7 +1298,8 @@
     const isScheduled = !!sim.available_at && new Date(sim.available_at).getTime() > Date.now();
     const historyRef = useRef<HTMLOListElement>(null);
     const [historyOpen, setHistoryOpen] = useState(initialHistoryOpen);
-    const cardTitle = isUmfcd ? 'Examen' : 'Simulare';
+    const cardTitle = isUmfcd ? umfcdSimulationKind(sim) : 'Simulare';
+    const umfcdYear = isUmfcd ? umfcdSimulationYear(sim) : null;
 
     const toggleHistory = () => {
       const nextOpen = !historyOpen;
@@ -1333,11 +1334,10 @@
           className={`simulation-library__card simulation-library__card--biology ${focused ? `ring-2 ${isUmfcd ? 'ring-blue-500' : 'ring-emerald-500'} ring-offset-2` : ''}`}>
           <div className="simulation-library__biology-heading">
             <h3>{cardTitle}</h3>
-            <span className="simulation-library__biology-number" aria-label={`${isUmfcd ? 'Examenul' : 'Simularea'} ${Number(index ?? 0) + 1}`}>
-              {String(Number(index ?? 0) + 1).padStart(2, '0')}
+            <span className="simulation-library__biology-number" aria-label={isUmfcd ? `Anul ${umfcdYear ?? 'nesetat'}` : `Simularea ${Number(index ?? 0) + 1}`}>
+              {isUmfcd ? (umfcdYear ?? '—') : String(Number(index ?? 0) + 1).padStart(2, '0')}
             </span>
           </div>
-          {isUmfcd && sim.title && <p className="simulation-library__umfcd-title" title={sim.title}>{sim.title}</p>}
           <div className="simulation-library__biology-meta">
             <span><strong>{sim.questionCount}</strong> grile</span>
             <span aria-hidden="true">·</span>
@@ -1428,7 +1428,7 @@
         )}
         <div className="mb-3 flex flex-wrap items-start gap-2">
           <h3 className="line-clamp-2 min-w-0 flex-1 font-display text-base font-semibold leading-snug text-stone-900">
-            {isUmfcd ? sim.title : biologySimulationName(index + 1)}
+            {isUmfcd ? umfcdSimulationName(sim) : biologySimulationName(index + 1)}
           </h3>
           {hasSubmitted ? (
             <span className="badge shrink-0 bg-brand-100 text-brand-700">
