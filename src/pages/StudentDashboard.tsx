@@ -875,7 +875,7 @@
                   <div className="simulation-library__hero-photo" role="img" aria-label="Foaie de răspunsuri la examen și creion" />
                 </div>
                 <div className="simulation-library__section-heading">
-                  <h2>{page === 'all' ? 'Simulări disponibile' : 'Filtru materiale:'}</h2>
+                  <h2>{page === 'all' ? 'Rezolvă. Verifică. Înțelege.' : 'Aplică ce ai învățat!'}</h2>
                   {page === 'umfcd' && (
                     <div className="simulation-library__filters" role="group" aria-label="Filtrează examenele UMFCD">
                       <label className="simulation-library__filter">
