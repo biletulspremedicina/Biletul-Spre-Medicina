@@ -941,22 +941,8 @@
             ) : (
               <section className="review-workspace">
                 <div className="review-workspace__heading">
-                  <div>
-                    <p className="review-workspace__eyebrow">Revizuire</p>
-                    <h1>Întrebări de revizuit</h1>
-                    <p className="review-workspace__subtitle">Grilele salvate, într-un singur loc.</p>
-                  </div>
-                  <p className="review-workspace__count">
-                    <strong>{String(reviewQuestions.length).padStart(2, '0')}</strong>
-                    <span>{reviewQuestions.length === 1 ? 'grilă salvată' : 'grile salvate'}</span>
-                  </p>
+                  <h1>Întrebări de revizuit</h1>
                 </div>
-
-                {!hasActiveSub && (
-                  <p className="review-workspace__subscription-note">
-                    Grilele salvate din materialele care necesită abonament sunt ascunse și vor reapărea după reactivarea abonamentului.
-                  </p>
-                )}
 
                 {reviewError && (
                   <div role="alert" className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
