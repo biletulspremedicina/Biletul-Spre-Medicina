@@ -4,7 +4,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Clock, Send, AlertTriangle, Loader2, ChevronLeft, FileText, Save, CheckCircle2, XCircle } from 'lucide-react';
 import Logo from '@/components/Logo';
 import Loading from '@/components/Loading';
-import { biologySimulationName } from '@/lib/materialDisplayNames';
+import { biologySimulationName, umfcdSimulationName } from '@/lib/materialDisplayNames';
 import './SimulationView.css';
 
 type Props = {
@@ -303,7 +303,7 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
 
   const displayName = simulation.student_section === 'all'
     ? biologySimulationName(simulation.display_order ?? 1)
-    : simulation.title;
+    : umfcdSimulationName(simulation);
 
   if (error) {
     return (
@@ -360,7 +360,6 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
             </p>
             <section className="simulation-intro__card" aria-labelledby="simulation-intro-summary">
               <h2 id="simulation-intro-summary">{displayName}</h2>
-              {simulation.student_section === 'umfcd' && simulation.description && <p className="simulation-intro__description">{simulation.description}</p>}
               <div className="simulation-intro__stats">
                 <p><strong>{questionCount}</strong> {questionCount === 1 ? 'grilă' : 'grile'}</p>
                 <p><strong>{simulation.duration_minutes}</strong> min</p>
