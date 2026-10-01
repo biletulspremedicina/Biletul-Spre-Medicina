@@ -9,9 +9,11 @@
   align-items: center;
   overflow: hidden;
   padding: 28px 40px;
-  border: 1px solid #e4b900;
+  border: 1px solid #dfbc45;
   border-radius: 17px;
-  background: #ffd214;
+  background:
+    radial-gradient(circle at 84% 38%, rgba(255, 242, 184, .55), transparent 34%),
+    linear-gradient(110deg, #f5df91 0%, #ffd214 54%, #e6b934 100%);
 }
 
 .review-workspace__index-heading h2,
@@ -101,20 +103,6 @@
 .review-workspace__bubble--8 { width: 19px; height: 19px; top: 19px; right: 281px; background: #fff7dc; opacity: .75; }
 .review-workspace__bubble--9 { width: 18px; height: 18px; bottom: 26px; right: 116px; background: #fff6d2; opacity: .7; }
 .review-workspace__bubble--10 { width: 14px; height: 14px; bottom: 32px; right: 345px; background: #fff8dd; opacity: .78; }
-.review-workspace__bubble--11 { width: 52px; height: 52px; top: -16px; right: 55px; background: #b58225; opacity: .27; }
-.review-workspace__bubble--12 { width: 36px; height: 36px; bottom: -9px; right: 290px; background: #f6e5ae; opacity: .48; }
-.review-workspace__bubble--13 { width: 25px; height: 25px; top: 69px; right: 20px; background: #ae7b20; opacity: .34; }
-.review-workspace__bubble--14 { width: 20px; height: 20px; top: 11px; right: 220px; background: #fff0bf; opacity: .58; }
-.review-workspace__bubble--15 { width: 16px; height: 16px; bottom: 17px; right: 207px; background: #aa7721; opacity: .39; }
-.review-workspace__bubble--16 { width: 11px; height: 11px; top: 55px; right: 369px; background: #fff3cb; opacity: .67; }
-.review-workspace__bubble--17 { width: 9px; height: 9px; bottom: 9px; right: 68px; background: #fff5d4; opacity: .7; }
-.review-workspace__bubble--11 { width: 52px; height: 52px; top: -16px; right: 55px; background: #b58225; opacity: .27; }
-.review-workspace__bubble--12 { width: 36px; height: 36px; bottom: -9px; right: 290px; background: #f6e5ae; opacity: .48; }
-.review-workspace__bubble--13 { width: 25px; height: 25px; top: 69px; right: 20px; background: #ae7b20; opacity: .34; }
-.review-workspace__bubble--14 { width: 20px; height: 20px; top: 11px; right: 220px; background: #fff0bf; opacity: .58; }
-.review-workspace__bubble--15 { width: 16px; height: 16px; bottom: 17px; right: 207px; background: #aa7721; opacity: .39; }
-.review-workspace__bubble--16 { width: 11px; height: 11px; top: 55px; right: 369px; background: #fff3cb; opacity: .67; }
-.review-workspace__bubble--17 { width: 9px; height: 9px; bottom: 9px; right: 68px; background: #fff5d4; opacity: .7; }
 .review-workspace__bubble--11 { width: 52px; height: 52px; top: -16px; right: 55px; background: #b58225; opacity: .27; }
 .review-workspace__bubble--12 { width: 36px; height: 36px; bottom: -9px; right: 290px; background: #f6e5ae; opacity: .48; }
 .review-workspace__bubble--13 { width: 25px; height: 25px; top: 69px; right: 20px; background: #ae7b20; opacity: .34; }
