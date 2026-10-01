@@ -37,6 +37,7 @@
   import PracticeLibrary from '@/components/PracticeLibrary';
   import { medicalFactForDate } from '@/lib/dailyMedicalFacts';
   import { biologySimulationName, umfcdSimulationKind, umfcdSimulationName, umfcdSimulationYear } from '@/lib/materialDisplayNames';
+  import './StudentDashboard.review.css';
 
   type IncomingTab = 'all' | 'practice' | 'umfcd' | 'chemistry' | 'dashboard';
   type PageId = 'home' | 'all' | 'practice' | 'umfcd' | 'chemistry' | 'review' | 'settings';
@@ -226,6 +227,7 @@
     const [communityPercent, setCommunityPercent] = useState(() => demoCommunityPercent(new Date()));
     const [dailyFactDateKey, setDailyFactDateKey] = useState(() => dateKey(new Date()));
     const [reviewQuestions, setReviewQuestions] = useState<ReviewQuestionRPC[]>([]);
+    const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null);
     const [reviewLoading, setReviewLoading] = useState(false);
     const [reviewError, setReviewError] = useState<string | null>(null);
     const [removingReviewId, setRemovingReviewId] = useState<string | null>(null);
@@ -937,14 +939,23 @@
                 )}
               </section>
             ) : (
-              <section>
-                <PageHeading icon={<SidebarNavIcon src={NAV_IMAGE_SOURCES.review} fallback={<Bookmark size={27} />} size={34} />} title="Întrebări de revizuit"
-                  subtitle="Toate grilele pe care le-ai salvat, împreună cu răspunsurile și explicațiile lor." />
+              <section className="review-workspace">
+                <div className="review-workspace__heading">
+                  <div>
+                    <p className="review-workspace__eyebrow">Revizuire</p>
+                    <h1>Întrebări de revizuit</h1>
+                    <p className="review-workspace__subtitle">Grilele salvate, într-un singur loc.</p>
+                  </div>
+                  <p className="review-workspace__count">
+                    <strong>{String(reviewQuestions.length).padStart(2, '0')}</strong>
+                    <span>{reviewQuestions.length === 1 ? 'grilă salvată' : 'grile salvate'}</span>
+                  </p>
+                </div>
 
                 {!hasActiveSub && (
-                  <div className="mb-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                  <p className="review-workspace__subscription-note">
                     Grilele salvate din materialele care necesită abonament sunt ascunse și vor reapărea după reactivarea abonamentului.
-                  </div>
+                  </p>
                 )}
 
                 {reviewError && (
@@ -959,27 +970,20 @@
                 {reviewLoading ? (
                   <div className="py-12"><Loading message="Se încarcă grilele salvate..." /></div>
                 ) : reviewQuestions.length === 0 ? (
-                  <EmptyState icon={<Bookmark size={36} />} title="Nu ai adăugat încă nicio grilă."
-                    text="După ce finalizezi o simulare sau un set de antrenament, poți salva aici orice grilă din pagina de rezultate." />
+                  <div className="review-workspace__empty">
+                    <span className="review-workspace__empty-label">Colecția ta</span>
+                    <h2>Revizuirea începe cu prima grilă salvată.</h2>
+                    <p>După ce finalizezi o simulare sau un set de antrenament, poți salva aici grilele la care vrei să revii.</p>
+                    <button type="button" onClick={() => goTo('all')}>Explorează simulările <span aria-hidden="true">→</span></button>
+                  </div>
                 ) : (
-                  <>
-                    <div className="mb-5 flex items-center justify-between gap-3">
-                      <p className="text-sm font-semibold text-[#385467]">
-                        {reviewQuestions.length} {reviewQuestions.length === 1 ? 'grilă salvată' : 'grile salvate'}
-                      </p>
-                    </div>
-                    <div className="space-y-5">
-                      {reviewQuestions.map((question, index) => (
-                        <ReviewQuestionCard
-                          key={question.out_review_id}
-                          question={question}
-                          index={index + 1}
-                          removing={removingReviewId === question.out_review_id}
-                          onRemove={() => void removeReviewQuestion(question)}
-                        />
-                      ))}
-                    </div>
-                  </>
+                  <ReviewWorkspace
+                    questions={reviewQuestions}
+                    selectedId={selectedReviewId}
+                    onSelect={setSelectedReviewId}
+                    removingId={removingReviewId}
+                    onRemove={(question) => void removeReviewQuestion(question)}
+                  />
                 )}
               </section>
             )}
@@ -1182,122 +1186,114 @@
     );
   }
 
-  function ReviewQuestionCard({
-    question,
-    index,
-    removing,
-    onRemove,
-  }: {
-    question: ReviewQuestionRPC;
-    index: number;
-    removing: boolean;
-    onRemove: () => void;
+  function ReviewWorkspace({ questions, selectedId, onSelect, removingId, onRemove }: {
+    questions: ReviewQuestionRPC[];
+    selectedId: string | null;
+    onSelect: (id: string) => void;
+    removingId: string | null;
+    onRemove: (question: ReviewQuestionRPC) => void;
   }) {
-    const isCG = question.out_q_type === 'CG';
-    const answerIsCorrect = question.out_user_answer === question.out_correct_answer;
+    const selected = questions.find((question) => question.out_review_id === selectedId) || questions[0];
+    const isCG = selected.out_q_type === 'CG';
+    const answerIsCorrect = selected.out_user_answer === selected.out_correct_answer;
+    const sourceLabel = selected.out_source_type === 'simulation' ? 'Simulare' : 'Antrenament';
 
     return (
-      <article className="rounded-[22px] border border-[#dce7e2] bg-white p-5 shadow-[0_8px_28px_rgba(25,67,53,0.04)] sm:p-6">
-        <div className="flex items-start gap-3">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#edf5f1] text-xs font-bold text-[#365b4d]">
-            {index}
-          </span>
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-semibold text-stone-600">
-                {isCG ? 'Complement Grupat' : 'Complement Simplu'}
-              </span>
-              <span className="rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-semibold text-brand-700">
-                {question.out_source_type === 'simulation' ? 'Simulare' : 'Antrenament'} · {question.out_source_title}
-              </span>
-              {question.out_requires_subscription && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700">
-                  <Crown size={11} /> Abonament
-                </span>
-              )}
-            </div>
-            <h2 className="mt-3 text-base font-semibold leading-relaxed text-stone-900">
-              {question.out_question_text}
-            </h2>
+      <div className="review-workspace__layout">
+        <nav className="review-workspace__index" aria-label="Grile salvate">
+          <div className="review-workspace__index-heading">
+            <h2>Colecția ta</h2>
+            <span>{questions.length} {questions.length === 1 ? 'întrebare' : 'întrebări'}</span>
           </div>
-          <button
-            type="button"
-            onClick={onRemove}
-            disabled={removing}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-red-100 bg-red-50 px-2.5 py-2 text-xs font-semibold text-red-700 transition-colors hover:border-red-200 hover:bg-red-100 disabled:cursor-wait disabled:opacity-60"
-            aria-label="Elimină grila din lista de revizuit"
-          >
-            {removing ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-            <span className="hidden sm:inline">Elimină</span>
-          </button>
-        </div>
-
-        {isCG ? (
-          <div className="ml-0 mt-4 space-y-2 sm:ml-11">
-            {[1, 2, 3, 4].map((number) => {
-              const statement = question[`out_statement_${number}` as keyof ReviewQuestionRPC] as string;
-              if (!statement) return null;
-              return (
-                <div key={number} className="flex gap-2 rounded-xl border border-stone-200 bg-stone-50/60 px-4 py-2.5 text-sm text-stone-700">
-                  <span className="font-bold text-stone-500">{number}.</span>
-                  <span>{statement}</span>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="ml-0 mt-4 grid gap-2 sm:ml-11">
-            {(['A', 'B', 'C', 'D', 'E'] as const).map((letter) => {
-              const option = question[`out_option_${letter.toLowerCase()}` as keyof ReviewQuestionRPC] as string;
-              if (!option) return null;
-              const isCorrectOption = question.out_correct_answer === letter;
-              const isUserChoice = question.out_user_answer === letter;
-              return (
-                <div key={letter} className={`flex items-center gap-3 rounded-xl border px-4 py-2.5 text-sm ${
-                  isCorrectOption
-                    ? 'border-green-300 bg-green-50 text-green-900'
-                    : isUserChoice
-                      ? 'border-red-300 bg-red-50 text-red-900'
-                      : 'border-stone-200 bg-white text-stone-700'
-                }`}>
-                  <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                    isCorrectOption
-                      ? 'bg-green-600 text-white'
-                      : isUserChoice
-                        ? 'bg-red-500 text-white'
-                        : 'bg-stone-100 text-stone-600'
-                  }`}>
-                    {letter}
+          <div className="review-workspace__index-list">
+            {questions.map((question, index) => (
+              <button
+                key={question.out_review_id}
+                type="button"
+                className={`review-workspace__index-item${selected.out_review_id === question.out_review_id ? ' is-selected' : ''}`}
+                onClick={() => onSelect(question.out_review_id)}
+                aria-current={selected.out_review_id === question.out_review_id ? 'true' : undefined}
+              >
+                <span className="review-workspace__index-number">{String(index + 1).padStart(2, '0')}</span>
+                <span className="review-workspace__index-copy">
+                  <span className="review-workspace__index-type">{question.out_q_type === 'CG' ? 'Complement grupat' : 'Complement simplu'}</span>
+                  <span className="review-workspace__index-question">{question.out_question_text}</span>
+                  <span className="review-workspace__index-source">
+                    {question.out_source_type === 'simulation' ? 'Simulare' : 'Antrenament'} · {question.out_source_title}
                   </span>
-                  <span className="flex-1">{option}</span>
-                  {isCorrectOption && <span className="text-xs font-bold text-green-700">Corect</span>}
-                  {isUserChoice && !isCorrectOption && <span className="text-xs font-bold text-red-700">Răspunsul tău</span>}
-                </div>
-              );
-            })}
+                </span>
+                <ChevronRight size={17} aria-hidden="true" />
+              </button>
+            ))}
           </div>
-        )}
+        </nav>
 
-        <div className="ml-0 mt-4 grid gap-2 sm:ml-11 sm:grid-cols-2">
-          <div className="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm">
-            <span className="text-stone-500">Răspunsul tău: </span>
-            <strong className={answerIsCorrect ? 'text-green-700' : 'text-red-700'}>
-              {question.out_user_answer || 'Nerăspuns'}
-            </strong>
+        <article className="review-workspace__detail" key={selected.out_review_id}>
+          <div className="review-workspace__detail-top">
+            <div className="review-workspace__meta">
+              <span>{isCG ? 'Complement grupat' : 'Complement simplu'}</span>
+              <span aria-hidden="true">/</span>
+              <span>{sourceLabel} · {selected.out_source_title}</span>
+              {selected.out_requires_subscription && <span className="review-workspace__premium">Cu abonament</span>}
+            </div>
+            <button
+              type="button"
+              className="review-workspace__remove"
+              onClick={() => onRemove(selected)}
+              disabled={removingId === selected.out_review_id}
+              aria-label="Elimină grila din lista de revizuit"
+            >
+              {removingId === selected.out_review_id ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />}
+              Elimină
+            </button>
           </div>
-          <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm">
-            <span className="text-green-800">Răspuns corect: </span>
-            <strong className="text-green-800">{question.out_correct_answer}</strong>
-          </div>
-        </div>
 
-        <div className="ml-0 mt-4 rounded-xl border border-brand-100 bg-brand-50 p-4 sm:ml-11">
-          <p className="text-xs font-bold uppercase tracking-wide text-brand-700">Explicație</p>
-          <p className="mt-1 text-sm leading-relaxed text-stone-700">
-            {question.out_explanation || 'Această grilă nu are încă o explicație.'}
-          </p>
-        </div>
-      </article>
+          <h2 className="review-workspace__question">{selected.out_question_text}</h2>
+
+          {isCG ? (
+            <div className="review-workspace__statements">
+              {[1, 2, 3, 4].map((number) => {
+                const statement = selected[`out_statement_${number}` as keyof ReviewQuestionRPC] as string;
+                if (!statement) return null;
+                return <div className="review-workspace__statement" key={number}><span>{number}.</span><span>{statement}</span></div>;
+              })}
+            </div>
+          ) : (
+            <div className="review-workspace__answers">
+              {(['A', 'B', 'C', 'D', 'E'] as const).map((letter) => {
+                const option = selected[`out_option_${letter.toLowerCase()}` as keyof ReviewQuestionRPC] as string;
+                if (!option) return null;
+                const isCorrectOption = selected.out_correct_answer === letter;
+                const isWrongChoice = selected.out_user_answer === letter && !isCorrectOption;
+                return (
+                  <div key={letter} className={`review-workspace__answer${isCorrectOption ? ' is-correct' : ''}${isWrongChoice ? ' is-incorrect' : ''}`}>
+                    <span className="review-workspace__answer-letter">{letter}</span>
+                    <span className="review-workspace__answer-text">{option}</span>
+                    {isCorrectOption && <span className="review-workspace__answer-status">Corect</span>}
+                    {isWrongChoice && <span className="review-workspace__answer-status">Răspunsul tău</span>}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <div className="review-workspace__result" aria-label="Rezultatul grilei">
+            <div>
+              <span>Răspunsul tău</span>
+              <strong className={answerIsCorrect ? 'is-correct' : 'is-incorrect'}>{selected.out_user_answer || 'Nerăspuns'}</strong>
+            </div>
+            <div>
+              <span>Răspuns corect</span>
+              <strong className="is-correct">{selected.out_correct_answer}</strong>
+            </div>
+          </div>
+
+          <div className="review-workspace__explanation">
+            <h3>Explicație</h3>
+            <p>{selected.out_explanation || 'Această grilă nu are încă o explicație.'}</p>
+          </div>
+        </article>
+      </div>
     );
   }
 
