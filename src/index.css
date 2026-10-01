@@ -793,7 +793,7 @@ html.student-dark .simulation-library__card-meta { color: #c1d1c5; border-color:
   --umfcd-heading-offset-x: 30px;
 }
 .simulation-library--umfcd .simulation-library__biology-heading h3[data-umfcd-kind="Simulare"] {
-  --umfcd-heading-offset-x: 15px;
+  --umfcd-heading-offset-x: 10px;
 }
 .simulation-library--umfcd .simulation-library__biology-number {
   --umfcd-year-tilt: 15deg; /* Schimbă aici unghiul pentru a înclina anul. */
