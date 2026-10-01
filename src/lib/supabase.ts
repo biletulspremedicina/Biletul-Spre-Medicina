@@ -34,6 +34,8 @@ export type Simulation = {
   created_at: string;
   student_section: 'all' | 'umfcd';
   display_order: number | null;
+  umfcd_kind: 'Examen' | 'Simulare' | null;
+  umfcd_year: number | null;
 };
 
 export type AppSettings = {
