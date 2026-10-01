@@ -9,9 +9,9 @@
   align-items: center;
   overflow: hidden;
   padding: 28px 40px;
-  border: 1px solid #b58b34;
+  border: 1px solid #d3ab4d;
   border-radius: 17px;
-  background: linear-gradient(100deg, #c9a34a 0%, #e4ba49 26%, #f2cf55 50%, #d6a83b 76%, #af8029 100%);
+  background: radial-gradient(ellipse at 50% 46%, #f8df84 0%, #ecc65e 60%, #d9ad49 100%);
 }
 
 .review-workspace__index-heading h2,
