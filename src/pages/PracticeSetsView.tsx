@@ -224,7 +224,7 @@ function PracticeSetCard({
         <span><strong>{set.out_question_count}</strong> {set.out_question_count === 1 ? 'grilă' : 'grile'}</span>
         <span aria-hidden="true">·</span>
         <span className={isPremium ? 'simulation-library__biology-access--premium' : 'simulation-library__biology-access--free'}>
-          {isPremium ? 'Acces cu abonament' : 'Fără abonament'}
+          {isPremium ? 'Necesită abonament' : 'Fără abonament'}
         </span>
       </div>
 
