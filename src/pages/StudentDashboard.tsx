@@ -879,7 +879,7 @@
                   {page === 'umfcd' && (
                     <div className="simulation-library__filters" role="group" aria-label="Filtrează examenele UMFCD">
                       <label className="simulation-library__filter">
-                        <span>Tip</span>
+                        <span className="sr-only">Tipul materialului</span>
                         <span className="simulation-library__filter-control">
                           <select value={umfcdKindFilter} onChange={(event) => {
                             const nextKind = event.target.value as 'all' | 'Examen' | 'Simulare';
@@ -896,7 +896,7 @@
                         </span>
                       </label>
                       <label className="simulation-library__filter">
-                        <span>An</span>
+                        <span className="sr-only">Anul materialului</span>
                         <span className="simulation-library__filter-control">
                           <select value={selectedUmfcdYear ?? ''} onChange={(event) =>
                             setUmfcdYearFilter(event.target.value ? Number(event.target.value) : null)}>
