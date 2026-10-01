@@ -1443,9 +1443,11 @@
                     {sim.hasInProgress ? `Continuă ${cardTitle === 'Examen' ? 'examenul' : 'simularea'}` : `Rezolvă ${cardTitle === 'Examen' ? 'examenul' : 'simularea'}`}
                   </button>
                 ) : (
-                  <button type="button" onClick={onBuySubscription} disabled={buyingSub}
-                    className="simulation-library__biology-primary">
-                    {buyingSub ? 'Se activează…' : 'Activează abonamentul'}
+                  <button type="button" disabled
+                    aria-label={`Rezolvă ${cardTitle === 'Examen' ? 'examenul' : 'simularea'} — necesită abonament`}
+                    className="simulation-library__biology-primary simulation-library__biology-primary--locked">
+                    <Lock size={15} strokeWidth={2} aria-hidden="true" />
+                    <span>Rezolvă {cardTitle === 'Examen' ? 'examenul' : 'simularea'}</span>
                   </button>
                 )}
               </>
