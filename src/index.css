@@ -921,6 +921,8 @@ html.student-dark .simulation-library--umfcd .border-dashed > div { background: 
 @media (min-width: 701px) and (max-width: 1200px) {
   .simulation-library:not(.simulation-library--umfcd) .simulation-library__card--biology h3 { font-size: 40px; }
   .simulation-library:not(.simulation-library--umfcd) .simulation-library__biology-number { font-size: 66px; }
+  .simulation-library--umfcd .simulation-library__biology-heading h3 { font-size: clamp(39px, 3.6vw, 44px); }
+  .simulation-library--umfcd .simulation-library__biology-number { font-size: clamp(37px, 3.6vw, 44px); }
   .simulation-library:not(.simulation-library--umfcd) .simulation-library__biology-meta {
     flex-wrap: nowrap;
     gap: 4px 5px;
@@ -928,12 +930,22 @@ html.student-dark .simulation-library--umfcd .border-dashed > div { background: 
     font-size: 11px;
   }
   .simulation-library:not(.simulation-library--umfcd) .simulation-library__biology-meta strong { font-size: 18px; }
+  .simulation-library--umfcd .simulation-library__biology-meta {
+    flex-wrap: nowrap;
+    gap: 4px 5px;
+    white-space: nowrap;
+    font-size: 11px;
+  }
+  .simulation-library--umfcd .simulation-library__biology-meta strong { font-size: 18px; }
 }
 
 @media (min-width: 481px) and (max-width: 700px) {
   .simulation-library:not(.simulation-library--umfcd) .simulation-library__card--biology h3 { font-size: 40px; }
   .simulation-library:not(.simulation-library--umfcd) .simulation-library__biology-number { font-size: 66px; }
   .simulation-library:not(.simulation-library--umfcd) .simulation-library__biology-meta { flex-wrap: nowrap; white-space: nowrap; }
+  .simulation-library--umfcd .simulation-library__biology-heading h3 { font-size: 46px; }
+  .simulation-library--umfcd .simulation-library__biology-number { font-size: 46px; }
+  .simulation-library--umfcd .simulation-library__biology-meta { flex-wrap: nowrap; white-space: nowrap; }
 }
 
 @media (max-width: 1350px) {
