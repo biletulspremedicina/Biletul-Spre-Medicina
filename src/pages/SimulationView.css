@@ -136,7 +136,7 @@
 
 .simulation-intro__steps li:last-child { border-bottom: 0; }
 .simulation-intro__steps strong { font-weight: 700; }
-.simulation-intro__step-note { display: block; text-align: center; }
+.simulation-intro__step-note { display: block; text-align: center; transform: translateX(-15px); }
 
 .simulation-intro__step-number {
   border-right: 1px solid #b8c9c2;
