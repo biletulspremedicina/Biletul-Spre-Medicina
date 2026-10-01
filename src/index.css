@@ -774,6 +774,7 @@ html.student-dark .simulation-library__card-meta { color: #c1d1c5; border-color:
 .simulation-library--umfcd .simulation-library__section-heading {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: end;
   gap: 18px;
 }
@@ -785,6 +786,8 @@ html.student-dark .simulation-library__card-meta { color: #c1d1c5; border-color:
   font-weight: 650;
   letter-spacing: .02em;
 }
+.simulation-library__filters { display: flex; align-items: end; justify-self: start; gap: 10px; }
+.simulation-library__filter { display: block; min-width: 0; }
 .simulation-library__filter-control { position: relative; display: block; }
 .simulation-library__filter select {
   width: 150px;
