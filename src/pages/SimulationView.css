@@ -7,6 +7,7 @@
 }
 
 .simulation-intro--umfcd { --intro-accent: #245b85; }
+.simulation-intro--practice { --intro-accent: #842d42; }
 
 .simulation-intro__header {
   border-bottom: 1px solid #e7e8e3;
@@ -192,6 +193,7 @@
 
 .simulation-intro__stats p + p { border-left: 1px solid #dce2dc; }
 .simulation-intro__stats strong { font-weight: 700; }
+.simulation-intro__stats p.simulation-intro__stats-untimed { font-size: clamp(17px, 1.4vw, 22px); }
 
 .simulation-intro__wish {
   height: clamp(44px, 5.25vw, 63px);
