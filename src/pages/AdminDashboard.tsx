@@ -10,7 +10,7 @@ import {
 import Logo from '@/components/Logo';
 import Loading from '@/components/Loading';
 import ContentTools from '@/components/admin/ContentTools';
-import { biologySimulationName } from '@/lib/materialDisplayNames';
+import { biologySimulationName, umfcdSimulationKind, umfcdSimulationName, umfcdSimulationYear } from '@/lib/materialDisplayNames';
 
 type Props = {
   onExit: () => void;
@@ -265,7 +265,7 @@ function SimAdminCard({ sim, order, total, studentSection, savingOrder, onMoveTo
   const [questionCount, setQuestionCount] = useState(0);
   const [publishError, setPublishError] = useState<string | null>(null);
   const isScheduled = !!sim.available_at && new Date(sim.available_at).getTime() > Date.now();
-  const displayName = studentSection === 'all' ? biologySimulationName(order) : sim.title;
+  const displayName = studentSection === 'all' ? biologySimulationName(order) : umfcdSimulationName(sim);
 
   useEffect(() => {
     (async () => {
@@ -349,7 +349,6 @@ function SimAdminCard({ sim, order, total, studentSection, savingOrder, onMoveTo
             <span className="badge bg-stone-100 text-stone-500"><EyeOff size={12} /> Ciornă</span>
           )}
         </div>
-        {studentSection === 'umfcd' && sim.description && <p className="mt-3 line-clamp-2 text-sm text-stone-600">{sim.description}</p>}
         <div className="mt-4 grid grid-cols-2 gap-x-3 gap-y-2 text-xs text-stone-500">
           <span className="flex min-w-0 items-start gap-1.5"><Clock size={14} className="mt-0.5 shrink-0" />{sim.duration_minutes} min</span>
           <span className="flex min-w-0 items-start gap-1.5"><CreditCard size={14} className="mt-0.5 shrink-0" />{sim.requires_subscription ? 'Cu abonament' : 'Fără abonament'}</span>
@@ -391,8 +390,8 @@ function SimAdminCard({ sim, order, total, studentSection, savingOrder, onMoveTo
 }
 
 function SimForm({ sim, studentSection, nextOrder, onSaved, onCancel }: { sim?: Simulation; studentSection: 'all' | 'umfcd'; nextOrder?: number; onSaved: () => void; onCancel: () => void }) {
-  const [title, setTitle] = useState(sim?.title || '');
-  const [description, setDescription] = useState(sim?.description || '');
+  const [umfcdKind, setUmfcdKind] = useState<'Examen' | 'Simulare'>(sim ? umfcdSimulationKind(sim) : 'Examen');
+  const [umfcdYear, setUmfcdYear] = useState(sim ? String(umfcdSimulationYear(sim) ?? '') : '');
   const [duration, setDuration] = useState(sim?.duration_minutes?.toString() || '120');
   const [requiresSub, setRequiresSub] = useState(sim ? sim.requires_subscription : false);
   const existingFutureRelease = !!sim?.available_at && new Date(sim.available_at).getTime() > Date.now();
@@ -406,7 +405,11 @@ function SimForm({ sim, studentSection, nextOrder, onSaved, onCancel }: { sim?: 
 
   const handleSave = async () => {
     setError(null);
-    if (studentSection === 'umfcd' && !title.trim()) { setError('Titlul este obligatoriu.'); return; }
+    const year = Number(umfcdYear);
+    if (studentSection === 'umfcd' && (!/^\d{4}$/.test(umfcdYear) || year < 1900 || year > 2100)) {
+      setError('Introdu un an valid între 1900 și 2100.');
+      return;
+    }
     const dur = parseInt(duration) || 0;
     if (dur <= 0) { setError('Durata trebuie să fie un număr valid de minute.'); return; }
     if (timedPost && !availableAt) { setError('Alege ziua și ora publicării programate.'); return; }
@@ -419,8 +422,10 @@ function SimForm({ sim, studentSection, nextOrder, onSaved, onCancel }: { sim?: 
     setSaving(true);
     const existingSection = sim?.student_section || studentSection;
     const payload = {
-      title: studentSection === 'all' ? 'Simulare' : title.trim(),
-      description: studentSection === 'all' ? '' : description.trim(),
+      title: studentSection === 'all' ? 'Simulare' : `${umfcdKind} ${year}`,
+      description: '',
+      umfcd_kind: studentSection === 'umfcd' ? umfcdKind : null,
+      umfcd_year: studentSection === 'umfcd' ? year : null,
       duration_minutes: dur,
       requires_subscription: requiresSub,
       available_at: timedPost
@@ -477,13 +482,18 @@ function SimForm({ sim, studentSection, nextOrder, onSaved, onCancel }: { sim?: 
       <div className="grid gap-4 sm:grid-cols-2">
         {studentSection === 'umfcd' && (
           <>
-            <div className="sm:col-span-2">
-              <label className="label">Titlu</label>
-              <input className="input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Examen UMFCD..." />
+            <div>
+              <label className="label" htmlFor="umfcd-kind">Tip</label>
+              <select id="umfcd-kind" className="input" value={umfcdKind}
+                onChange={(e) => setUmfcdKind(e.target.value as 'Examen' | 'Simulare')}>
+                <option value="Examen">Examen</option>
+                <option value="Simulare">Simulare</option>
+              </select>
             </div>
-            <div className="sm:col-span-2">
-              <label className="label">Descriere</label>
-              <textarea className="input min-h-[80px]" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Descriere scurtă a examenului..." />
+            <div>
+              <label className="label" htmlFor="umfcd-year">An</label>
+              <input id="umfcd-year" type="number" className="input" value={umfcdYear}
+                onChange={(e) => setUmfcdYear(e.target.value)} placeholder="2026" min={1900} max={2100} />
             </div>
           </>
         )}
