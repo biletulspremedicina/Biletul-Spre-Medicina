@@ -359,7 +359,7 @@ export default function PracticeSetView({ setId, onExit, onHome, onComplete }: P
             <div className="simulation-intro__rule" />
             <h2>De știut înainte de start</h2>
             <ol className="simulation-intro__steps">
-              <li><span className="simulation-intro__step-number">1</span><span>Poți introduce timpul-limită pentru acest set. <strong>Câmp gol = fără limită.</strong></span></li>
+              <li><span className="simulation-intro__step-number">1</span><span>Poți introduce timpul-limită pentru acest set.<strong className="simulation-intro__step-note">Câmp gol = Fără limită.</strong></span></li>
               <li><span className="simulation-intro__step-number">2</span><span>Poți reveni la set; cronometrul continuă dacă l-ai activat.</span></li>
               <li><span className="simulation-intro__step-number">3</span><span>La expirare, răspunsurile <strong>se trimit automat.</strong></span></li>
             </ol>
@@ -390,7 +390,6 @@ export default function PracticeSetView({ setId, onExit, onHome, onComplete }: P
                         setMinutesError(null);
                       }
                     }}
-                    placeholder="____"
                     aria-label="Timp-limită în minute; lasă gol pentru a lucra fără cronometru"
                     aria-invalid={!!minutesError}
                     aria-describedby={minutesError ? 'practice-time-error' : undefined}
