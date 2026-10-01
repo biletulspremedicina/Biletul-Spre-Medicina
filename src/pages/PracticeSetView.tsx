@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase, type PracticeQuestionRPC, type PracticeSetRPC } from '@/lib/supabase';
 import {
-  ChevronLeft, Send, AlertTriangle, Loader2, FileText, Save, CheckCircle2, XCircle,
+  ChevronLeft, Send, AlertTriangle, Loader2, FileText, Save, CheckCircle2, XCircle, Clock,
 } from 'lucide-react';
 import Logo from '@/components/Logo';
 import Loading from '@/components/Loading';
@@ -16,6 +16,43 @@ type Props = {
 };
 
 const LETTERS = ['A', 'B', 'C', 'D', 'E'] as const;
+const MAX_TIME_LIMIT_MINUTES = 1440;
+const practiceTimerKey = (attemptId: string) => `bsm-practice-timer:${attemptId}`;
+
+function readPracticeDeadline(attemptId: string): number | null {
+  try {
+    const saved = window.localStorage.getItem(practiceTimerKey(attemptId));
+    if (!saved) return null;
+    const deadline = Number(saved);
+    return Number.isFinite(deadline) && deadline > 0 ? deadline : null;
+  } catch {
+    return null;
+  }
+}
+
+function savePracticeDeadline(attemptId: string, deadline: number) {
+  try {
+    window.localStorage.setItem(practiceTimerKey(attemptId), String(deadline));
+  } catch {
+    // The timer still works for the current session if storage is unavailable.
+  }
+}
+
+function clearPracticeDeadline(attemptId: string) {
+  try {
+    window.localStorage.removeItem(practiceTimerKey(attemptId));
+  } catch {
+    // Best effort.
+  }
+}
+
+function formatPracticeTime(seconds: number) {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = seconds % 60;
+  if (hours > 0) return `${hours}:${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+  return `${minutes}:${String(remainingSeconds).padStart(2, '0')}`;
+}
 
 type SaveState = 'idle' | 'saving' | 'saved' | 'error';
 
@@ -34,11 +71,16 @@ export default function PracticeSetView({ setId, onExit, onHome, onComplete }: P
   const [saveState, setSaveState] = useState<SaveState>('idle');
   const [started, setStarted] = useState(false);
   const [introMeta, setIntroMeta] = useState<IntroMeta | null>(null);
+  const [minutesInput, setMinutesInput] = useState('');
+  const [minutesError, setMinutesError] = useState<string | null>(null);
+  const [deadline, setDeadline] = useState<number | null>(null);
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
 
   const answersRef = useRef<Record<string, string>>({});
   const attemptIdRef = useRef<string | null>(null);
   const submittedRef = useRef(false);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoSubmitTriggeredRef = useRef(false);
 
   useEffect(() => {
     let active = true;
@@ -78,6 +120,14 @@ export default function PracticeSetView({ setId, onExit, onHome, onComplete }: P
 
   // Start or resume attempt
   const startAttempt = useCallback(async () => {
+    const selectedMinutes = minutesInput.trim() === '' ? null : Number(minutesInput);
+    if (selectedMinutes !== null && (
+      !Number.isInteger(selectedMinutes) || selectedMinutes < 1 || selectedMinutes > MAX_TIME_LIMIT_MINUTES
+    )) {
+      setMinutesError(`Introdu un număr întreg între 1 și ${MAX_TIME_LIMIT_MINUTES} sau lasă câmpul gol.`);
+      return;
+    }
+    setMinutesError(null);
     setError(null);
     setLoading(true);
     const { data, error: startError } = await supabase.rpc('start_practice_attempt', {
@@ -109,16 +159,24 @@ export default function PracticeSetView({ setId, onExit, onHome, onComplete }: P
     attemptIdRef.current = att.out_id;
 
     if (att.out_submitted_at) {
+      clearPracticeDeadline(att.out_id);
       onComplete(att.out_id);
       return;
     }
+
+    const savedDeadline = readPracticeDeadline(att.out_id);
+    const nextDeadline = savedDeadline ?? (selectedMinutes === null ? null : Date.now() + selectedMinutes * 60_000);
+    if (savedDeadline === null && nextDeadline !== null) savePracticeDeadline(att.out_id, nextDeadline);
+    setDeadline(nextDeadline);
+    setTimeLeft(nextDeadline === null ? null : Math.max(0, Math.ceil((nextDeadline - Date.now()) / 1000)));
+    autoSubmitTriggeredRef.current = false;
 
     if (att.out_answers && Object.keys(att.out_answers).length > 0) {
       answersRef.current = att.out_answers as Record<string, string>;
       setAnswers(att.out_answers as Record<string, string>);
     }
     setStarted(true);
-  }, [setId, onComplete]);
+  }, [setId, onComplete, minutesInput]);
 
   // Load questions once started
   useEffect(() => {
@@ -192,10 +250,30 @@ export default function PracticeSetView({ setId, onExit, onHome, onComplete }: P
 
     if (data && data.length > 0) {
       const result = data[0] as { out_id: string };
+      if (attemptIdRef.current) clearPracticeDeadline(attemptIdRef.current);
       setSubmitting(false);
       onComplete(result.out_id);
     }
   }, [setId, onComplete]);
+
+  useEffect(() => {
+    if (!started || deadline === null) return;
+    const tick = () => {
+      const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+      setTimeLeft(remaining);
+      if (remaining === 0 && !autoSubmitTriggeredRef.current) {
+        autoSubmitTriggeredRef.current = true;
+        void submitAttempt();
+      }
+    };
+    tick();
+    const interval = window.setInterval(tick, 1000);
+    document.addEventListener('visibilitychange', tick);
+    return () => {
+      window.clearInterval(interval);
+      document.removeEventListener('visibilitychange', tick);
+    };
+  }, [started, deadline, submitAttempt]);
 
   const handleAnswer = (questionId: string, letter: string) => {
     const newAnswers = { ...answersRef.current, [questionId]: letter };
@@ -281,9 +359,9 @@ export default function PracticeSetView({ setId, onExit, onHome, onComplete }: P
             <div className="simulation-intro__rule" />
             <h2>De știut înainte de start</h2>
             <ol className="simulation-intro__steps">
-              <li><span className="simulation-intro__step-number">1</span><span>Setul <strong>nu are cronometru.</strong></span></li>
-              <li><span className="simulation-intro__step-number">2</span><span>Poți reveni la set; răspunsurile salvate rămân disponibile.</span></li>
-              <li><span className="simulation-intro__step-number">3</span><span>Trimite răspunsurile la final pentru a vedea <strong>rezultatul și explicațiile.</strong></span></li>
+              <li><span className="simulation-intro__step-number">1</span><span>Poți introduce timpul-limită pentru acest set. <strong>Câmp gol = fără limită.</strong></span></li>
+              <li><span className="simulation-intro__step-number">2</span><span>Poți reveni la set; cronometrul continuă dacă l-ai activat.</span></li>
+              <li><span className="simulation-intro__step-number">3</span><span>La expirare, răspunsurile <strong>se trimit automat.</strong></span></li>
             </ol>
           </section>
 
@@ -299,8 +377,28 @@ export default function PracticeSetView({ setId, onExit, onHome, onComplete }: P
               )}
               <div className="simulation-intro__stats">
                 <p><strong>{introMeta.questionCount}</strong> {introMeta.questionCount === 1 ? 'grilă' : 'grile'}</p>
-                <p className="simulation-intro__stats-untimed">Fără cronometru</p>
+                <label className="simulation-intro__time-field">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    maxLength={4}
+                    value={minutesInput}
+                    onChange={(event) => {
+                      if (/^\d{0,4}$/.test(event.target.value)) {
+                        setMinutesInput(event.target.value);
+                        setMinutesError(null);
+                      }
+                    }}
+                    placeholder="____"
+                    aria-label="Timp-limită în minute; lasă gol pentru a lucra fără cronometru"
+                    aria-invalid={!!minutesError}
+                    aria-describedby={minutesError ? 'practice-time-error' : undefined}
+                  />
+                  <span>minute</span>
+                </label>
               </div>
+              {minutesError && <p id="practice-time-error" className="simulation-intro__time-error" role="alert">{minutesError}</p>}
               <div className="simulation-intro__actions">
                 <button onClick={startAttempt} className="simulation-intro__start" type="button">Începe setul</button>
                 <button onClick={onExit} className="simulation-intro__later" type="button">Nu acum</button>
@@ -329,6 +427,13 @@ export default function PracticeSetView({ setId, onExit, onHome, onComplete }: P
                 {saveState === 'saved' && <><CheckCircle2 size={12} className="text-brand-600" /> Progres salvat</>}
                 {saveState === 'error' && <><XCircle size={12} className="text-red-500" /> Salvarea a eșuat</>}
               </span>
+            )}
+            {timeLeft !== null && (
+              <div className={`flex items-center gap-2 rounded-lg px-3 py-1.5 font-mono text-sm font-bold ${timeLeft < 300 ? 'bg-red-100 text-red-700' : 'bg-brand-100 text-brand-700'}`}
+                role="timer" aria-label={`Timp rămas: ${formatPracticeTime(timeLeft)}`}>
+                <Clock size={16} aria-hidden="true" />
+                <span aria-hidden="true">{formatPracticeTime(timeLeft)}</span>
+              </div>
             )}
             <button
               onClick={() => submitAttempt()}
