@@ -992,7 +992,7 @@
                 <div className="review-workspace__heading">
                   <h1>Întrebări de revizuit</h1>
                   <div className="review-workspace__heading-art" aria-hidden="true">
-                    {Array.from({ length: 10 }, (_, index) => (
+                    {Array.from({ length: 17 }, (_, index) => (
                       <span className={`review-workspace__bubble review-workspace__bubble--${index + 1}`} key={index} />
                     ))}
                     <span className="review-workspace__question-mark">?</span>
