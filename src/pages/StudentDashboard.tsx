@@ -73,7 +73,7 @@
     practice: '/Capitole.png', // Aici pui sursa imaginii ANTRENAMENT PE CAPITOLE
     umfcd: '', // Aici pui sursa imaginii EXAMENE UMFCD
     review: '/Revizie2.png', // Aici pui sursa imaginii INTREBARI DE REVIZUIT
-    chemistry: '',
+    chemistry: '/Chimie.png',
   };
 
   const serif = { fontFamily: 'Georgia, Cambria, "Times New Roman", serif' };
