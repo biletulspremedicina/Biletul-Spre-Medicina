@@ -231,6 +231,8 @@
     const [reviewLoading, setReviewLoading] = useState(false);
     const [reviewError, setReviewError] = useState<string | null>(null);
     const [removingReviewId, setRemovingReviewId] = useState<string | null>(null);
+    const [openingReviewSourceId, setOpeningReviewSourceId] = useState<string | null>(null);
+    const [reviewSourceError, setReviewSourceError] = useState<string | null>(null);
     const [materialRelease, setMaterialRelease] = useState<MaterialReleaseRPC | null>(null);
     const [focusedSimulationId, setFocusedSimulationId] = useState<string | null>(null);
     const [umfcdKindFilter, setUmfcdKindFilter] = useState<'all' | 'Examen' | 'Simulare'>('all');
@@ -418,6 +420,53 @@
         ));
       }
       setRemovingReviewId(null);
+    };
+
+    const openReviewSource = async (question: ReviewQuestionRPC) => {
+      setOpeningReviewSourceId(question.out_review_id);
+      setReviewSourceError(null);
+      try {
+        const { data: savedQuestion, error: sourceError } = await supabase
+          .from('review_questions')
+          .select('source_id')
+          .eq('id', question.out_review_id)
+          .maybeSingle();
+        if (sourceError || !savedQuestion?.source_id) throw sourceError || new Error('Sursa nu mai este disponibilă.');
+
+        if (question.out_source_type === 'practice') {
+          const sourceId = savedQuestion.source_id;
+          let lessonId = practiceSets.find((set) => set.id === sourceId)?.lesson_id;
+          if (!lessonId) {
+            const { data: set, error: setError } = await supabase.from('practice_sets')
+              .select('lesson_id').eq('id', sourceId).maybeSingle();
+            if (setError || !set?.lesson_id) throw setError || new Error('Capitolul nu mai este disponibil.');
+            lessonId = set.lesson_id;
+          }
+          if (!lessonId) throw new Error('Capitolul nu mai este disponibil.');
+          const lessonTitle = practiceLessons.find((lesson) => lesson.out_id === lessonId)?.out_title
+            || 'Antrenament pe capitole';
+          onOpenPracticeLesson(lessonId, lessonTitle, sourceId);
+        } else {
+          const sourceId = savedQuestion.source_id;
+          let section = simulations.find((simulation) => simulation.id === sourceId)?.student_section;
+          if (!section) {
+            const { data: simulation, error: simulationError } = await supabase.from('simulations')
+              .select('student_section').eq('id', sourceId).maybeSingle();
+            if (simulationError || !simulation) throw simulationError || new Error('Simularea nu mai este disponibilă.');
+            section = simulation.student_section as 'all' | 'umfcd';
+          }
+          setUmfcdKindFilter('all');
+          setUmfcdYearFilter(null);
+          setFocusedSimulationId(sourceId);
+          setPage(section === 'umfcd' ? 'umfcd' : 'all');
+          setMobileMenuOpen(false);
+        }
+      } catch (error) {
+        console.error('Review question source navigation error:', error);
+        setReviewSourceError('Nu am putut deschide materialul. Încearcă din nou.');
+      } finally {
+        setOpeningReviewSourceId(null);
+      }
     };
 
     const handleBuySubscription = async () => {
@@ -952,6 +1001,9 @@
                     </button>
                   </div>
                 )}
+                {reviewSourceError && (
+                  <p role="alert" className="review-workspace__source-error">{reviewSourceError}</p>
+                )}
 
                 {reviewLoading ? (
                   <div className="py-12"><Loading message="Se încarcă grilele salvate..." /></div>
@@ -966,9 +1018,11 @@
                   <ReviewWorkspace
                     questions={reviewQuestions}
                     selectedId={selectedReviewId}
-                    onSelect={setSelectedReviewId}
+                    onSelect={(id) => { setSelectedReviewId(id); setReviewSourceError(null); }}
                     removingId={removingReviewId}
                     onRemove={(question) => void removeReviewQuestion(question)}
+                    openingSourceId={openingReviewSourceId}
+                    onOpenSource={(question) => void openReviewSource(question)}
                   />
                 )}
               </section>
@@ -1180,12 +1234,14 @@
     return numberedSet ? practiceSetName(numberedSet[1], Number(numberedSet[2])) : storedTitle;
   }
 
-  function ReviewWorkspace({ questions, selectedId, onSelect, removingId, onRemove }: {
+  function ReviewWorkspace({ questions, selectedId, onSelect, removingId, onRemove, openingSourceId, onOpenSource }: {
     questions: ReviewQuestionRPC[];
     selectedId: string | null;
     onSelect: (id: string) => void;
     removingId: string | null;
     onRemove: (question: ReviewQuestionRPC) => void;
+    openingSourceId: string | null;
+    onOpenSource: (question: ReviewQuestionRPC) => void;
   }) {
     const selected = questions.find((question) => question.out_review_id === selectedId) || questions[0];
     const isCG = selected.out_q_type === 'CG';
@@ -1225,20 +1281,31 @@
           <div className="review-workspace__detail-top">
             <div className="review-workspace__meta">
               <span>{isCG ? 'Complement grupat' : 'Complement simplu'}</span>
-              <span aria-hidden="true">/</span>
-              <span>{reviewSourceName(selected)}</span>
               {selected.out_requires_subscription && <span className="review-workspace__premium">Cu abonament</span>}
             </div>
-            <button
-              type="button"
-              className="review-workspace__remove"
-              onClick={() => onRemove(selected)}
-              disabled={removingId === selected.out_review_id}
-              aria-label="Elimină grila din lista de revizuit"
-            >
-              {removingId === selected.out_review_id ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />}
-              Elimină
-            </button>
+            <div className="review-workspace__actions">
+              <button
+                type="button"
+                className="review-workspace__source-link"
+                onClick={() => onOpenSource(selected)}
+                disabled={openingSourceId === selected.out_review_id}
+                aria-label={`Deschide materialul ${reviewSourceName(selected)}`}
+              >
+                {openingSourceId === selected.out_review_id && <Loader2 size={14} className="animate-spin" />}
+                <span>{reviewSourceName(selected)}</span>
+                <ChevronRight size={15} aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                className="review-workspace__remove"
+                onClick={() => onRemove(selected)}
+                disabled={removingId === selected.out_review_id}
+                aria-label="Elimină grila din lista de revizuit"
+              >
+                {removingId === selected.out_review_id ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />}
+                Elimină
+              </button>
+            </div>
           </div>
 
           <h2 className="review-workspace__question">{selected.out_question_text}</h2>
