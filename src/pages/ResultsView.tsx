@@ -4,7 +4,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Lock, Trophy, CheckCircle2, XCircle, ChevronLeft, Clock, Crown, RotateCcw, History, Loader2 } from 'lucide-react';
 import Logo from '@/components/Logo';
 import Loading from '@/components/Loading';
-import { biologySimulationName } from '@/lib/materialDisplayNames';
+import { biologySimulationName, umfcdSimulationName } from '@/lib/materialDisplayNames';
 
 type Props = {
   simulationId: string;
@@ -156,7 +156,7 @@ export default function ResultsView({ simulationId, attemptId, onExit, onRetake 
 
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8">
         <h1 className="font-display text-2xl font-bold text-stone-900 mb-1">
-          {simulation.student_section === 'all' ? biologySimulationName(simulation.display_order ?? 1) : simulation.title}
+          {simulation.student_section === 'all' ? biologySimulationName(simulation.display_order ?? 1) : umfcdSimulationName(simulation)}
         </h1>
         <p className="text-stone-500 text-sm mb-6">Rezultate și explicații</p>
 
