@@ -774,7 +774,43 @@ html.student-dark .simulation-library__card-meta { color: #c1d1c5; border-color:
 .simulation-library--umfcd .simulation-library__progress-track { background: #dce7ee; }
 .simulation-library--umfcd .simulation-library__progress-track div { background: #286b96; }
 .simulation-library--umfcd .simulation-library__grid { border-color: #e8eef2; }
+.simulation-library--umfcd .simulation-library__grid { grid-auto-rows: auto; align-items: start; }
 .simulation-library--umfcd .simulation-library__card { border-color: #d7e3eb; }
+.simulation-library--umfcd .simulation-library__card--biology {
+  background: radial-gradient(circle at 85% 0, #f3f8fb, #fff 48%);
+  box-shadow: 0 3px 14px rgba(24, 70, 103, .04);
+}
+.simulation-library--umfcd .simulation-library__card--biology h3,
+.simulation-library--umfcd .simulation-library__biology-meta strong,
+.simulation-library--umfcd .simulation-library__biology-history h4 { color: #173c57; }
+.simulation-library--umfcd .simulation-library__biology-number { color: #245b85; }
+.simulation-library__umfcd-title {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  margin: 0 0 5px;
+  color: #526b7a;
+  font-size: 12px;
+  line-height: 1.35;
+}
+.simulation-library--umfcd .simulation-library__biology-meta { color: #526b7a; }
+.simulation-library--umfcd .simulation-library__biology-access--free { color: #286b96; }
+.simulation-library--umfcd .simulation-library__biology-history { border-color: #dce7ee; }
+.simulation-library--umfcd .simulation-library__biology-history-slider { background: #fbfdff; border-color: #e0e9ef; }
+.simulation-library--umfcd .simulation-library__biology-history-node { border-color: #39799c; background: #fbfdff; }
+.simulation-library--umfcd .simulation-library__biology-history-node--complete { background: #39799c; }
+.simulation-library--umfcd .simulation-library__biology-history-link { color: #8dadc0; }
+.simulation-library--umfcd .simulation-library__biology-history-label,
+.simulation-library--umfcd .simulation-library__biology-history li strong,
+.simulation-library--umfcd .simulation-library__biology-countdown { color: #245b75; }
+.simulation-library--umfcd .simulation-library__biology-secondary { color: #174d70; border-color: #acc7d6; }
+.simulation-library--umfcd .simulation-library__biology-secondary:hover { background: #f1f7fa; border-color: #39799c; }
+.simulation-library--umfcd .simulation-library__biology-primary { background: #174d70; }
+.simulation-library--umfcd .simulation-library__biology-primary:hover { background: #256486; }
+.simulation-library--umfcd .simulation-library__biology-history-toggle:focus-visible,
+.simulation-library--umfcd .simulation-library__biology-history ol:focus-visible,
+.simulation-library--umfcd .simulation-library__biology-actions button:focus-visible { outline-color: #286b96; }
 .simulation-library--umfcd .simulation-library__card:hover {
   border-color: #6b9bb7;
   box-shadow: 0 12px 30px rgba(24, 70, 103, .09);
@@ -800,6 +836,24 @@ html.student-dark .simulation-library--umfcd .simulation-library__hero-photo {
 }
 html.student-dark .simulation-library--umfcd .simulation-library__grid { background: #1a303e; border-color: #3c596b; }
 html.student-dark .simulation-library--umfcd .simulation-library__card { background: #1d3645; border-color: #476475; }
+html.student-dark .simulation-library--umfcd .simulation-library__card--biology { background: radial-gradient(circle at 50% 0, #29485a, #1d3645 46%); }
+html.student-dark .simulation-library--umfcd .simulation-library__card--biology h3,
+html.student-dark .simulation-library--umfcd .simulation-library__biology-meta strong,
+html.student-dark .simulation-library--umfcd .simulation-library__biology-history h4,
+html.student-dark .simulation-library--umfcd .simulation-library__biology-history li strong { color: #e8f1f7; }
+html.student-dark .simulation-library--umfcd .simulation-library__biology-number { color: #a6cee4; }
+html.student-dark .simulation-library--umfcd .simulation-library__umfcd-title,
+html.student-dark .simulation-library--umfcd .simulation-library__biology-meta { color: #c3d5e1; }
+html.student-dark .simulation-library--umfcd .simulation-library__biology-access--free { color: #a6cee4; }
+html.student-dark .simulation-library--umfcd .simulation-library__biology-history { border-color: #476475; }
+html.student-dark .simulation-library--umfcd .simulation-library__biology-history-slider { background: #203d4e; border-color: #476475; }
+html.student-dark .simulation-library--umfcd .simulation-library__biology-history-node { border-color: #9fc9dd; background: #203d4e; }
+html.student-dark .simulation-library--umfcd .simulation-library__biology-history-node--complete { background: #9fc9dd; }
+html.student-dark .simulation-library--umfcd .simulation-library__biology-history-link { color: #729eb5; }
+html.student-dark .simulation-library--umfcd .simulation-library__biology-history-label,
+html.student-dark .simulation-library--umfcd .simulation-library__biology-countdown { color: #e0edf4; }
+html.student-dark .simulation-library--umfcd .simulation-library__biology-secondary { color: #e8f1f7; background: #29485a; border-color: #59788b; }
+html.student-dark .simulation-library--umfcd .simulation-library__biology-secondary:hover { background: #34586b; }
 html.student-dark .simulation-library--umfcd .simulation-library__card-index { color: #b9dbee; }
 html.student-dark .simulation-library--umfcd .simulation-library__progress { color: #d2e3ed; }
 html.student-dark .simulation-library--umfcd .simulation-library__card-meta { color: #c3d5e1; border-color: #476475; }
