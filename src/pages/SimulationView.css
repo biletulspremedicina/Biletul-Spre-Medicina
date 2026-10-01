@@ -136,6 +136,7 @@
 
 .simulation-intro__steps li:last-child { border-bottom: 0; }
 .simulation-intro__steps strong { font-weight: 700; }
+.simulation-intro__step-note { display: block; text-align: center; }
 
 .simulation-intro__step-number {
   border-right: 1px solid #b8c9c2;
@@ -207,17 +208,16 @@
 
 .simulation-intro__time-field input {
   width: 70px;
-  padding: 0 3px 2px;
-  border: 0;
-  border-bottom: 1px solid var(--intro-accent);
-  border-radius: 0;
+  padding: 2px 3px 3px;
+  border: 1px solid #dce2dc;
+  border-bottom: 2px solid var(--intro-accent);
+  border-radius: 7px 7px 2px 2px;
   background: transparent;
   color: inherit;
   font: inherit;
   text-align: center;
 }
 
-.simulation-intro__time-field input::placeholder { color: #96a19a; }
 .simulation-intro__time-field input:focus-visible { outline: 2px solid var(--intro-accent); outline-offset: 3px; }
 .simulation-intro__time-error { margin: -6px 0 12px; color: #a32e38; font-size: 12px; text-align: center; }
 
