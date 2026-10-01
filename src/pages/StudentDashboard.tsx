@@ -991,10 +991,17 @@
               <section className="review-workspace">
                 <div className="review-workspace__heading">
                   <h1>Întrebări de revizuit</h1>
+                  <span className="review-workspace__arc review-workspace__arc--top" aria-hidden="true" />
+                  <span className="review-workspace__arc review-workspace__arc--bottom" aria-hidden="true" />
+                  <span className="review-workspace__arc review-workspace__arc--right" aria-hidden="true" />
                   <div className="review-workspace__heading-art" aria-hidden="true">
-                    {Array.from({ length: 17 }, (_, index) => (
-                      <span className={`review-workspace__bubble review-workspace__bubble--${index + 1}`} key={index} />
-                    ))}
+                    <span className="review-workspace__orbit review-workspace__orbit--outer">
+                      <span className="review-workspace__orbit-dot review-workspace__orbit-dot--outer-a" />
+                      <span className="review-workspace__orbit-dot review-workspace__orbit-dot--outer-b" />
+                    </span>
+                    <span className="review-workspace__orbit review-workspace__orbit--inner">
+                      <span className="review-workspace__orbit-dot review-workspace__orbit-dot--inner" />
+                    </span>
                     <span className="review-workspace__question-mark">?</span>
                   </div>
                 </div>
