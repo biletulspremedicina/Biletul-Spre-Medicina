@@ -784,7 +784,7 @@ html.student-dark .simulation-library__card-meta { color: #c1d1c5; border-color:
 .simulation-library--umfcd .simulation-library__biology-meta strong,
 .simulation-library--umfcd .simulation-library__biology-history h4 { color: #173c57; }
 .simulation-library--umfcd .simulation-library__biology-heading h3 {
-  --umfcd-heading-offset-x: 15px; /* Valoare mai mare = mai la dreapta. */
+  --umfcd-heading-offset-x: 5px; /* Valoare mai mare = mai la dreapta. */
   font-size: clamp(34px, 2.9vw, 46px);
   line-height: 1;
   letter-spacing: -.05em;
