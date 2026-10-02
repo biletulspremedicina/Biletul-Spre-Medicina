@@ -273,7 +273,7 @@ function PracticeSetCard({
       <div className="simulation-library__biology-actions">
         {isScheduled && set.out_available_at ? (
           <div className="simulation-library__biology-countdown">
-            <span className="practice-set-card__release-label">Accesibil în</span>
+            <span className="practice-set-card__release-label">Material accesibil în:</span>
             <ReleaseCountdown target={set.out_available_at} onComplete={onReleaseReached} />
           </div>
         ) : (
