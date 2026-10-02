@@ -1047,8 +1047,6 @@
   .practice-sets-page { animation: study-colour-fade .42s ease-out; }
 
   .practice-library__slide-viewport { position: relative; overflow: hidden; }
-  .practice-library--chapter-open,
-  html.student-dark .practice-library.practice-library--chapter-open { border-color: transparent; }
   .practice-library__slide-track {
     display: flex;
     width: 100%;
@@ -1064,14 +1062,35 @@
   .practice-library--chapter-open .practice-library__slide-pane:first-child + .practice-library__slide-pane { position: relative; margin-left: 100%; }
   .practice-sets-page--embedded { min-height: 0; padding: 0; background: transparent; animation: none; }
   .practice-sets-page__inline-back {
-    display: inline-flex; align-items: center; gap: 5px; margin: 14px 0;
-    color: #762b3f; font-size: 13px; font-weight: 650;
+    position: absolute; z-index: 2; top: 17px; right: 20px;
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 7px 10px; border: 1px solid rgba(255,255,255,.45); border-radius: 5px;
+    background: rgba(48,17,27,.2); color: #fffaf8; font-size: 12px; font-weight: 650;
   }
-  .practice-sets-page__inline-back:hover { text-decoration: underline; text-underline-offset: 3px; }
-  .practice-sets-page__inline-back:focus-visible { outline: 2px solid #842d42; outline-offset: 4px; }
-  .practice-sets-page--embedded .practice-sets-page__hero { border-radius: 0; }
+  .practice-sets-page__inline-back:hover { background: rgba(48,17,27,.38); }
+  .practice-sets-page__inline-back:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+  .practice-sets-page--embedded .practice-sets-page__hero { min-height: 238px; border: 0; border-bottom: 1px solid #eadbdd; border-radius: 0; }
+  .practice-sets-page--embedded .practice-sets-page__hero-copy { width: 70%; padding: 36px; }
+  .practice-sets-page--embedded .practice-sets-page__hero-copy p { margin-bottom: 12px; font-size: 11px; letter-spacing: .25em; }
+  .practice-sets-page--embedded .practice-sets-page__hero-copy h1 { font-size: clamp(32px, 3.7vw, 54px); }
+  .practice-sets-page__hero-subtitle { display: block; margin-top: 12px; color: #f6e0e1; font-size: 18px; line-height: 1.5; }
+  .practice-sets-page--embedded .practice-sets-page__section-heading { gap: 24px; margin: 0; padding: 28px clamp(20px, 3vw, 42px) 19px; }
+  .practice-sets-page--embedded .practice-sets-page__section-heading h2 { font-size: clamp(27px, 2.6vw, 38px); }
+  .practice-sets-page__progress { display: flex; align-items: center; gap: 16px; padding-bottom: 4px; color: #80636b; font-family: Georgia, Cambria, "Times New Roman", serif; font-size: 15px; white-space: nowrap; }
+  .practice-sets-page__progress-track { width: clamp(70px, 12vw, 180px); height: 7px; overflow: hidden; border-radius: 99px; background: #e9dfe1; }
+  .practice-sets-page__progress-track div { height: 100%; border-radius: inherit; background: #842d42; transition: width .5s ease; }
+  .practice-sets-page--embedded .practice-sets-page__grid { gap: 18px; margin: 0 clamp(14px, 2vw, 26px) 28px; padding: clamp(14px, 1.7vw, 24px); border: 1px solid #f0e6e7; border-radius: 28px; background: #fff; box-shadow: 0 10px 30px rgba(105,37,55,.035); }
   html.student-dark .practice-sets-page--embedded { background: transparent; }
-  html.student-dark .practice-sets-page__inline-back { color: #f0a8b7; }
+  html.student-dark .practice-sets-page__inline-back { color: #fffaf8; }
+  html.student-dark .practice-sets-page--embedded .practice-sets-page__grid { background: #1d2420; border-color: #5d3943; }
+  html.student-dark .practice-sets-page__progress { color: #c7aab3; }
+  @media (max-width: 680px) {
+    .practice-sets-page--embedded .practice-sets-page__hero { min-height: 218px; }
+    .practice-sets-page--embedded .practice-sets-page__hero-copy { width: 100%; padding: 34px 20px; }
+    .practice-sets-page__hero-subtitle { font-size: 16px; }
+    .practice-sets-page--embedded .practice-sets-page__section-heading { align-items: flex-start; }
+    .practice-sets-page__progress { flex-wrap: wrap; }
+  }
   @media (prefers-reduced-motion: reduce) {
     .practice-library__slide-track { transition: none; }
   }
