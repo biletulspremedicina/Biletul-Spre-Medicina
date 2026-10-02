@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase, type Simulation, type ExamQuestion, type Attempt } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
-import { AlertTriangle, ChevronLeft } from 'lucide-react';
+import { AlertTriangle, ChevronLeft, Send } from 'lucide-react';
 import Logo from '@/components/Logo';
 import QuestionRail from '@/components/QuestionRail';
 import Loading from '@/components/Loading';
@@ -424,9 +424,6 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
             <strong>{displayName}</strong>
           </nav>
           <span className={`practice-exam__header-timer${timeLeft < 300 ? ' practice-exam__header-timer--urgent' : ''}`} role="timer" aria-label={`Timp rămas: ${formatTime(timeLeft)}`}>{formatTime(timeLeft)}</span>
-          <button className="practice-exam__submit" type="button" onClick={() => void submitAttempt(false)} disabled={submitting || questions.length === 0}>
-            {submitting ? 'Se trimite…' : <><span className="practice-exam__submit-long">Trimite răspunsurile</span><span className="practice-exam__submit-short">Trimite</span></>}
-          </button>
         </div>
       </header>
 
@@ -474,6 +471,10 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
                 {saveState === 'error' && 'Salvarea a eșuat'}
               </p>
             )}
+            <button className="practice-exam__submit" type="button" onClick={() => void submitAttempt(false)} disabled={submitting || questions.length === 0}>
+              <Send size={17} strokeWidth={1.8} aria-hidden="true" />
+              <span>{submitting ? 'Se trimite…' : 'Trimite răspunsurile'}</span>
+            </button>
           </div>
         </aside>
       </div>
