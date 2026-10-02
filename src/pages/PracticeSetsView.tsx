@@ -121,7 +121,7 @@ export default function PracticeSetsView({
         </section>
 
         <div className="practice-sets-page__section-heading">
-          <h2>{embedded ? 'Grile relevante si riguors selectionate.' : 'Seturi disponibile'}</h2>
+          <h2>{embedded ? 'Materiale relevante, riguors selectionate.' : 'Seturi disponibile'}</h2>
           {!loading && (embedded ? (
             <div className="practice-sets-page__progress" aria-label={`${completedSetCount} din ${sets.length} seturi rezolvate`}>
               <span>{completedSetCount} din {sets.length} rezolvate</span>
