@@ -121,7 +121,7 @@ export default function PracticeSetsView({
         </section>
 
         <div className="practice-sets-page__section-heading">
-          <h2>{embedded ? 'Materiale relevante, riguors selecționate.' : 'Seturi disponibile'}</h2>
+          <h2>{embedded ? 'Materiale relevante, riguros selecționate.' : 'Seturi disponibile'}</h2>
           {!loading && (embedded ? (
             <div className="practice-sets-page__progress" aria-label={`${completedSetCount} din ${sets.length} seturi rezolvate`}>
               <span>{completedSetCount} din {sets.length} rezolvate</span>
@@ -233,7 +233,7 @@ function PracticeSetCard({
       <div className="simulation-library__biology-meta">
         <span><strong>{set.out_question_count}</strong> {set.out_question_count === 1 ? 'grilă' : 'grile'}</span>
         <span aria-hidden="true">·</span>
-        <span className="font-bold">Cronometru</span>
+        <span className="font-bold">Cronometru disponibil</span>
         <span aria-hidden="true">·</span>
         <span className={isPremium ? 'simulation-library__biology-access--premium' : 'simulation-library__biology-access--free'}>
           {isPremium ? 'Necesită abonament' : 'Fără abonament'}
