@@ -554,9 +554,6 @@ function QuestionCard({
               </div>
             );
           })}
-          <p className="practice-exam__combination-key">
-            <strong>Variante:</strong> A = 1, 2, 3 · B = 1, 3 · C = 2, 4 · D = doar 4 · E = toate sau altă combinație
-          </p>
         </div>
       )}
 
