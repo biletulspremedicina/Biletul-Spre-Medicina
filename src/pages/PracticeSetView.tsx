@@ -10,6 +10,8 @@ import './PracticeSetView.css';
 
 type Props = {
   setId: string;
+  lessonId?: string;
+  lessonTitle?: string;
   onExit: () => void;
   onHome: () => void;
   onComplete: (attemptId: string) => void;
@@ -62,7 +64,7 @@ type IntroMeta = {
   questionCount: number;
 };
 
-export default function PracticeSetView({ setId, onExit, onHome, onComplete }: Props) {
+export default function PracticeSetView({ setId, lessonId, lessonTitle, onExit, onHome, onComplete }: Props) {
   const [questions, setQuestions] = useState<PracticeQuestionRPC[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
@@ -86,38 +88,53 @@ export default function PracticeSetView({ setId, onExit, onHome, onComplete }: P
   useEffect(() => {
     let active = true;
     (async () => {
-      const { data: set, error: setLookupError } = await supabase
-        .from('practice_sets')
-        .select('lesson_id')
-        .eq('id', setId)
-        .maybeSingle();
-      if (!active) return;
-      if (setLookupError || !set) {
-        setError('Setul nu a fost găsit.');
-        setLoading(false);
-        return;
+      let resolvedLessonId = lessonId;
+      if (!resolvedLessonId) {
+        const { data: set, error: setLookupError } = await supabase
+          .from('practice_sets')
+          .select('lesson_id')
+          .eq('id', setId)
+          .maybeSingle();
+        if (!active) return;
+        if (setLookupError || !set) {
+          if (setLookupError) console.error('practice_sets lookup error:', setLookupError);
+          setError('Nu s-au putut încărca datele setului. Întoarce-te la capitol și deschide setul din nou.');
+          setLoading(false);
+          return;
+        }
+        resolvedLessonId = set.lesson_id;
       }
 
-      const [lessonResult, setsResult] = await Promise.all([
-        supabase.from('practice_lessons').select('title').eq('id', set.lesson_id).maybeSingle(),
-        supabase.rpc('get_practice_sets', { p_lesson_id: set.lesson_id }),
-      ]);
+      const setsResult = await supabase.rpc('get_practice_sets', { p_lesson_id: resolvedLessonId });
       if (!active) return;
       const selectedSet = ((setsResult.data || []) as PracticeSetRPC[])
         .find((item) => item.out_id === setId);
-      if (lessonResult.error || !lessonResult.data || setsResult.error || !selectedSet) {
-        setError('Nu s-au putut încărca detaliile setului.');
-      } else {
-        setIntroMeta({
-          lessonTitle: lessonResult.data.title,
-          position: selectedSet.out_position,
-          questionCount: selectedSet.out_question_count,
-        });
+      if (setsResult.error || !selectedSet) {
+        if (setsResult.error) console.error('get_practice_sets error:', setsResult.error);
+        setError('Setul nu mai este disponibil în acest capitol. Reîncarcă lista și încearcă din nou.');
+        setLoading(false);
+        return;
       }
+      let resolvedLessonTitle = lessonTitle;
+      if (!resolvedLessonTitle) {
+        const { data: lesson, error: lessonError } = await supabase
+          .from('practice_lessons')
+          .select('title')
+          .eq('id', resolvedLessonId)
+          .maybeSingle();
+        if (!active) return;
+        if (lessonError) console.error('practice_lessons lookup error:', lessonError);
+        resolvedLessonTitle = lesson?.title || 'Capitol';
+      }
+      setIntroMeta({
+        lessonTitle: resolvedLessonTitle || 'Capitol',
+        position: selectedSet.out_position,
+        questionCount: selectedSet.out_question_count,
+      });
       setLoading(false);
     })();
     return () => { active = false; };
-  }, [setId]);
+  }, [setId, lessonId, lessonTitle]);
 
   // Start or resume attempt
   const startAttempt = useCallback(async () => {
