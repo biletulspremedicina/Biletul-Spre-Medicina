@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import Logo from '@/components/Logo';
 import Loading from '@/components/Loading';
+import { practiceSetName } from '@/lib/materialDisplayNames';
 
 type Props = {
   setId: string;
@@ -24,6 +25,7 @@ export default function PracticeResultsView({ setId, attemptId, onExit, onRetake
   const [resultsLoading, setResultsLoading] = useState(false);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [isPremium, setIsPremium] = useState<boolean | null>(null);
+  const [materialName, setMaterialName] = useState<string | null>(null);
   const [reviewQuestionIds, setReviewQuestionIds] = useState<Set<string>>(() => new Set());
   const [reviewBusyId, setReviewBusyId] = useState<string | null>(null);
 
@@ -35,8 +37,13 @@ export default function PracticeResultsView({ setId, attemptId, onExit, onRetake
       setHistory(histData);
 
       const { data: setData } = await supabase.from('practice_sets')
-        .select('requires_subscription').eq('id', setId).maybeSingle();
+        .select('requires_subscription, position, lesson_id').eq('id', setId).maybeSingle();
       setIsPremium(setData?.requires_subscription ?? null);
+      if (setData) {
+        const { data: lesson } = await supabase.from('practice_lessons')
+          .select('title').eq('id', setData.lesson_id).maybeSingle();
+        if (lesson?.title) setMaterialName(practiceSetName(lesson.title, setData.position + 1));
+      }
 
       if (attemptId) {
         setSelectedAttemptId(attemptId);
@@ -139,7 +146,7 @@ export default function PracticeResultsView({ setId, attemptId, onExit, onRetake
       </header>
 
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="font-display text-2xl font-bold text-stone-900 mb-1">Rezultate set de grile</h1>
+        <h1 className="font-display text-2xl font-bold text-stone-900 mb-1">{materialName || 'Rezultate set de grile'}</h1>
         <p className="text-stone-500 text-sm mb-6">Scor, răspunsuri corecte și explicații</p>
 
         {/* History selector */}
