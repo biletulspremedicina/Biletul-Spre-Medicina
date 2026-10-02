@@ -992,7 +992,7 @@
                 <div className="review-workspace__heading">
                   <h1>Întrebări de revizuit</h1>
                   <div className="review-workspace__ambient" aria-hidden="true">
-                    {Array.from({ length: 10 }, (_, index) => (
+                    {Array.from({ length: 15 }, (_, index) => (
                       <span className={`review-workspace__ambient-dot review-workspace__ambient-dot--${index + 1}`} key={index} />
                     ))}
                   </div>
