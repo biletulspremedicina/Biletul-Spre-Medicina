@@ -350,6 +350,7 @@ export type ReviewQuestionRPC = {
   out_review_id: string;
   out_source_type: 'simulation' | 'practice';
   out_source_title: string;
+  out_display_name?: string;
   out_requires_subscription: boolean;
   out_question_id: string;
   out_q_type: 'CS' | 'CG';
