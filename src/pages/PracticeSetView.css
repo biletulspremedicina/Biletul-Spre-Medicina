@@ -64,20 +64,30 @@
 .practice-exam__breadcrumb strong { overflow: hidden; color: #174a3c; font-weight: 600; text-overflow: ellipsis; }
 
 .practice-exam__comfort-control {
-  display: inline-flex;
+  display: flex;
   flex: none;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 4px;
   margin-left: auto;
-  padding: 8px 0 8px 8px;
-  border: 0;
-  background: transparent;
+  padding: 4px 0 4px 8px;
   color: #425d51;
-  cursor: pointer;
   font: inherit;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
+}
+.practice-exam__comfort-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+.practice-exam__comfort-switch {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
 }
 .practice-exam__comfort-track {
   display: flex;
@@ -98,9 +108,25 @@
   box-shadow: 0 1px 4px rgba(18, 48, 36, .18);
   transition: transform .2s ease;
 }
-.practice-exam__comfort-control:hover .practice-exam__comfort-track { border-color: #547c67; }
-.practice-exam__comfort-control[aria-checked="true"] .practice-exam__comfort-track { border-color: #237454; background: #237454; }
-.practice-exam__comfort-control[aria-checked="true"] .practice-exam__comfort-thumb { transform: translateX(20px); }
+.practice-exam__comfort-switch:hover .practice-exam__comfort-track { border-color: #547c67; }
+.practice-exam__comfort-switch[aria-checked="true"] .practice-exam__comfort-track { border-color: #237454; background: #237454; }
+.practice-exam__comfort-switch[aria-checked="true"] .practice-exam__comfort-thumb { transform: translateX(20px); }
+.practice-exam__comfort-remember {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 1;
+}
+.practice-exam__comfort-remember input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: #237454;
+  cursor: pointer;
+}
 
 .practice-exam__submit {
   display: inline-flex;
@@ -474,7 +500,13 @@
   .practice-exam__header-inner { min-height: 72px; gap: 12px; padding-inline: 17px; }
   .practice-exam__breadcrumb { display: none; }
   .practice-exam__comfort-control { gap: 0; padding-left: 0; }
-  .practice-exam__comfort-label { display: none; }
+  .practice-exam__comfort-label,
+  .practice-exam__comfort-remember span { display: none; }
+  .practice-exam__comfort-actions { gap: 8px; }
+  .practice-exam__comfort-track { width: 40px; height: 23px; }
+  .practice-exam__comfort-thumb { width: 15px; height: 15px; }
+  .practice-exam__comfort-switch[aria-checked="true"] .practice-exam__comfort-thumb { transform: translateX(16px); }
+  .practice-exam__comfort-remember input { width: 17px; height: 17px; }
   .practice-exam__layout { display: flex; flex-direction: column; }
   .practice-exam__progress { order: 0; }
   .practice-exam__rail { order: 1; border-right: 0; border-bottom: 1px solid #e4e6e1; }
