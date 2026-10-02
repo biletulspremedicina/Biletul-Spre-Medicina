@@ -1222,14 +1222,16 @@
   .practice-sets-page .practice-set-card .simulation-library__biology-history li strong { color: #763346; }
   .practice-set-card .simulation-library__biology-actions { padding-top: 17px; }
   .simulation-library__card--scheduled,
-  .practice-sets-page .practice-set-card--scheduled {
+  .practice-sets-page .practice-set-card--scheduled,
+  .simulation-library__card--biology:has(.simulation-library__biology-countdown) {
     height: 330px;
     min-height: 330px;
     max-height: 330px;
     align-self: start;
   }
   .simulation-library__card--scheduled .simulation-library__biology-actions,
-  .practice-set-card--scheduled .simulation-library__biology-actions {
+  .practice-set-card--scheduled .simulation-library__biology-actions,
+  .simulation-library__card--biology:has(.simulation-library__biology-countdown) .simulation-library__biology-actions {
     flex: 1;
     align-items: center;
     justify-content: center;
@@ -1257,7 +1259,8 @@
   }
   @media (max-width: 680px) {
     .simulation-library__card--scheduled,
-    .practice-sets-page .practice-set-card--scheduled { height: auto; min-height: 330px; max-height: none; }
+    .practice-sets-page .practice-set-card--scheduled,
+    .simulation-library__card--biology:has(.simulation-library__biology-countdown) { height: auto; min-height: 330px; max-height: none; }
     .practice-sets-page__nav-button { width: 42px; padding: 8px; }
     .practice-sets-page__nav-button span { display: none; }
     .practice-sets-page__hero { min-height: 150px; }
