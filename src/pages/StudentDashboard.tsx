@@ -1217,14 +1217,22 @@
       const interval = window.setInterval(tick, 1000);
       return () => window.clearInterval(interval);
     }, [target, completedRef, onComplete]);
-    const totalSeconds = Math.ceil(remaining / 1000);
-    const days = Math.floor(totalSeconds / 86_400);
-    const hours = Math.floor((totalSeconds % 86_400) / 3_600);
-    const minutes = Math.floor((totalSeconds % 3_600) / 60);
-    const seconds = totalSeconds % 60;
+    const totalMinutes = Math.ceil(remaining / 60_000);
+    const days = Math.floor(totalMinutes / 1_440);
+    const hours = Math.floor((totalMinutes % 1_440) / 60);
+    const minutes = totalMinutes % 60;
+    const units = [
+      ...(days > 0 ? [{ value: days, label: days === 1 ? 'zi' : 'zile' }] : []),
+      ...(days > 0 || hours > 0 ? [{ value: hours, label: hours === 1 ? 'oră' : 'ore' }] : []),
+      { value: minutes, label: minutes === 1 ? 'minut' : 'minute' },
+    ];
     return (
-      <span className="mt-1 block font-bold tabular-nums">
-        {days > 0 ? `${days}z ` : ''}{String(hours).padStart(2, '0')}:{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+      <span className="practice-set-card__time" aria-label={units.map(({ value, label }) => `${value} ${label}`).join(', ')}>
+        {units.map(({ value, label }) => (
+          <span className="practice-set-card__time-unit" key={label}>
+            <strong>{value}</strong><small>{label}</small>
+          </span>
+        ))}
       </span>
     );
   }
@@ -1475,7 +1483,7 @@
     if (editorial) {
       return (
         <article id={`released-simulation-${sim.id}`}
-          className={`simulation-library__card simulation-library__card--biology ${focused ? `ring-2 ${isUmfcd ? 'ring-blue-500' : 'ring-emerald-500'} ring-offset-2` : ''}`}>
+          className={`simulation-library__card simulation-library__card--biology ${isScheduled ? 'simulation-library__card--scheduled' : ''} ${focused ? `ring-2 ${isUmfcd ? 'ring-blue-500' : 'ring-emerald-500'} ring-offset-2` : ''}`}>
           <div className="simulation-library__biology-heading">
             <h3 data-umfcd-kind={isUmfcd ? cardTitle : undefined}>{cardTitle}</h3>
             <span className="simulation-library__biology-number" aria-label={isUmfcd ? `Anul ${umfcdYear ?? 'nesetat'}` : `Simularea ${Number(index ?? 0) + 1}`}>
@@ -1492,7 +1500,7 @@
             </span>
           </div>
 
-          <div className="simulation-library__biology-history">
+          {!isScheduled && <div className="simulation-library__biology-history">
             <h4>
               <button type="button" className="simulation-library__biology-history-toggle"
                 onClick={toggleHistory} aria-expanded={historyOpen} aria-controls={`simulation-history-${sim.id}`}>
@@ -1524,12 +1532,12 @@
               </ol>
               </div>
             </div>
-          </div>
+          </div>}
 
           <div className="simulation-library__biology-actions">
             {isScheduled && sim.available_at ? (
               <div className="simulation-library__biology-countdown">
-                <span>Accesibil în</span>
+                <span className="practice-set-card__release-label">Accesibil în</span>
                 <InlineReleaseCountdown target={sim.available_at} onComplete={onReleaseReached} />
               </div>
             ) : (
@@ -1610,10 +1618,8 @@
         </div>
         <div className={`mt-auto flex flex-col gap-2 border-t border-stone-100 pt-4 ${editorial ? 'simulation-library__card-actions' : ''}`}>
           {isScheduled && sim.available_at ? (
-            <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-center text-sm font-semibold text-blue-800">
-              <span className="flex items-center justify-center gap-2">
-                <CalendarClock size={16} /> Accesibil în
-              </span>
+            <div className="simulation-library__biology-countdown">
+              <span className="practice-set-card__release-label">Accesibil în</span>
               <InlineReleaseCountdown target={sim.available_at} onComplete={onReleaseReached} />
             </div>
           ) : isFree ? (
