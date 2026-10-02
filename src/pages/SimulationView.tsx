@@ -1,11 +1,12 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase, type Simulation, type ExamQuestion, type Attempt } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
-import { Clock, Send, AlertTriangle, Loader2, ChevronLeft, FileText, Save, CheckCircle2, XCircle } from 'lucide-react';
+import { AlertTriangle, ChevronLeft } from 'lucide-react';
 import Logo from '@/components/Logo';
 import Loading from '@/components/Loading';
 import { biologySimulationName, umfcdSimulationName } from '@/lib/materialDisplayNames';
 import './SimulationView.css';
+import './PracticeSetView.css';
 
 type Props = {
   simulationId: string;
@@ -59,6 +60,7 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
   const [error, setError] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<SaveState>('idle');
   const [questionCount, setQuestionCount] = useState(0);
+  const [activeQuestion, setActiveQuestion] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const submittedRef = useRef(false);
   const answersRef = useRef<Record<string, string>>({});
@@ -175,6 +177,30 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
       setQuestions((qs || []) as unknown as ExamQuestion[]);
     })();
   }, [started, simulation, attempt, simulationId]);
+
+  useEffect(() => {
+    if (!started || questions.length === 0) return;
+    let frame = 0;
+    const updateActiveQuestion = () => {
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(() => {
+        let current = 0;
+        questions.forEach((question, index) => {
+          const element = document.getElementById(`exam-question-${question.id}`);
+          if (element && element.getBoundingClientRect().top <= window.innerHeight * 0.35) current = index;
+        });
+        setActiveQuestion(current);
+      });
+    };
+    updateActiveQuestion();
+    window.addEventListener('scroll', updateActiveQuestion, { passive: true });
+    window.addEventListener('resize', updateActiveQuestion);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', updateActiveQuestion);
+      window.removeEventListener('resize', updateActiveQuestion);
+    };
+  }, [started, questions]);
 
   // Auto-save with debounce
   const saveProgress = useCallback(async (answersToSave: Record<string, string>) => {
@@ -380,52 +406,52 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
   }
 
   const answeredCount = Object.keys(answers).length;
+  const remainingCount = Math.max(0, questions.length - answeredCount);
+  const categoryName = simulation.student_section === 'umfcd' ? 'Examene UMFCD' : 'Simulări biologie';
 
   return (
-    <div className="min-h-screen bg-stone-50">
-      <header className="sticky top-0 z-20 border-b border-stone-200 bg-white/95 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 py-3">
-          <div className="flex items-center gap-3">
-            <Logo size="sm" showText={false} />
-            <span className="text-sm font-medium text-stone-700 hidden sm:inline">{displayName}</span>
-          </div>
-          <div className="flex items-center gap-2 sm:gap-4">
-            {saveState !== 'idle' && (
-              <span className="hidden sm:flex items-center gap-1 text-xs text-stone-500">
-                {saveState === 'saving' && <><Save size={12} /> Se salvează…</>}
-                {saveState === 'saved' && <><CheckCircle2 size={12} className="text-brand-600" /> Progres salvat</>}
-                {saveState === 'error' && <><XCircle size={12} className="text-red-500" /> Salvarea a eșuat</>}
-              </span>
-            )}
-            <div className={`flex items-center gap-2 rounded-lg px-3 py-1.5 font-mono font-bold text-sm ${timeLeft < 300 ? 'bg-red-100 text-red-700' : 'bg-brand-100 text-brand-700'}`}>
-              <Clock size={16} />
-              {formatTime(timeLeft)}
-            </div>
-            <button
-              onClick={() => submitAttempt(false)}
-              disabled={submitting}
-              className="btn-primary"
-            >
-              {submitting && <Loader2 size={16} className="animate-spin" />}
-              <Send size={16} />
-              <span className="hidden sm:inline">Trimite</span>
-            </button>
-          </div>
+    <div className="practice-exam">
+      <header className="practice-exam__header">
+        <div className="practice-exam__header-inner">
+          <button className="practice-exam__brand" type="button" onClick={onExit} aria-label="Înapoi la materiale">
+            <img src="/Logo_final.png" alt="" />
+            <span><strong>Biletul</strong><strong>Spre</strong><strong>Medicină</strong></span>
+          </button>
+          <nav className="practice-exam__breadcrumb" aria-label="Locația curentă">
+            <button type="button" onClick={onExit}>{categoryName}</button>
+            <span aria-hidden="true">/</span>
+            <strong>{displayName}</strong>
+          </nav>
+          <span className={`practice-exam__header-timer${timeLeft < 300 ? ' practice-exam__header-timer--urgent' : ''}`} role="timer" aria-label={`Timp rămas: ${formatTime(timeLeft)}`}>{formatTime(timeLeft)}</span>
+          <button className="practice-exam__submit" type="button" onClick={() => void submitAttempt(false)} disabled={submitting || questions.length === 0}>
+            {submitting ? 'Se trimite…' : <><span className="practice-exam__submit-long">Trimite răspunsurile</span><span className="practice-exam__submit-short">Trimite</span></>}
+          </button>
         </div>
       </header>
 
-      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-6 flex items-center justify-between text-sm text-stone-500">
-          <span>{answeredCount} / {questions.length} întrebări răspunse</span>
-          <div className="h-2 flex-1 mx-4 rounded-full bg-stone-200 overflow-hidden max-w-xs">
-            <div
-              className="h-full bg-brand-500 transition-all"
-              style={{ width: `${questions.length > 0 ? (answeredCount / questions.length) * 100 : 0}%` }}
-            />
+      <div className="practice-exam__layout">
+        <aside className="practice-exam__rail" aria-label="Parcursul grilelor">
+          <div className="practice-exam__sticky">
+            <h2>Parcurs</h2>
+            <ol>
+              {questions.map((question, index) => (
+                <li key={question.id}>
+                  <button
+                    type="button"
+                    className={`practice-exam__number${activeQuestion === index ? ' practice-exam__number--active' : ''}${answers[question.id] ? ' practice-exam__number--answered' : ''}`}
+                    onClick={() => document.getElementById(`exam-question-${question.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                    aria-label={`Mergi la întrebarea ${index + 1}${answers[question.id] ? ', completată' : ''}`}
+                    aria-current={activeQuestion === index ? 'location' : undefined}
+                  >
+                    {index + 1}
+                  </button>
+                </li>
+              ))}
+            </ol>
           </div>
-        </div>
+        </aside>
 
-        <div className="space-y-6">
+        <main className="practice-exam__questions" aria-label="Grilele simulării">
           {questions.map((q, idx) => (
             <QuestionCard
               key={q.id}
@@ -435,28 +461,39 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
               onSelect={(letter) => handleAnswer(q.id, letter)}
             />
           ))}
-        </div>
 
-        {questions.length === 0 && (
-          <div className="card p-12 text-center text-stone-500">
-            <FileText size={40} className="mx-auto mb-4 text-stone-300" />
-            <p>Nu există întrebări în această simulare.</p>
-          </div>
-        )}
+          {questions.length === 0 && <p className="practice-exam__empty">Nu există întrebări în această simulare.</p>}
 
-        {questions.length > 0 && (
-          <div className="mt-8 flex justify-end">
-            <button
-              onClick={() => submitAttempt(false)}
-              disabled={submitting}
-              className="btn-primary"
-            >
-              {submitting && <Loader2 size={16} className="animate-spin" />}
-              <Send size={16} />
-              Trimite răspunsurile
-            </button>
+          {questions.length > 0 && (
+            <footer className="practice-exam__footer">
+              <span>Ai ajuns la finalul setului.</span>
+              <button type="button" onClick={() => void submitAttempt(false)} disabled={submitting}>
+                {submitting ? 'Se trimite…' : 'Trimite răspunsurile'}
+              </button>
+            </footer>
+          )}
+        </main>
+
+        <aside className="practice-exam__progress" aria-label="Progresul simulării">
+          <div className="practice-exam__sticky">
+            <h2>Progres</h2>
+            <p><strong>{answeredCount}</strong> din {questions.length} completate</p>
+            <div className="practice-exam__progress-track" role="progressbar" aria-valuenow={answeredCount} aria-valuemin={0} aria-valuemax={questions.length} aria-label="Grile completate">
+              <span style={{ width: `${questions.length ? (answeredCount / questions.length) * 100 : 0}%` }} />
+            </div>
+            <p className="practice-exam__remaining">{remainingCount} {remainingCount === 1 ? 'rămasă' : 'rămase'}</p>
+            <div className={`practice-exam__timer${timeLeft < 300 ? ' practice-exam__timer--urgent' : ''}`} role="timer" aria-label={`Timp rămas: ${formatTime(timeLeft)}`}>
+              <span>Timp rămas</span><strong aria-hidden="true">{formatTime(timeLeft)}</strong>
+            </div>
+            {saveState !== 'idle' && (
+              <p className="practice-exam__save" role="status">
+                {saveState === 'saving' && 'Se salvează…'}
+                {saveState === 'saved' && 'Progres salvat'}
+                {saveState === 'error' && 'Salvarea a eșuat'}
+              </p>
+            )}
           </div>
-        )}
+        </aside>
       </div>
     </div>
   );
@@ -484,38 +521,29 @@ function QuestionCard({
   const isCG = question.type === 'CG';
 
   return (
-    <div className="card p-6">
-      <div className="mb-4 flex items-start gap-3">
-        <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-stone-100 text-xs font-bold text-stone-600">
-          {index + 1}
-        </span>
-        <div className="flex-1">
-          <span className="badge bg-stone-100 text-stone-600 mb-2">
-            {isCG ? 'Complement Grupat' : 'Complement Simplu'}
-          </span>
-          <p className="text-stone-900 font-medium leading-relaxed">{question.question_text}</p>
-        </div>
-      </div>
+    <section className="practice-exam__question" id={`exam-question-${question.id}`} aria-labelledby={`exam-question-title-${question.id}`}>
+      <p className="practice-exam__eyebrow">Întrebarea {index + 1} <span aria-hidden="true">/</span> {isCG ? 'Complement grupat' : 'Complement simplu'}</p>
+      <h2 id={`exam-question-title-${question.id}`}>{question.question_text}</h2>
 
       {isCG && (
-        <div className="mb-4 ml-10 space-y-2">
+        <div className="practice-exam__statements">
           {[1, 2, 3, 4].map((n) => {
             const text = question[`statement_${n}` as keyof ExamQuestion] as string;
             if (!text) return null;
             return (
-              <div key={n} className="flex gap-2 text-sm text-stone-700">
-                <span className="font-semibold text-stone-500">{n}.</span>
+              <div key={n} className="practice-exam__statement">
+                <span>{n}.</span>
                 <span>{text}</span>
               </div>
             );
           })}
-          <div className="mt-3 rounded-lg bg-stone-50 border border-stone-200 p-3 text-xs text-stone-500">
+          <p className="practice-exam__combination-key">
             <strong>Variante:</strong> A = 1, 2, 3 · B = 1, 3 · C = 2, 4 · D = doar 4 · E = toate sau altă combinație
-          </div>
+          </p>
         </div>
       )}
 
-      <div className="ml-10 grid gap-2">
+      <div className="practice-exam__options" role="group" aria-label={`Răspunsuri pentru întrebarea ${index + 1}`}>
         {LETTERS.map((letter) => {
           const optionText = isCG
             ? getCGLabel(letter)
@@ -528,24 +556,18 @@ function QuestionCard({
           return (
             <button
               key={letter}
+              type="button"
               onClick={() => onSelect(letter)}
-              className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm transition-all ${
-                isSelected
-                  ? 'border-brand-500 bg-brand-50 text-brand-900 ring-1 ring-brand-500/20'
-                  : 'border-stone-200 bg-white text-stone-700 hover:border-stone-300 hover:bg-stone-50'
-              }`}
+              className={`practice-exam__option${isSelected ? ' practice-exam__option--selected' : ''}`}
+              aria-pressed={isSelected}
             >
-              <span className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                isSelected ? 'bg-brand-600 text-white' : 'bg-stone-100 text-stone-600'
-              }`}>
-                {letter}
-              </span>
-              <span>{optionText}</span>
+              <span className="practice-exam__option-letter">{letter}</span>
+              <span className="practice-exam__option-text">{optionText}</span>
             </button>
           );
         })}
       </div>
-    </div>
+    </section>
   );
 }
 
