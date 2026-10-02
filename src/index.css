@@ -1047,6 +1047,8 @@
   .practice-sets-page { animation: study-colour-fade .42s ease-out; }
 
   .practice-library__slide-viewport { position: relative; overflow: hidden; }
+  .practice-library--chapter-open,
+  html.student-dark .practice-library.practice-library--chapter-open { border-color: transparent; }
   .practice-library__slide-track {
     display: flex;
     width: 100%;
@@ -1060,9 +1062,9 @@
   .practice-library--chapter-open .practice-library__slide-pane:first-child { position: absolute; left: 0; top: 0; width: 100%; }
   .practice-library__slide-pane:first-child + .practice-library__slide-pane { position: absolute; left: 0; top: 0; width: 100%; margin-left: 100%; }
   .practice-library--chapter-open .practice-library__slide-pane:first-child + .practice-library__slide-pane { position: relative; margin-left: 100%; }
-  .practice-sets-page--embedded { min-height: 0; padding: 18px 20px 28px; background: transparent; animation: none; }
+  .practice-sets-page--embedded { min-height: 0; padding: 0; background: transparent; animation: none; }
   .practice-sets-page__inline-back {
-    display: inline-flex; align-items: center; gap: 5px; margin: 0 0 14px;
+    display: inline-flex; align-items: center; gap: 5px; margin: 14px 0;
     color: #762b3f; font-size: 13px; font-weight: 650;
   }
   .practice-sets-page__inline-back:hover { text-decoration: underline; text-underline-offset: 3px; }
@@ -1070,9 +1072,6 @@
   .practice-sets-page--embedded .practice-sets-page__hero { border-radius: 0; }
   html.student-dark .practice-sets-page--embedded { background: transparent; }
   html.student-dark .practice-sets-page__inline-back { color: #f0a8b7; }
-  @media (max-width: 639px) {
-    .practice-sets-page--embedded { padding: 14px 12px 22px; }
-  }
   @media (prefers-reduced-motion: reduce) {
     .practice-library__slide-track { transition: none; }
   }
