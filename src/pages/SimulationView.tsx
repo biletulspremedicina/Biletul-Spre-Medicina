@@ -401,7 +401,6 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
   }
 
   const answeredCount = Object.keys(answers).length;
-  const remainingCount = Math.max(0, questions.length - answeredCount);
   const categoryName = simulation.student_section === 'umfcd' ? 'Examene UMFCD' : 'Simulări biologie';
 
   return (
@@ -448,14 +447,12 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
 
         <aside className="practice-exam__progress" aria-label="Progresul simulării">
           <div className="practice-exam__sticky">
-            <h2>Progres</h2>
             <p><strong>{answeredCount}</strong> din {questions.length} completate</p>
             <div className="practice-exam__progress-track" role="progressbar" aria-valuenow={answeredCount} aria-valuemin={0} aria-valuemax={questions.length} aria-label="Grile completate">
               <span style={{ width: `${questions.length ? (answeredCount / questions.length) * 100 : 0}%` }} />
             </div>
-            <p className="practice-exam__remaining">{remainingCount} {remainingCount === 1 ? 'rămasă' : 'rămase'}</p>
             <div className={`practice-exam__timer${timeLeft < 300 ? ' practice-exam__timer--urgent' : ''}`} role="timer" aria-label={`Timp rămas: ${formatTime(timeLeft)}`}>
-              <span>Timp rămas</span><strong aria-hidden="true">{formatTime(timeLeft)}</strong>
+              <strong aria-hidden="true">{formatTime(timeLeft)}</strong>
             </div>
             {saveState !== 'idle' && (
               <p className="practice-exam__save" role="status">
