@@ -276,21 +276,35 @@
 
 .practice-exam__progress p { margin: 0; font-size: 15px; }
 .practice-exam__progress p strong { font-weight: 600; }
+.practice-exam__section-label {
+  display: block;
+  margin-bottom: 14px;
+  color: #64736b;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-align: left;
+  text-transform: uppercase;
+}
 .practice-exam__progress-track {
   height: 7px;
-  margin: 14px 0 0;
+  margin: 18px 0 0;
   overflow: hidden;
   border-radius: 10px;
   background: #e5e6e2;
 }
 .practice-exam__progress-track span { display: block; height: 100%; background: #175743; transition: width .25s ease; }
+.practice-exam__timer-section {
+  width: 100%;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #dedfda;
+}
 .practice-exam__timer {
   display: flex;
   width: 100%;
   justify-content: center;
-  margin-top: 32px;
-  padding: 24px 0 0;
-  border-top: 1px solid #dedfda;
+  margin-top: 16px;
   text-align: center;
 }
 .practice-exam__timer strong {
@@ -303,7 +317,7 @@
   line-height: 1.1;
 }
 .practice-exam__timer--urgent strong { color: #a53838; }
-.practice-exam__progress .practice-exam__save { margin-top: 25px; color: #717b73; font-size: 12px; }
+.practice-exam__progress .practice-exam__save { margin-top: 8px; color: #717b73; font-size: 12px; }
 
 .practice-exam__footer {
   display: flex;
@@ -329,6 +343,7 @@ html.student-dark .practice-exam__submit { border-color: #2d7457; background: #2
 html.student-dark .practice-exam__submit:hover:not(:disabled) { background: #358666; }
 html.student-dark .practice-exam__breadcrumb,
 html.student-dark .practice-exam__eyebrow,
+html.student-dark .practice-exam__section-label,
 html.student-dark .practice-exam__progress .practice-exam__save,
 html.student-dark .practice-exam__footer { color: #a7b9ae; }
 html.student-dark .practice-exam__rail,
@@ -337,7 +352,7 @@ html.student-dark .practice-exam__breadcrumb,
 html.student-dark .practice-exam__question,
 html.student-dark .practice-exam__option,
 html.student-dark .practice-exam__statements,
-html.student-dark .practice-exam__timer { border-color: #34483e; }
+html.student-dark .practice-exam__timer-section { border-color: #34483e; }
 html.student-dark .practice-exam__question h2,
 html.student-dark .practice-exam__option,
 html.student-dark .practice-exam__option-letter { color: #e6eee8; }
@@ -374,10 +389,13 @@ html.student-dark .practice-exam__header-timer--urgent { color: #f0a4a0; }
   }
   .practice-exam__progress { border-left: 0; border-bottom: 1px solid #e4e6e1; }
   .practice-exam__progress .practice-exam__sticky { position: static; display: flex; flex-direction: row; height: auto; max-height: none; align-items: center; flex-wrap: wrap; gap: 8px 18px; padding: 20px 30px; }
+  .practice-exam__progress .practice-exam__section-label:first-child { flex-basis: 100%; margin-bottom: 0; }
   .practice-exam__progress-track { flex: 1; min-width: 100px; margin: 0; }
-  .practice-exam__timer { margin: 12px 0 4px; padding: 0; border: 0; }
+  .practice-exam__timer-section { margin: 12px 0 4px; padding: 0; border: 0; }
+  .practice-exam__timer-section .practice-exam__section-label { margin-bottom: 6px; }
+  .practice-exam__timer { margin-top: 0; }
   .practice-exam__timer strong { font-size: 32px; }
-  .practice-exam__progress .practice-exam__save { margin: 0; }
+  .practice-exam__progress .practice-exam__save { flex-basis: 100%; margin: 0; }
   .practice-exam__progress .practice-exam__submit { width: auto; min-width: 205px; margin: 0 0 0 auto; }
   .practice-exam__rail .practice-exam__sticky { padding: 26px 14px 26px 24px; }
   .practice-exam__questions { padding: 36px 30px 70px; }
