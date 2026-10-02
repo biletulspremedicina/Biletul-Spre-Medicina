@@ -1537,7 +1537,7 @@
           <div className="simulation-library__biology-actions">
             {isScheduled && sim.available_at ? (
               <div className="simulation-library__biology-countdown">
-                <span className="practice-set-card__release-label">Accesibil în</span>
+                <span className="practice-set-card__release-label">Material accesibil în:</span>
                 <InlineReleaseCountdown target={sim.available_at} onComplete={onReleaseReached} />
               </div>
             ) : (
@@ -1619,7 +1619,7 @@
         <div className={`mt-auto flex flex-col gap-2 border-t border-stone-100 pt-4 ${editorial ? 'simulation-library__card-actions' : ''}`}>
           {isScheduled && sim.available_at ? (
             <div className="simulation-library__biology-countdown">
-              <span className="practice-set-card__release-label">Accesibil în</span>
+              <span className="practice-set-card__release-label">Material accesibil în:</span>
               <InlineReleaseCountdown target={sim.available_at} onComplete={onReleaseReached} />
             </div>
           ) : isFree ? (
