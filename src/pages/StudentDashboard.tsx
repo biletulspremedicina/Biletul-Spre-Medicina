@@ -611,12 +611,12 @@
       <aside className={`fixed inset-y-0 left-0 z-50 flex w-[236px] flex-col bg-[#073e33] px-4 pb-5 pt-8 text-white shadow-[14px_0_35px_rgba(4,43,35,0.08)] transition-transform duration-300 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 lg:shadow-none ${
         mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
-        <div className="mb-9 flex items-center gap-2 px-3">
+        <div className="mb-9 flex items-center gap-1.5 px-3">
           <img src="/Logo_final.png" alt="" className="h-11 w-16 shrink-0 object-contain" />
-          <div className="text-[13px] font-extrabold uppercase leading-[1.05] tracking-[0.03em]">
+          <div className="text-[13px] font-extrabold uppercase leading-[1.08] tracking-[0.025em]">
             <span className="block">Biletul</span>
             <span className="block">Spre</span>
-            <span className="block">Medicină</span>
+            <span className="block text-[#8bd6ad]">Medicină</span>
           </div>
           <button type="button" onClick={() => setMobileMenuOpen(false)}
             className="ml-auto rounded-lg p-1 text-white/70 hover:bg-white/10 lg:hidden" aria-label="Închide meniul">
