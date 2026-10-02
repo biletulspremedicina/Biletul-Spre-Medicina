@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase, type PracticeQuestionRPC, type PracticeSetRPC } from '@/lib/supabase';
-import { ChevronLeft, AlertTriangle } from 'lucide-react';
+import { ChevronLeft, AlertTriangle, Send } from 'lucide-react';
 import Logo from '@/components/Logo';
 import QuestionRail from '@/components/QuestionRail';
 import Loading from '@/components/Loading';
@@ -468,9 +468,6 @@ export default function PracticeSetView({ setId, lessonId, lessonTitle, onExit, 
             <strong>{introMeta ? practiceSetName(introMeta.lessonTitle, introMeta.position) : 'Set de grile'}</strong>
           </nav>
           {timeLeft !== null && <span className={`practice-exam__header-timer${timeLeft < 300 ? ' practice-exam__header-timer--urgent' : ''}`} role="timer" aria-label={`Timp rămas: ${formatPracticeTime(timeLeft)}`}>{formatPracticeTime(timeLeft)}</span>}
-          <button className="practice-exam__submit" type="button" onClick={() => void submitAttempt()} disabled={submitting || questions.length === 0}>
-            {submitting ? 'Se trimite…' : <><span className="practice-exam__submit-long">Trimite răspunsurile</span><span className="practice-exam__submit-short">Trimite</span></>}
-          </button>
         </div>
       </header>
 
@@ -520,6 +517,10 @@ export default function PracticeSetView({ setId, lessonId, lessonTitle, onExit, 
                 {saveState === 'error' && 'Salvarea a eșuat'}
               </p>
             )}
+            <button className="practice-exam__submit" type="button" onClick={() => void submitAttempt()} disabled={submitting || questions.length === 0}>
+              <Send size={17} strokeWidth={1.8} aria-hidden="true" />
+              <span>{submitting ? 'Se trimite…' : 'Trimite răspunsurile'}</span>
+            </button>
           </div>
         </aside>
       </div>
