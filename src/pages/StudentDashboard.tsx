@@ -57,8 +57,6 @@
     practiceSubNonce: number;
     onOpenChemistryLesson: (lessonId: string) => void;
     initialTab?: IncomingTab;
-    theme: 'light' | 'dark' | 'system';
-    onThemeChange: (theme: 'light' | 'dark' | 'system') => void;
   };
 
   type SimWithStatus = Simulation & {
@@ -219,8 +217,6 @@
     practiceSubNonce,
     onOpenChemistryLesson,
     initialTab = 'all',
-    theme,
-    onThemeChange,
   }: Props) {
     const { profile, refreshProfile, signOut } = useAuth();
     const userId = profile?.id;
@@ -916,8 +912,6 @@
                 subscription={subscription}
                 subscriptionHistory={subscriptionHistory}
                 onRefreshProfile={refreshProfile}
-                theme={theme}
-                onThemeChange={onThemeChange}
               />
             ) : page === 'practice' ? (
               <PracticeLibrary lessons={practiceLessons}
