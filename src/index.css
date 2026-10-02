@@ -1062,11 +1062,14 @@
   .practice-library--chapter-open .practice-library__slide-pane:first-child + .practice-library__slide-pane { position: relative; margin-left: 100%; }
   .practice-sets-page--embedded { min-height: 0; padding: 0; background: transparent; animation: none; }
   .practice-sets-page__inline-back {
-    display: inline-flex; align-items: center; gap: 4px; margin-top: 15px;
-    padding: 7px 10px; border: 1px solid rgba(255,255,255,.45); border-radius: 5px;
-    background: rgba(48,17,27,.2); color: #fffaf8; font-size: 12px; font-weight: 650;
+    display: inline-flex; min-height: 36px; align-items: center; gap: 8px; margin-top: 16px;
+    padding: 4px 0 6px; border: 0; border-bottom: 1px solid rgba(255,250,248,.62); border-radius: 0;
+    background: transparent; color: #fffaf8; font-size: 14px; font-weight: 600; letter-spacing: .01em;
+    transition: border-color .2s ease, color .2s ease;
   }
-  .practice-sets-page__inline-back:hover { background: rgba(48,17,27,.38); }
+  .practice-sets-page__inline-back svg { transition: transform .2s ease; }
+  .practice-sets-page__inline-back:hover { border-color: #fffaf8; color: #fff; }
+  .practice-sets-page__inline-back:hover svg { transform: translateX(-3px); }
   .practice-sets-page__inline-back:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
   .practice-sets-page--embedded .practice-sets-page__hero { min-height: 238px; border: 0; border-bottom: 1px solid #eadbdd; border-radius: 0; }
   .practice-sets-page--embedded .practice-sets-page__hero-copy { width: 70%; padding: 24px 36px; }
