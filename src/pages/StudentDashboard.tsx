@@ -669,14 +669,14 @@
       : 0;
 
     return (
-      <div className="min-h-screen bg-white font-sans text-[#14283a] lg:grid lg:grid-cols-[236px_minmax(0,1fr)]">
+      <div className={`min-h-screen bg-white font-sans text-[#14283a] lg:grid lg:grid-cols-[236px_minmax(0,1fr)]${page === 'review' ? ' student-review-page' : ''}`}>
         {mobileMenuOpen && (
           <button type="button" aria-label="Închide meniul" onClick={() => setMobileMenuOpen(false)}
             className="fixed inset-0 z-40 bg-[#071b17]/55 lg:hidden" />
         )}
         {sidebar}
 
-        <div className="min-w-0">
+        <div className={`min-w-0${page === 'review' ? ' student-review-page__content' : ''}`}>
           <header className="relative z-20 flex min-h-[60px] items-center justify-between border-b border-[#e6eaeb] bg-white px-5 py-2 sm:px-7">
             <button type="button" onClick={() => setMobileMenuOpen(true)}
               className="mr-3 rounded-lg p-2 text-[#164d3e] hover:bg-[#e9f5ef] lg:hidden" aria-label="Deschide meniul">
@@ -703,7 +703,7 @@
             </div>
           </header>
 
-          <main className="mx-auto max-w-[1500px] px-4 pb-12 pt-5 sm:px-6 lg:px-6 xl:px-7">
+          <main className={`mx-auto max-w-[1500px] px-4 pb-12 pt-5 sm:px-6 lg:px-6 xl:px-7${page === 'review' ? ' student-review-page__main' : ''}`}>
             {(loadError || subMessage) && (
               <div role="status" className={`mb-5 rounded-xl border px-4 py-3 text-sm ${
                 loadError || subMessage?.startsWith('Nu')
@@ -1297,7 +1297,7 @@
           </div>
         </nav>
 
-        <article className="review-workspace__detail" key={selected.out_review_id}>
+        <article className="review-workspace__detail" key={selected.out_review_id} tabIndex={0} aria-label="Grila selectată și explicația">
           <div className="review-workspace__detail-top">
             <div className="review-workspace__meta">
               <span>{isCG ? 'Complement grupat' : 'Complement simplu'}</span>
