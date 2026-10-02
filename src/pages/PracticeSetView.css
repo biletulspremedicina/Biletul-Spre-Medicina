@@ -138,16 +138,6 @@
   height: calc(100dvh - 88px);
   padding: 26px 24px 26px clamp(24px, 3vw, 58px);
 }
-.practice-exam__sticky h2 {
-  margin: 0 0 16px;
-  color: #49645b;
-  font-family: Inter, "Plus Jakarta Sans", sans-serif;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-}
-
 .practice-exam__rail-viewport {
   position: relative;
   flex: 1;
@@ -288,16 +278,30 @@
 .practice-exam__progress p strong { font-weight: 600; }
 .practice-exam__progress-track {
   height: 7px;
-  margin: 14px 0 15px;
+  margin: 14px 0 0;
   overflow: hidden;
   border-radius: 10px;
   background: #e5e6e2;
 }
 .practice-exam__progress-track span { display: block; height: 100%; background: #175743; transition: width .25s ease; }
-.practice-exam__progress .practice-exam__remaining { color: #777d78; font-size: 14px; }
-.practice-exam__timer { margin-top: 32px; padding-top: 21px; border-top: 1px solid #dedfda; }
-.practice-exam__timer span { display: block; margin-bottom: 7px; color: #747b77; font-size: 12px; }
-.practice-exam__timer strong { color: #174a3c; font-family: Georgia, Cambria, "Times New Roman", serif; font-size: 24px; font-variant-numeric: tabular-nums; }
+.practice-exam__timer {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  margin-top: 32px;
+  padding: 24px 0 0;
+  border-top: 1px solid #dedfda;
+  text-align: center;
+}
+.practice-exam__timer strong {
+  color: #174a3c;
+  font-family: Georgia, Cambria, "Times New Roman", serif;
+  font-size: clamp(32px, 2.6vw, 40px);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  letter-spacing: -.025em;
+  line-height: 1.1;
+}
 .practice-exam__timer--urgent strong { color: #a53838; }
 .practice-exam__progress .practice-exam__save { margin-top: 25px; color: #717b73; font-size: 12px; }
 
@@ -325,8 +329,6 @@ html.student-dark .practice-exam__submit { border-color: #2d7457; background: #2
 html.student-dark .practice-exam__submit:hover:not(:disabled) { background: #358666; }
 html.student-dark .practice-exam__breadcrumb,
 html.student-dark .practice-exam__eyebrow,
-html.student-dark .practice-exam__progress .practice-exam__remaining,
-html.student-dark .practice-exam__timer span,
 html.student-dark .practice-exam__progress .practice-exam__save,
 html.student-dark .practice-exam__footer { color: #a7b9ae; }
 html.student-dark .practice-exam__rail,
@@ -372,12 +374,9 @@ html.student-dark .practice-exam__header-timer--urgent { color: #f0a4a0; }
   }
   .practice-exam__progress { border-left: 0; border-bottom: 1px solid #e4e6e1; }
   .practice-exam__progress .practice-exam__sticky { position: static; display: flex; flex-direction: row; height: auto; max-height: none; align-items: center; flex-wrap: wrap; gap: 8px 18px; padding: 20px 30px; }
-  .practice-exam__progress .practice-exam__sticky h2 { width: 100%; margin: 0; }
   .practice-exam__progress-track { flex: 1; min-width: 100px; margin: 0; }
-  .practice-exam__progress .practice-exam__remaining { white-space: nowrap; }
-  .practice-exam__timer { margin: 0; padding: 0; border: 0; }
-  .practice-exam__timer span { display: none; }
-  .practice-exam__timer strong { font-size: 18px; }
+  .practice-exam__timer { margin: 12px 0 4px; padding: 0; border: 0; }
+  .practice-exam__timer strong { font-size: 32px; }
   .practice-exam__progress .practice-exam__save { margin: 0; }
   .practice-exam__progress .practice-exam__submit { width: auto; min-width: 205px; margin: 0 0 0 auto; }
   .practice-exam__rail .practice-exam__sticky { padding: 26px 14px 26px 24px; }
@@ -402,7 +401,7 @@ html.student-dark .practice-exam__header-timer--urgent { color: #f0a4a0; }
   .practice-exam__number--active { border-bottom-color: #145541; }
   html.student-dark .practice-exam__number--active { border-bottom-color: #85c69d; }
   .practice-exam__progress .practice-exam__sticky { padding: 14px 18px; }
-  .practice-exam__progress .practice-exam__sticky h2 { display: none; }
+  .practice-exam__timer strong { font-size: 30px; }
   .practice-exam__progress .practice-exam__submit { width: 100%; min-width: 0; margin: 10px 0 0; }
   .practice-exam__question { padding-bottom: 42px; margin-bottom: 37px; scroll-margin-top: 90px; }
   .practice-exam__question h2 { margin-bottom: 24px; font-size: clamp(27px, 7vw, 35px); }
