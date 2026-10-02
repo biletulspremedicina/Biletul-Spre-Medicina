@@ -123,7 +123,8 @@ function AppContent() {
     setActivePracticeLessonId(lessonId);
     setActivePracticeLessonTitle(lessonTitle);
     setFocusedPracticeSetId(focusSetId || null);
-    setRoute('practice-sets');
+    setStudentInitialTab('practice');
+    setRoute('student-dashboard');
   };
 
   const handleStartPracticeSet = (setId: string) => {
@@ -227,7 +228,7 @@ if (route === 'practice-sets' && activePracticeLessonId) {
     return (
       <PracticeSetView
         setId={activePracticeSetId}
-        onExit={() => setRoute('practice-sets')}
+        onExit={() => { setStudentInitialTab('practice'); setRoute('student-dashboard'); }}
         onHome={() => { setStudentInitialTab('dashboard'); setRoute('student-dashboard'); }}
         onComplete={handlePracticeComplete}
       />
@@ -240,7 +241,7 @@ if (route === 'practice-sets' && activePracticeLessonId) {
         <PracticeResultsView
           setId={activePracticeSetId}
           attemptId={activePracticeAttemptId || undefined}
-          onExit={() => setRoute('practice-sets')}
+          onExit={() => { setStudentInitialTab('practice'); setRoute('student-dashboard'); }}
           onRetake={() => handleStartPracticeSet(activePracticeSetId)}
         />
         <SupportChat />
@@ -281,6 +282,14 @@ if (route === 'practice-sets' && activePracticeLessonId) {
         onStartSimulation={handleStartSimulation}
         onViewResults={handleViewResults}
         onOpenPracticeLesson={handleOpenPracticeLesson}
+        activePracticeLesson={activePracticeLessonId ? { id: activePracticeLessonId, title: activePracticeLessonTitle } : null}
+        focusedPracticeSetId={focusedPracticeSetId || undefined}
+        onBackToPracticeLessons={() => { setActivePracticeLessonId(null); setFocusedPracticeSetId(null); }}
+        onStartPracticeSet={handleStartPracticeSet}
+        onViewPracticeResults={handleViewPracticeResults}
+        onBuyPracticeSubscription={handleBuySubscription}
+        practiceBuyingSub={practiceBuyingSub}
+        practiceSubNonce={practiceSubNonce}
         onOpenChemistryLesson={handleOpenChemistryLesson}
         initialTab={studentInitialTab}
         theme={studentTheme}
