@@ -36,18 +36,18 @@ export default function QuestionRail({ questionIds, answers, activeIndex, questi
   const renderGroup = (group: number, leaving: boolean) => {
     const start = group * GROUP_SIZE;
     const ids = questionIds.slice(start, start + GROUP_SIZE);
-    const localActive = activeIndex - start;
+    const localActive = Math.min(Math.max(activeIndex - start, 0), Math.max(ids.length - 1, 0));
     return (
       <ol
         key={`${group}-${leaving ? 'out' : 'in'}`}
         className={`practice-exam__rail-group${outgoingGroup !== null ? ` practice-exam__rail-group--${leaving ? 'leaving' : 'entering'}-${direction}` : ''}`}
         aria-hidden={leaving ? 'true' : undefined}
       >
-        {!leaving && localActive >= 0 && localActive < ids.length && (
+        {ids.length > 0 && (
           <span
             className="practice-exam__active-line"
             aria-hidden="true"
-            style={{ transform: `translateY(calc(var(--rail-step) * ${localActive}))` }}
+            style={{ transform: `translateY(${localActive * 100}%)` }}
           />
         )}
         {ids.map((id, localIndex) => {
