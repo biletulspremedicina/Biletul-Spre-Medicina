@@ -85,6 +85,7 @@ export default function PracticeSetsView({
 
   const hasActiveSub = !!subscription;
   const totalQuestions = sets.reduce((total, set) => total + set.out_question_count, 0);
+  const completedSetCount = sets.filter((set) => attempts.some((attempt) => attempt.set_id === set.out_id)).length;
 
   return (
     <div className={`practice-sets-page bg-stone-50 ${embedded ? 'practice-sets-page--embedded' : 'min-h-screen'}`}>
@@ -109,19 +110,27 @@ export default function PracticeSetsView({
       </header>}
 
       <main className={`practice-sets-page__content w-full ${embedded ? '' : 'px-3 py-5 sm:px-4 lg:px-5'}`}>
-        {embedded && <button type="button" onClick={onBack} className="practice-sets-page__inline-back"><ChevronLeft size={18} aria-hidden="true" /> Toate capitolele</button>}
         <section className="practice-sets-page__hero" aria-labelledby="practice-lesson-title">
           <img className="practice-sets-page__hero-photo" src={practiceChapterImageFor(lessonTitle, true)} alt="" />
           <div className="practice-sets-page__hero-veil" />
+          {embedded && <button type="button" onClick={onBack} className="practice-sets-page__inline-back"><ChevronLeft size={17} aria-hidden="true" /> Toate capitolele</button>}
           <div className="practice-sets-page__hero-copy">
             <p>Antrenament pe capitole</p>
             <h1 id="practice-lesson-title">{lessonTitle}</h1>
+            {embedded && <span className="practice-sets-page__hero-subtitle">Alege un set și lucrează grilele în ritmul tău.</span>}
           </div>
         </section>
 
         <div className="practice-sets-page__section-heading">
           <h2>Seturi disponibile</h2>
-          {!loading && <span>{sets.length} {sets.length === 1 ? 'set' : 'seturi'} · {totalQuestions} {totalQuestions === 1 ? 'grilă' : 'grile'}</span>}
+          {!loading && (embedded ? (
+            <div className="practice-sets-page__progress" aria-label={`${completedSetCount} din ${sets.length} seturi rezolvate`}>
+              <span>{completedSetCount} din {sets.length} rezolvate</span>
+              <div className="practice-sets-page__progress-track" role="progressbar" aria-valuenow={completedSetCount} aria-valuemin={0} aria-valuemax={sets.length || 1}>
+                <div style={{ width: `${sets.length ? (completedSetCount / sets.length) * 100 : 0}%` }} />
+              </div>
+            </div>
+          ) : <span>{sets.length} {sets.length === 1 ? 'set' : 'seturi'} · {totalQuestions} {totalQuestions === 1 ? 'grilă' : 'grile'}</span>)}
         </div>
 
         {loading ? (
