@@ -48,10 +48,10 @@ function clearPracticeDeadline(attemptId: string) {
   }
 }
 
-function formatPracticeTime(seconds: number) {
+function formatPracticeTime(seconds: number, showSeconds = true) {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
-  const remainingSeconds = seconds % 60;
+  const remainingSeconds = showSeconds ? seconds % 60 : 0;
   if (hours > 0) return `${hours}:${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
   return `${minutes}:${String(remainingSeconds).padStart(2, '0')}`;
 }
@@ -77,6 +77,7 @@ export default function PracticeSetView({ setId, lessonId, lessonTitle, onExit, 
   const [minutesError, setMinutesError] = useState<string | null>(null);
   const [deadline, setDeadline] = useState<number | null>(null);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const [showSeconds, setShowSeconds] = useState(true);
   const [activeQuestion, setActiveQuestion] = useState(0);
 
   const answersRef = useRef<Record<string, string>>({});
@@ -461,7 +462,7 @@ export default function PracticeSetView({ setId, lessonId, lessonTitle, onExit, 
             <span aria-hidden="true">/</span>
             <strong>{introMeta ? practiceSetName(introMeta.lessonTitle, introMeta.position) : 'Set de grile'}</strong>
           </nav>
-          {timeLeft !== null && <span className={`practice-exam__header-timer${timeLeft < 300 ? ' practice-exam__header-timer--urgent' : ''}`} role="timer" aria-label={`Timp rămas: ${formatPracticeTime(timeLeft)}`}>{formatPracticeTime(timeLeft)}</span>}
+          {timeLeft !== null && <span className={`practice-exam__header-timer${timeLeft < 300 ? ' practice-exam__header-timer--urgent' : ''}`} role="timer" aria-label={`Timp rămas${showSeconds ? '' : ', secundele ascunse'}: ${formatPracticeTime(timeLeft, showSeconds)}`}>{formatPracticeTime(timeLeft, showSeconds)}</span>}
         </div>
       </header>
 
@@ -508,9 +509,12 @@ export default function PracticeSetView({ setId, lessonId, lessonTitle, onExit, 
             {timeLeft !== null && (
               <div className="practice-exam__timer-section">
                 <span className="practice-exam__section-label">Timp rămas</span>
-                <div className={`practice-exam__timer${timeLeft < 300 ? ' practice-exam__timer--urgent' : ''}`} role="timer" aria-label={`Timp rămas: ${formatPracticeTime(timeLeft)}`}>
-                  <strong aria-hidden="true">{formatPracticeTime(timeLeft)}</strong>
+                <div className={`practice-exam__timer${timeLeft < 300 ? ' practice-exam__timer--urgent' : ''}`} role="timer" aria-label={`Timp rămas${showSeconds ? '' : ', secundele ascunse'}: ${formatPracticeTime(timeLeft, showSeconds)}`}>
+                  <strong aria-hidden="true">{formatPracticeTime(timeLeft, showSeconds)}</strong>
                 </div>
+                <button className="practice-exam__seconds-toggle" type="button" aria-pressed={!showSeconds} onClick={() => setShowSeconds((current) => !current)}>
+                  {showSeconds ? 'Ascunde secundele' : 'Afișează secundele'}
+                </button>
               </div>
             )}
             <button className="practice-exam__submit" type="button" onClick={() => void submitAttempt()} disabled={submitting || questions.length === 0}>
