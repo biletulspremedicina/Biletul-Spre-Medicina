@@ -1,4 +1,35 @@
+.student-review-page {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.student-review-page__content {
+  display: flex;
+  min-height: 0;
+  height: 100%;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.student-review-page__content > header { flex: none; }
+
+.student-review-page__main {
+  display: flex;
+  width: 100%;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+  padding-bottom: 20px;
+}
+
 .review-workspace {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
   color: #14283a;
 }
 
@@ -6,6 +37,7 @@
   position: relative;
   display: flex;
   min-height: 158px;
+  flex: none;
   align-items: center;
   overflow: hidden;
   padding: 28px 40px;
@@ -212,8 +244,11 @@
 .review-workspace__layout {
   display: grid;
   grid-template-columns: minmax(245px, 30%) minmax(0, 1fr);
+  min-height: 0;
+  flex: 1;
   margin-top: 16px;
   border-bottom: 1px solid #e3e9e7;
+  overflow: hidden;
 }
 
 .review-workspace__source-error {
@@ -223,12 +258,17 @@
 }
 
 .review-workspace__index {
+  display: flex;
   min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
   border-right: 1px solid #dce5e3;
 }
 
 .review-workspace__index-heading {
   display: flex;
+  flex: none;
   align-items: baseline;
   justify-content: space-between;
   gap: 10px;
@@ -242,8 +282,11 @@
 }
 
 .review-workspace__index-list {
-  max-height: min(75vh, 920px);
-  overflow: auto;
+  min-height: 0;
+  flex: 1;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   scrollbar-color: #c9d8d2 transparent;
   scrollbar-width: thin;
 }
@@ -329,7 +372,17 @@
 
 .review-workspace__detail {
   min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 18px 0 30px 34px;
+  scrollbar-color: #c9d8d2 transparent;
+  scrollbar-width: thin;
+}
+
+.review-workspace__detail:focus-visible {
+  outline: 2px solid #177356;
+  outline-offset: -2px;
 }
 
 .review-workspace__detail-top {
@@ -638,21 +691,26 @@
     transform: scale(.88);
     transform-origin: center right;
   }
+}
 
+@media (max-width: 700px) {
   .review-workspace__layout {
-    display: block;
+    display: flex;
+    flex-direction: column;
   }
 
   .review-workspace__index {
+    height: 180px;
+    flex: none;
     border-right: 0;
   }
 
   .review-workspace__index-list {
     display: flex;
-    max-height: none;
     gap: 10px;
     padding-bottom: 14px;
     overflow-x: auto;
+    overflow-y: hidden;
   }
 
   .review-workspace__index-item {
@@ -669,7 +727,8 @@
   }
 
   .review-workspace__detail {
-    padding: 22px 0 30px;
+    flex: 1;
+    padding: 22px 0 24px;
     border-top: 1px solid #dce5e3;
   }
 }
