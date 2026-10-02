@@ -78,6 +78,7 @@ export default function PracticeSetView({ setId, lessonId, lessonTitle, onExit, 
   const [deadline, setDeadline] = useState<number | null>(null);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [showSeconds, setShowSeconds] = useState(true);
+  const [comfortMode, setComfortMode] = useState(false);
   const [activeQuestion, setActiveQuestion] = useState(0);
 
   const answersRef = useRef<Record<string, string>>({});
@@ -451,7 +452,7 @@ export default function PracticeSetView({ setId, lessonId, lessonTitle, onExit, 
   const answeredCount = Object.keys(answers).length;
 
   return (
-    <div className="practice-exam">
+    <div className={`practice-exam${comfortMode ? ' practice-exam--dark' : ''}`}>
       <header className="practice-exam__header">
         <div className="practice-exam__header-inner">
           <button className="practice-exam__brand" type="button" onClick={onHome} aria-label="Acasă — Biletul spre Medicină">
@@ -463,6 +464,10 @@ export default function PracticeSetView({ setId, lessonId, lessonTitle, onExit, 
             <strong>{introMeta ? practiceSetName(introMeta.lessonTitle, introMeta.position) : 'Set de grile'}</strong>
           </nav>
           {timeLeft !== null && <span className={`practice-exam__header-timer${timeLeft < 300 ? ' practice-exam__header-timer--urgent' : ''}`} role="timer" aria-label={`Timp rămas${showSeconds ? '' : ', secundele ascunse'}: ${formatPracticeTime(timeLeft, showSeconds)}`}>{formatPracticeTime(timeLeft, showSeconds)}</span>}
+          <button className="practice-exam__comfort-control" type="button" role="switch" aria-label="Confort vizual" aria-checked={comfortMode} onClick={() => setComfortMode((current) => !current)}>
+            <span className="practice-exam__comfort-label">Confort vizual</span>
+            <span className="practice-exam__comfort-track" aria-hidden="true"><span className="practice-exam__comfort-thumb" /></span>
+          </button>
         </div>
       </header>
 
