@@ -493,21 +493,25 @@ export default function PracticeSetView({ setId, lessonId, lessonTitle, onExit, 
 
         <aside className="practice-exam__progress" aria-label="Progresul setului">
           <div className="practice-exam__sticky">
+            <span className="practice-exam__section-label">Parcurs</span>
             <p><strong>{answeredCount}</strong> din {questions.length} completate</p>
-            <div className="practice-exam__progress-track" role="progressbar" aria-valuenow={answeredCount} aria-valuemin={0} aria-valuemax={questions.length} aria-label="Grile completate">
-              <span style={{ width: `${questions.length ? (answeredCount / questions.length) * 100 : 0}%` }} />
-            </div>
-            {timeLeft !== null && (
-              <div className={`practice-exam__timer${timeLeft < 300 ? ' practice-exam__timer--urgent' : ''}`} role="timer" aria-label={`Timp rămas: ${formatPracticeTime(timeLeft)}`}>
-                <strong aria-hidden="true">{formatPracticeTime(timeLeft)}</strong>
-              </div>
-            )}
             {saveState !== 'idle' && (
               <p className="practice-exam__save" role="status">
                 {saveState === 'saving' && 'Se salvează…'}
                 {saveState === 'saved' && 'Progres salvat'}
                 {saveState === 'error' && 'Salvarea a eșuat'}
               </p>
+            )}
+            <div className="practice-exam__progress-track" role="progressbar" aria-valuenow={answeredCount} aria-valuemin={0} aria-valuemax={questions.length} aria-label="Grile completate">
+              <span style={{ width: `${questions.length ? (answeredCount / questions.length) * 100 : 0}%` }} />
+            </div>
+            {timeLeft !== null && (
+              <div className="practice-exam__timer-section">
+                <span className="practice-exam__section-label">Timp rămas</span>
+                <div className={`practice-exam__timer${timeLeft < 300 ? ' practice-exam__timer--urgent' : ''}`} role="timer" aria-label={`Timp rămas: ${formatPracticeTime(timeLeft)}`}>
+                  <strong aria-hidden="true">{formatPracticeTime(timeLeft)}</strong>
+                </div>
+              </div>
             )}
             <button className="practice-exam__submit" type="button" onClick={() => void submitAttempt()} disabled={submitting || questions.length === 0}>
               <span>{submitting ? 'Se trimite…' : 'Trimite răspunsurile'}</span>
