@@ -3,6 +3,7 @@ import { supabase, type Simulation, type ExamQuestion, type Attempt } from '@/li
 import { useAuth } from '@/context/AuthContext';
 import { AlertTriangle, ChevronLeft } from 'lucide-react';
 import Logo from '@/components/Logo';
+import QuestionRail from '@/components/QuestionRail';
 import Loading from '@/components/Loading';
 import { biologySimulationName, umfcdSimulationName } from '@/lib/materialDisplayNames';
 import './SimulationView.css';
@@ -430,26 +431,7 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
       </header>
 
       <div className="practice-exam__layout">
-        <aside className="practice-exam__rail" aria-label="Parcursul grilelor">
-          <div className="practice-exam__sticky">
-            <h2>Parcurs</h2>
-            <ol>
-              {questions.map((question, index) => (
-                <li key={question.id}>
-                  <button
-                    type="button"
-                    className={`practice-exam__number${activeQuestion === index ? ' practice-exam__number--active' : ''}${answers[question.id] ? ' practice-exam__number--answered' : ''}`}
-                    onClick={() => document.getElementById(`exam-question-${question.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-                    aria-label={`Mergi la întrebarea ${index + 1}${answers[question.id] ? ', completată' : ''}`}
-                    aria-current={activeQuestion === index ? 'location' : undefined}
-                  >
-                    {index + 1}
-                  </button>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </aside>
+        <QuestionRail questionIds={questions.map((question) => question.id)} answers={answers} activeIndex={activeQuestion} questionIdPrefix="exam-question-" />
 
         <main className="practice-exam__questions" aria-label="Grilele simulării">
           {questions.map((q, idx) => (
