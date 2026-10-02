@@ -1,11 +1,20 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Search } from 'lucide-react';
 import type { PracticeLessonRPC } from '@/lib/supabase';
 import { PRACTICE_LIBRARY_HERO_IMAGE, practiceChapterImageFor } from '@/lib/practiceChapterImages';
+import PracticeSetsView from '@/pages/PracticeSetsView';
 
 type Props = {
   lessons: PracticeLessonRPC[];
   onOpen: (lesson: PracticeLessonRPC) => void;
+  selectedLesson: { id: string; title: string } | null;
+  focusSetId?: string;
+  onBack: () => void;
+  onStartSet: (setId: string) => void;
+  onViewResults: (setId: string, attemptId?: string) => void;
+  onBuySubscription: () => void;
+  buyingSub: boolean;
+  subscriptionNonce: number;
 };
 
 function normalize(value: string) {
@@ -22,8 +31,40 @@ function ChapterPhoto({ title }: { title: string }) {
   );
 }
 
-export default function PracticeLibrary({ lessons, onOpen }: Props) {
+export default function PracticeLibrary({
+  lessons, onOpen, selectedLesson, focusSetId, onBack, onStartSet, onViewResults,
+  onBuySubscription, buyingSub, subscriptionNonce,
+}: Props) {
   const [query, setQuery] = useState('');
+  const [displayedLesson, setDisplayedLesson] = useState(selectedLesson);
+  const [slideOpen, setSlideOpen] = useState(!!selectedLesson);
+  const slideFrame = useRef<number | null>(null);
+  const listPaneRef = useRef<HTMLDivElement>(null);
+  const chapterPaneRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (slideOpen) listPaneRef.current?.setAttribute('inert', '');
+    else listPaneRef.current?.removeAttribute('inert');
+    if (slideOpen) chapterPaneRef.current?.removeAttribute('inert');
+    else chapterPaneRef.current?.setAttribute('inert', '');
+  }, [slideOpen, displayedLesson]);
+
+  useEffect(() => {
+    if (slideFrame.current !== null) window.cancelAnimationFrame(slideFrame.current);
+    if (selectedLesson) {
+      setDisplayedLesson(selectedLesson);
+      slideFrame.current = window.requestAnimationFrame(() => {
+        slideFrame.current = window.requestAnimationFrame(() => setSlideOpen(true));
+      });
+    } else {
+      setSlideOpen(false);
+      const timeout = window.setTimeout(() => setDisplayedLesson(null), 440);
+      return () => window.clearTimeout(timeout);
+    }
+    return () => {
+      if (slideFrame.current !== null) window.cancelAnimationFrame(slideFrame.current);
+    };
+  }, [selectedLesson?.id, selectedLesson?.title]);
   const term = normalize(query.trim());
   const visible = term
     ? lessons.filter((lesson) => normalize(`${lesson.out_title} ${lesson.out_subject}`).includes(term))
@@ -32,7 +73,10 @@ export default function PracticeLibrary({ lessons, onOpen }: Props) {
   const questionCount = lessons.reduce((total, lesson) => total + Number(lesson.out_question_count || 0), 0);
 
   return (
-    <section className="practice-library overflow-hidden border border-[#e1e8e3] bg-[#fffefa] text-[#152b2b]">
+    <section className={`practice-library practice-library--sliding overflow-hidden border border-[#e1e8e3] bg-[#fffefa] text-[#152b2b] ${slideOpen ? 'practice-library--chapter-open' : ''}`}>
+      <div className="practice-library__slide-viewport">
+      <div className="practice-library__slide-track">
+      <div ref={listPaneRef} className="practice-library__slide-pane" aria-hidden={slideOpen}>
       <div className="practice-library__hero relative isolate flex min-h-[218px] items-center overflow-hidden border-b border-[#dce5df] bg-[#f9faf7] px-6 py-9 sm:px-9 lg:min-h-[238px]">
         <div className="absolute inset-0 -z-20 bg-cover bg-right bg-no-repeat" style={{ backgroundImage: `url('${PRACTICE_LIBRARY_HERO_IMAGE}')` }} />
         <div className="practice-library__hero-veil absolute inset-0 -z-10 bg-[linear-gradient(90deg,#fffefa_0%,#fffefa_43%,rgba(255,254,250,.94)_53%,rgba(255,254,250,.04)_81%)] max-sm:bg-[linear-gradient(90deg,#fffefa_0%,rgba(255,254,250,.95)_68%,rgba(255,254,250,.72)_100%)]" />
@@ -91,6 +135,26 @@ export default function PracticeLibrary({ lessons, onOpen }: Props) {
             );
           })}
         </div>
+      </div>
+      </div>
+      {displayedLesson && (
+        <div ref={chapterPaneRef} className="practice-library__slide-pane" aria-hidden={!slideOpen}>
+          <PracticeSetsView
+            key={`${displayedLesson.id}-${subscriptionNonce}`}
+            embedded
+            lessonId={displayedLesson.id}
+            lessonTitle={displayedLesson.title}
+            focusSetId={focusSetId}
+            onStartSet={onStartSet}
+            onViewResults={onViewResults}
+            onBack={onBack}
+            onHome={onBack}
+            onBuySubscription={onBuySubscription}
+            buyingSub={buyingSub}
+          />
+        </div>
+      )}
+      </div>
       </div>
     </section>
   );
