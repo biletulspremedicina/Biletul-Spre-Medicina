@@ -228,6 +228,8 @@ if (route === 'practice-sets' && activePracticeLessonId) {
     return (
       <PracticeSetView
         setId={activePracticeSetId}
+        lessonId={activePracticeLessonId || undefined}
+        lessonTitle={activePracticeLessonTitle || undefined}
         onExit={() => { setStudentInitialTab('practice'); setRoute('student-dashboard'); }}
         onHome={() => { setStudentInitialTab('dashboard'); setRoute('student-dashboard'); }}
         onComplete={handlePracticeComplete}
