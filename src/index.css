@@ -1222,7 +1222,7 @@
   .practice-sets-page .practice-set-card .simulation-library__biology-history li strong { color: #763346; }
   .practice-set-card .simulation-library__biology-actions { padding-top: 17px; }
   .simulation-library__card--scheduled,
-  .practice-sets-page .practice-set-card--scheduled { min-height: 320px; align-self: stretch; }
+  .practice-sets-page .practice-set-card--scheduled { min-height: 330px; align-self: start; }
   .simulation-library__card--scheduled .simulation-library__biology-actions,
   .practice-set-card--scheduled .simulation-library__biology-actions {
     margin-top: auto;
