@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase, type PracticeQuestionRPC, type PracticeSetRPC } from '@/lib/supabase';
 import { ChevronLeft, AlertTriangle } from 'lucide-react';
 import Logo from '@/components/Logo';
+import QuestionRail from '@/components/QuestionRail';
 import Loading from '@/components/Loading';
 import { practiceSetName } from '@/lib/materialDisplayNames';
 import './SimulationView.css';
@@ -458,26 +459,7 @@ export default function PracticeSetView({ setId, onExit, onHome, onComplete }: P
       </header>
 
       <div className="practice-exam__layout">
-        <aside className="practice-exam__rail" aria-label="Parcursul grilelor">
-          <div className="practice-exam__sticky">
-            <h2>Parcurs</h2>
-            <ol>
-              {questions.map((question, index) => (
-                <li key={question.out_id}>
-                  <button
-                    type="button"
-                    className={`practice-exam__number${activeQuestion === index ? ' practice-exam__number--active' : ''}${answers[question.out_id] ? ' practice-exam__number--answered' : ''}`}
-                    onClick={() => document.getElementById(`practice-question-${question.out_id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-                    aria-label={`Mergi la întrebarea ${index + 1}${answers[question.out_id] ? ', completată' : ''}`}
-                    aria-current={activeQuestion === index ? 'location' : undefined}
-                  >
-                    {index + 1}
-                  </button>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </aside>
+        <QuestionRail questionIds={questions.map((question) => question.out_id)} answers={answers} activeIndex={activeQuestion} questionIdPrefix="practice-question-" />
 
         <main className="practice-exam__questions" aria-label="Grilele setului">
           {questions.map((q, idx) => (
