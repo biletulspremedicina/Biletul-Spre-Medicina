@@ -26,7 +26,7 @@
   display: inline-flex;
   flex: none;
   align-items: center;
-  gap: 12px;
+  gap: 6px;
   padding: 0;
   color: #113b30;
   text-align: left;
@@ -47,10 +47,11 @@
   flex-direction: column;
   font-size: 13px;
   font-weight: 800;
-  line-height: 1.05;
+  line-height: 1.08;
   letter-spacing: .025em;
   text-transform: uppercase;
 }
+.practice-exam__brand strong:last-child { color: #2a6b4e; }
 
 .practice-exam__breadcrumb {
   display: flex;
@@ -338,6 +339,7 @@ html.student-dark .practice-exam__header { background: #172923; border-color: #3
 html.student-dark .practice-exam__brand,
 html.student-dark .practice-exam__breadcrumb strong,
 html.student-dark .practice-exam__footer button { color: #c0e3cd; }
+html.student-dark .practice-exam__brand strong:last-child { color: #8bd6ad; }
 html.student-dark .practice-exam__submit { border-color: #2d7457; background: #2d7457; color: #fff; }
 html.student-dark .practice-exam__submit:hover:not(:disabled) { background: #358666; }
 html.student-dark .practice-exam__breadcrumb,
