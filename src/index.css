@@ -729,7 +729,7 @@
     opacity: 1;
   }
   .simulation-library__biology-actions button:focus-visible { outline: 2px solid #208358; outline-offset: 3px; }
-  .simulation-library__biology-countdown { width: 100%; text-align: center; color: #174c37; font-size: 13px; }
+  .simulation-library__biology-countdown { display: flex; width: 100%; flex-direction: column; align-items: center; gap: 12px; text-align: center; color: #174c37; font-size: 13px; }
 
   html.student-dark .simulation-library__card--biology {
     background: radial-gradient(circle at 50% 0, #274439, #1d332a 46%);
@@ -1221,18 +1221,17 @@
   .practice-sets-page .practice-set-card .simulation-library__biology-history-label,
   .practice-sets-page .practice-set-card .simulation-library__biology-history li strong { color: #763346; }
   .practice-set-card .simulation-library__biology-actions { padding-top: 17px; }
+  .simulation-library__card--scheduled,
+  .practice-sets-page .practice-set-card--scheduled { min-height: 320px; align-self: stretch; }
+  .simulation-library__card--scheduled .simulation-library__biology-actions,
   .practice-set-card--scheduled .simulation-library__biology-actions {
-    margin-top: 18px;
+    margin-top: auto;
     padding-top: 20px;
-    border-top: 1px solid #ead9dd;
+    border-top: 1px solid #dce5de;
   }
-  .practice-set-card--scheduled .simulation-library__biology-countdown {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-  }
-  .practice-set-card__release-label { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; }
+  .practice-set-card--scheduled .simulation-library__biology-actions { border-color: #ead9dd; }
+  .simulation-library--umfcd .simulation-library__card--scheduled .simulation-library__biology-actions { border-color: #dce7ee; }
+  .practice-set-card__release-label { display: inline-flex; align-items: center; font-size: 15px; font-weight: 750; }
   .practice-set-card__time { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center; gap: 8px clamp(13px, 2vw, 27px); width: 100%; font-variant-numeric: tabular-nums; }
   .practice-set-card__time-unit { display: inline-flex; align-items: baseline; gap: 5px; white-space: nowrap; }
   .practice-set-card__time-unit strong { font-family: Georgia, Cambria, "Times New Roman", serif; font-size: clamp(26px, 2.4vw, 33px); font-weight: 700; line-height: 1; }
@@ -1287,6 +1286,8 @@
   html.student-dark .practice-sets-page .practice-set-card .simulation-library__biology-history li strong { color: #f0d5dd; }
   html.student-dark .practice-sets-page .practice-set-card .simulation-library__biology-secondary { background: #392932; border-color: #906072; color: #f5e5e9; }
   html.student-dark .practice-sets-page .practice-set-card .simulation-library__biology-secondary:hover { background: #4b303b; }
+  html.student-dark .simulation-library__card--scheduled .simulation-library__biology-actions { border-color: #45604f; }
+  html.student-dark .simulation-library--umfcd .simulation-library__card--scheduled .simulation-library__biology-actions { border-color: #476475; }
   html.student-dark .practice-sets-page .practice-set-card--scheduled .simulation-library__biology-actions { border-color: #684451; }
   html.student-dark .practice-sets-page .practice-set-card .simulation-library__biology-countdown { color: #f5e5e9; }
 
