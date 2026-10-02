@@ -127,7 +127,13 @@
   padding: 42px 36px;
 }
 
-.practice-exam__rail .practice-exam__sticky { padding: 26px 24px 26px clamp(24px, 3vw, 58px); }
+.practice-exam__rail .practice-exam__sticky {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 88px);
+  height: calc(100dvh - 88px);
+  padding: 26px 24px 26px clamp(24px, 3vw, 58px);
+}
 .practice-exam__sticky h2 {
   margin: 0 0 16px;
   color: #49645b;
@@ -140,10 +146,13 @@
 
 .practice-exam__rail-viewport {
   position: relative;
-  height: calc(var(--rail-step) * 15);
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
 }
 .practice-exam__rail-group {
+  display: grid;
+  grid-template-rows: repeat(15, minmax(0, 1fr));
   position: absolute;
   inset: 0 0 auto;
   width: 100%;
@@ -165,15 +174,16 @@
   top: 0;
   left: 0;
   width: 3px;
-  height: var(--rail-step);
+  height: calc(100% / 15);
   background: #145541;
   transition: transform .34s cubic-bezier(.22, 1, .36, 1);
   pointer-events: none;
 }
 .practice-exam__number {
-  display: block;
+  display: flex;
+  align-items: center;
   width: 100%;
-  height: var(--rail-step);
+  height: 100%;
   padding: 3px 0 3px 14px;
   border: 0;
   background: transparent;
@@ -385,11 +395,11 @@ html.student-dark .practice-exam__header-timer--urgent { color: #f0a4a0; }
   .practice-exam__rail { order: 1; border-right: 0; border-bottom: 1px solid #e4e6e1; }
   .practice-exam__questions { order: 2; padding: 32px 18px 65px; }
   .practice-exam__rail { --rail-step: 36px; }
-  .practice-exam__rail .practice-exam__sticky { position: static; max-height: none; padding: 12px 18px; }
+  .practice-exam__rail .practice-exam__sticky { position: static; display: block; height: auto; max-height: none; padding: 12px 18px; }
   .practice-exam__rail-viewport { height: calc(var(--rail-step) * 3); }
-  .practice-exam__rail-group { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .practice-exam__rail-group { grid-template-columns: repeat(5, minmax(0, 1fr)); grid-template-rows: repeat(3, var(--rail-step)); }
   .practice-exam__active-line { display: none; }
-  .practice-exam__number { width: 100%; height: var(--rail-step); padding: 3px 0; border-bottom: 3px solid transparent; text-align: center; }
+  .practice-exam__number { justify-content: center; width: 100%; height: var(--rail-step); padding: 3px 0; border-bottom: 3px solid transparent; text-align: center; }
   .practice-exam__number--active { border-bottom-color: #145541; }
   html.student-dark .practice-exam__number--active { border-bottom-color: #85c69d; }
   .practice-exam__progress .practice-exam__sticky { padding: 14px 18px; }
