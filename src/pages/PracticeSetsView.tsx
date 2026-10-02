@@ -89,13 +89,7 @@ export default function PracticeSetsView({
     <div className={`practice-sets-page bg-stone-50 ${embedded ? 'practice-sets-page--embedded' : 'min-h-screen'}`}>
       {!embedded && <header className="practice-sets-page__topbar sticky top-0 z-10 border-b border-stone-200 bg-white/90 backdrop-blur-sm">
         <div className="flex w-full items-center justify-between gap-4 px-5 py-3 sm:px-7 lg:px-8">
-          <div className="flex origin-left scale-[0.9] items-center gap-1 sm:scale-100 sm:gap-1.5">
-            <div className="sm:hidden"><Logo size="sm" /></div>
-            <div className="hidden sm:block"><Logo /></div>
-            <span className="flex select-none flex-col text-[10px] font-extrabold uppercase leading-[1.08] tracking-wide sm:text-[12px]">
-              <span>Biletul</span><span>Spre</span><span className="practice-sets-page__brand-word">Medicină</span>
-            </span>
-          </div>
+          <Logo showText />
           <div className="flex items-center gap-2">
             <button type="button" onClick={onBack} className="practice-sets-page__nav-button practice-sets-page__nav-button--back" aria-label="Înapoi la capitole">
               <ChevronLeft size={20} aria-hidden="true" /><span>Înapoi</span>
