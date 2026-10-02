@@ -1,9 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase, PREMIUM_ATTEMPT_LIMIT, type PracticeAttempt, type PracticeSetRPC, type Subscription } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
-import {
-  ChevronLeft, ChevronDown, CalendarClock,
-} from 'lucide-react';
+import { ChevronLeft, ChevronDown } from 'lucide-react';
 import Logo from '@/components/Logo';
 import Loading from '@/components/Loading';
 import { practiceChapterImageFor } from '@/lib/practiceChapterImages';
@@ -275,7 +273,7 @@ function PracticeSetCard({
       <div className="simulation-library__biology-actions">
         {isScheduled && set.out_available_at ? (
           <div className="simulation-library__biology-countdown">
-            <span className="practice-set-card__release-label"><CalendarClock size={17} aria-hidden="true" /> Accesibil în</span>
+            <span className="practice-set-card__release-label">Accesibil în</span>
             <ReleaseCountdown target={set.out_available_at} onComplete={onReleaseReached} />
           </div>
         ) : (
