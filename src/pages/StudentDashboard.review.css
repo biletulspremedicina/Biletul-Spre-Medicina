@@ -5,7 +5,7 @@
 .review-workspace__heading {
   position: relative;
   display: flex;
-  min-height: 186px;
+  min-height: 158px;
   align-items: center;
   overflow: hidden;
   padding: 28px 40px;
@@ -60,29 +60,31 @@
 }
 
 .review-workspace__ambient-dot {
+  --drift-x: 14px;
+  --drift-y: -11px;
   position: absolute;
   display: block;
   border-radius: 50%;
   animation: review-ambient-drift 16s ease-in-out infinite alternate;
 }
 
-.review-workspace__ambient-dot:nth-child(2n) { animation-duration: 21s; animation-delay: -7s; }
-.review-workspace__ambient-dot:nth-child(3n) { animation-duration: 25s; animation-delay: -12s; }
+.review-workspace__ambient-dot:nth-child(2n) { --drift-x: -12px; --drift-y: 9px; animation-duration: 21s; animation-delay: -7s; }
+.review-workspace__ambient-dot:nth-child(3n) { --drift-x: 9px; --drift-y: 12px; animation-duration: 25s; animation-delay: -12s; }
 
-.review-workspace__ambient-dot--1 { width: 8px; height: 8px; top: 17%; left: 12%; background: #d6af50; opacity: .34; }
-.review-workspace__ambient-dot--2 { width: 14px; height: 14px; bottom: 13%; left: 24%; background: #ecd390; opacity: .38; }
-.review-workspace__ambient-dot--3 { width: 6px; height: 6px; top: 16%; left: 38%; background: #c69a39; opacity: .38; }
-.review-workspace__ambient-dot--4 { width: 10px; height: 10px; bottom: 16%; left: 46%; background: #e5c671; opacity: .42; }
-.review-workspace__ambient-dot--5 { width: 18px; height: 18px; top: 24%; left: 58%; background: #e8d3a2; opacity: .43; }
-.review-workspace__ambient-dot--6 { width: 9px; height: 9px; bottom: 20%; left: 66%; background: #c99f43; opacity: .35; }
-.review-workspace__ambient-dot--7 { width: 7px; height: 7px; top: 10%; left: 76%; background: #d9b763; opacity: .38; }
-.review-workspace__ambient-dot--8 { width: 13px; height: 13px; bottom: 14%; right: 8%; background: #e2c57b; opacity: .38; }
-.review-workspace__ambient-dot--9 { width: 6px; height: 6px; top: 68%; right: 27%; background: #c99b3f; opacity: .4; }
-.review-workspace__ambient-dot--10 { width: 11px; height: 11px; top: 13%; right: 8%; background: #ead29a; opacity: .45; }
+.review-workspace__ambient-dot--1 { width: 17px; height: 17px; top: 17%; left: 12%; background: #d6af50; opacity: .34; }
+.review-workspace__ambient-dot--2 { width: 28px; height: 28px; bottom: 13%; left: 24%; background: #ecd390; opacity: .38; }
+.review-workspace__ambient-dot--3 { width: 13px; height: 13px; top: 16%; left: 38%; background: #c69a39; opacity: .38; }
+.review-workspace__ambient-dot--4 { width: 20px; height: 20px; bottom: 16%; left: 46%; background: #e5c671; opacity: .42; }
+.review-workspace__ambient-dot--5 { width: 34px; height: 34px; top: 24%; left: 58%; background: #e8d3a2; opacity: .43; }
+.review-workspace__ambient-dot--6 { width: 18px; height: 18px; bottom: 20%; left: 66%; background: #c99f43; opacity: .35; }
+.review-workspace__ambient-dot--7 { width: 14px; height: 14px; top: 10%; left: 76%; background: #d9b763; opacity: .38; }
+.review-workspace__ambient-dot--8 { width: 26px; height: 26px; bottom: 14%; right: 8%; background: #e2c57b; opacity: .38; }
+.review-workspace__ambient-dot--9 { width: 13px; height: 13px; top: 68%; right: 27%; background: #c99b3f; opacity: .4; }
+.review-workspace__ambient-dot--10 { width: 22px; height: 22px; top: 13%; right: 8%; background: #ead29a; opacity: .45; }
 
 @keyframes review-ambient-drift {
   from { transform: translate3d(0, 0, 0); }
-  to { transform: translate3d(9px, -7px, 0); }
+  to { transform: translate3d(var(--drift-x), var(--drift-y), 0); }
 }
 
 .review-workspace__heading-art {
@@ -617,7 +619,7 @@
 
 @media (max-width: 900px) {
   .review-workspace__heading {
-    min-height: 165px;
+    min-height: 145px;
     padding: 24px 30px;
   }
 
@@ -669,7 +671,7 @@
 
 @media (max-width: 560px) {
   .review-workspace__heading {
-    min-height: 145px;
+    min-height: 128px;
     padding: 20px;
     border-radius: 13px;
   }
