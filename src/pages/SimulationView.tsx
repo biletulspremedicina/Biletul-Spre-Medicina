@@ -353,13 +353,7 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
         <header className="simulation-intro__header">
           <div className="simulation-intro__header-inner">
             <div className="simulation-intro__brand">
-              <div className="simulation-intro__brand-mobile"><Logo size="sm" /></div>
-              <div className="simulation-intro__brand-desktop"><Logo /></div>
-              <span className="simulation-intro__brand-name" aria-hidden="true">
-                <span>Biletul</span>
-                <span>Spre</span>
-                <span>Medicină</span>
-              </span>
+              <Logo showText />
             </div>
             <button onClick={onExit} className="simulation-intro__home" type="button" aria-label="Acasă">
               <img src="/Home.png" alt="" width={22} height={22} /><span>Acasă</span>
@@ -415,8 +409,7 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
       <header className="practice-exam__header">
         <div className="practice-exam__header-inner">
           <button className="practice-exam__brand" type="button" onClick={onExit} aria-label="Înapoi la materiale">
-            <img src="/Logo_final.png" alt="" />
-            <span><strong>Biletul</strong><strong>Spre</strong><strong>Medicină</strong></span>
+            <Logo showText linked={false} />
           </button>
           <nav className="practice-exam__breadcrumb" aria-label="Locația curentă">
             <button type="button" onClick={onExit}>{categoryName}</button>
