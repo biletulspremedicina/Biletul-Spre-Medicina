@@ -113,16 +113,15 @@ export default function PracticeSetsView({
         <section className="practice-sets-page__hero" aria-labelledby="practice-lesson-title">
           <img className="practice-sets-page__hero-photo" src={practiceChapterImageFor(lessonTitle, true)} alt="" />
           <div className="practice-sets-page__hero-veil" />
-          {embedded && <button type="button" onClick={onBack} className="practice-sets-page__inline-back"><ChevronLeft size={17} aria-hidden="true" /> Toate capitolele</button>}
           <div className="practice-sets-page__hero-copy">
-            <p>Antrenament pe capitole</p>
+            {!embedded && <p>Antrenament pe capitole</p>}
             <h1 id="practice-lesson-title">{lessonTitle}</h1>
-            {embedded && <span className="practice-sets-page__hero-subtitle">Alege un set și lucrează grilele în ritmul tău.</span>}
+            {embedded && <button type="button" onClick={onBack} className="practice-sets-page__inline-back"><ChevronLeft size={17} aria-hidden="true" /> Toate capitolele</button>}
           </div>
         </section>
 
         <div className="practice-sets-page__section-heading">
-          <h2>Seturi disponibile</h2>
+          <h2>{embedded ? 'Alege un set și lucrează grilele în ritmul tău.' : 'Seturi disponibile'}</h2>
           {!loading && (embedded ? (
             <div className="practice-sets-page__progress" aria-label={`${completedSetCount} din ${sets.length} seturi rezolvate`}>
               <span>{completedSetCount} din {sets.length} rezolvate</span>
