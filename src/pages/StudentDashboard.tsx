@@ -719,7 +719,9 @@
             </div>
           </header>
 
-          <main className={`mx-auto max-w-[1500px] px-4 pb-12 pt-5 sm:px-6 lg:px-6 xl:px-7${page === 'review' ? ' student-review-page__main' : ''}`}>
+          <main className={`${page === 'practice'
+            ? 'w-full min-w-0 p-0'
+            : 'mx-auto max-w-[1500px] px-4 pb-12 pt-5 sm:px-6 lg:px-6 xl:px-7'}${page === 'review' ? ' student-review-page__main' : ''}`}>
             {(loadError || subMessage) && (
               <div role="status" className={`mb-5 rounded-xl border px-4 py-3 text-sm ${
                 loadError || subMessage?.startsWith('Nu')
