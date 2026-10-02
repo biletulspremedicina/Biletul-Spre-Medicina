@@ -67,7 +67,7 @@
     questionCount: number;
   };
 
-  type PracticeSetRow = { id: string; lesson_id: string };
+  type PracticeSetRow = { id: string; lesson_id: string; position: number };
   const UMFCD_IMAGE_SRC = '/UMFCD.png'; // Imaginea pentru Examene UMFCD
   const SIMULATION_PHOTOS = [
     'https://upload.wikimedia.org/wikipedia/commons/2/24/Test-986769_640.jpg',
@@ -311,7 +311,7 @@
             supabase.from('subscriptions').select('*').eq('user_id', userId).order('end_at', { ascending: false }),
             supabase.from('attempts').select('*').eq('user_id', userId),
             supabase.from('practice_attempts').select('*').eq('user_id', userId),
-            supabase.from('practice_sets').select('id, lesson_id').eq('is_active', true),
+            supabase.from('practice_sets').select('id, lesson_id, position').eq('is_active', true),
             supabase.rpc('get_practice_lessons'),
             supabase.from('app_settings').select('*').eq('id', 1).maybeSingle(),
             supabase.from('chemistry_lessons').select('*').eq('is_published', true).order('position').order('created_at'),
@@ -412,10 +412,29 @@
         console.error('Review questions load error:', error);
         setReviewError('Grilele salvate nu au putut fi încărcate. Încearcă din nou.');
       } else {
-        setReviewQuestions((data || []) as unknown as ReviewQuestionRPC[]);
+        const rows = (data || []) as unknown as ReviewQuestionRPC[];
+        const { data: sourceRows, error: sourceError } = await supabase.from('review_questions')
+          .select('id, source_id').eq('user_id', userId);
+        if (sourceError) console.error('Review question source lookup error:', sourceError);
+        const sourceIds = new Map((sourceRows || []).map((row) => [row.id, row.source_id]));
+        setReviewQuestions(rows.map((question) => {
+          const sourceId = sourceIds.get(question.out_review_id);
+          if (question.out_source_type === 'simulation') {
+            const simulation = simulations.find((item) => item.id === sourceId);
+            if (!simulation) return question;
+            return { ...question, out_display_name: simulation.student_section === 'umfcd'
+              ? umfcdSimulationName(simulation)
+              : biologySimulationName(simulation.display_order ?? 1) };
+          }
+          const set = practiceSets.find((item) => item.id === sourceId);
+          const lessonTitle = practiceLessons.find((item) => item.out_id === set?.lesson_id)?.out_title;
+          return set && lessonTitle
+            ? { ...question, out_display_name: practiceSetName(lessonTitle, set.position + 1) }
+            : question;
+        }));
       }
       setReviewLoading(false);
-    }, [userId]);
+    }, [userId, simulations, practiceSets, practiceLessons]);
 
     useEffect(() => {
       if (page === 'review') void loadReviewQuestions();
@@ -844,7 +863,7 @@
                           Materialele sunt acum accesibile
                         </h2>
                         <div className="relative z-10 mt-6">
-                          <ReleaseDestination release={materialRelease} />
+                          <ReleaseDestination release={materialRelease} simulations={simulations} practiceSets={practiceSets} practiceLessons={practiceLessons} />
                         </div>
                         <div className="relative z-10 flex min-h-[76px] flex-1 items-center justify-center py-3">
                           <button type="button" onClick={() => void openReleasedMaterial()}
@@ -871,7 +890,7 @@
                           onComplete={() => void loadMaterialRelease()}
                         />
                         <div className="relative mt-1">
-                          <ReleaseDestination release={materialRelease} />
+                          <ReleaseDestination release={materialRelease} simulations={simulations} practiceSets={practiceSets} practiceLessons={practiceLessons} />
                         </div>
                         <p className="relative mt-auto border-t border-white/15 pt-3 text-center text-[11px] leading-relaxed text-white/65">
                           Fii mereu pe fază și lucrează cele mai noi postări.
@@ -1143,7 +1162,23 @@
     return <BookOpen size={28} className="text-[#70e0b8]" strokeWidth={1.8} />;
   }
 
-  function ReleaseDestination({ release }: { release: MaterialReleaseRPC }) {
+  function ReleaseDestination({ release, simulations, practiceSets, practiceLessons }: {
+    release: MaterialReleaseRPC;
+    simulations: SimWithStatus[];
+    practiceSets: PracticeSetRow[];
+    practiceLessons: PracticeLessonRPC[];
+  }) {
+    const simulation = simulations.find((item) => item.id === release.out_source_id);
+    const set = practiceSets.find((item) => item.id === release.out_source_id);
+    const chapterTitle = practiceLessons.find((item) => item.out_id === set?.lesson_id)?.out_title
+      || release.out_chapter_title;
+    const materialName = release.out_source_type === 'practice'
+      ? set && chapterTitle ? practiceSetName(chapterTitle, set.position + 1) : release.out_title
+      : simulation
+        ? simulation.student_section === 'umfcd'
+          ? umfcdSimulationName(simulation)
+          : biologySimulationName(simulation.display_order ?? 1)
+        : release.out_title;
     return (
       <div className="rounded-[14px] border border-white/15 bg-white/[0.08] px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
         <div className="flex min-w-0 items-center justify-center gap-3">
@@ -1156,9 +1191,7 @@
         </div>
         <div className="mx-auto my-2.5 h-px w-4/5 bg-white/15" />
         <p className="break-words text-center text-[clamp(17px,1.4vw,22px)] font-bold leading-tight text-white" style={serif}>
-          {release.out_source_type === 'practice'
-            ? (release.out_chapter_title?.trim() || release.out_title)
-            : release.out_title}
+          {materialName}
         </p>
       </div>
     );
@@ -1279,6 +1312,7 @@
   }
 
   function reviewSourceName(question: ReviewQuestionRPC): string {
+    if (question.out_display_name) return question.out_display_name;
     const storedTitle = question.out_source_title.trim();
     if (question.out_source_type !== 'practice') return storedTitle;
 
@@ -1485,9 +1519,9 @@
         <article id={`released-simulation-${sim.id}`}
           className={`simulation-library__card simulation-library__card--biology ${isScheduled ? 'simulation-library__card--scheduled' : ''} ${focused ? `ring-2 ${isUmfcd ? 'ring-blue-500' : 'ring-emerald-500'} ring-offset-2` : ''}`}>
           <div className="simulation-library__biology-heading">
-            <h3 data-umfcd-kind={isUmfcd ? cardTitle : undefined}>{cardTitle}</h3>
-            <span className="simulation-library__biology-number" aria-label={isUmfcd ? `Anul ${umfcdYear ?? 'nesetat'}` : `Simularea ${Number(index ?? 0) + 1}`}>
-              {isUmfcd ? (umfcdYear ?? '—') : String(Number(index ?? 0) + 1).padStart(2, '0')}
+            <h3 data-umfcd-kind={isUmfcd ? cardTitle : undefined} aria-label={isUmfcd ? umfcdSimulationName(sim) : biologySimulationName(sim.display_order ?? index + 1)}>{cardTitle}</h3>
+            <span className="simulation-library__biology-number" aria-hidden="true">
+              {isUmfcd ? (umfcdYear ?? '—') : String(sim.display_order ?? index + 1).padStart(2, '0')}
             </span>
           </div>
           <div className="simulation-library__biology-meta">
@@ -1582,7 +1616,7 @@
         )}
         <div className="mb-3 flex flex-wrap items-start gap-2">
           <h3 className="line-clamp-2 min-w-0 flex-1 font-display text-base font-semibold leading-snug text-stone-900">
-            {isUmfcd ? umfcdSimulationName(sim) : biologySimulationName(index + 1)}
+            {isUmfcd ? umfcdSimulationName(sim) : biologySimulationName(sim.display_order ?? index + 1)}
           </h3>
           {hasSubmitted ? (
             <span className="badge shrink-0 bg-brand-100 text-brand-700">
