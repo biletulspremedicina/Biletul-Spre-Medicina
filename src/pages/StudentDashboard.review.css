@@ -1,4 +1,4 @@
-.student-review-page {
+.student-review-page.min-h-screen {
   height: 100vh;
   height: 100dvh;
   min-height: 0;
@@ -15,14 +15,14 @@
 
 .student-review-page__content > header { flex: none; }
 
-.student-review-page__main {
+.student-review-page .student-review-page__main {
   display: flex;
   width: 100%;
   min-height: 0;
   flex: 1;
   flex-direction: column;
   overflow: hidden;
-  padding-bottom: 20px;
+  padding-bottom: 0;
 }
 
 .review-workspace {
