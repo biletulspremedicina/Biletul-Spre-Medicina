@@ -57,6 +57,7 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
   const [submitting, setSubmitting] = useState(false);
   const [attempt, setAttempt] = useState<Attempt | null>(null);
   const [timeLeft, setTimeLeft] = useState(0);
+  const [showSeconds, setShowSeconds] = useState(true);
   const [started, setStarted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<SaveState>('idle');
@@ -415,7 +416,7 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
             <span aria-hidden="true">/</span>
             <strong>{displayName}</strong>
           </nav>
-          <span className={`practice-exam__header-timer${timeLeft < 300 ? ' practice-exam__header-timer--urgent' : ''}`} role="timer" aria-label={`Timp rămas: ${formatTime(timeLeft)}`}>{formatTime(timeLeft)}</span>
+          <span className={`practice-exam__header-timer${timeLeft < 300 ? ' practice-exam__header-timer--urgent' : ''}`} role="timer" aria-label={`Timp rămas${showSeconds ? '' : ', secundele ascunse'}: ${formatTime(timeLeft, showSeconds)}`}>{formatTime(timeLeft, showSeconds)}</span>
         </div>
       </header>
 
@@ -461,9 +462,12 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
             </div>
             <div className="practice-exam__timer-section">
               <span className="practice-exam__section-label">Timp rămas</span>
-              <div className={`practice-exam__timer${timeLeft < 300 ? ' practice-exam__timer--urgent' : ''}`} role="timer" aria-label={`Timp rămas: ${formatTime(timeLeft)}`}>
-                <strong aria-hidden="true">{formatTime(timeLeft)}</strong>
+              <div className={`practice-exam__timer${timeLeft < 300 ? ' practice-exam__timer--urgent' : ''}`} role="timer" aria-label={`Timp rămas${showSeconds ? '' : ', secundele ascunse'}: ${formatTime(timeLeft, showSeconds)}`}>
+                <strong aria-hidden="true">{formatTime(timeLeft, showSeconds)}</strong>
               </div>
+              <button className="practice-exam__seconds-toggle" type="button" aria-pressed={!showSeconds} onClick={() => setShowSeconds((current) => !current)}>
+                {showSeconds ? 'Ascunde secundele' : 'Afișează secundele'}
+              </button>
             </div>
             <button className="practice-exam__submit" type="button" onClick={() => void submitAttempt(false)} disabled={submitting || questions.length === 0}>
               <span>{submitting ? 'Se trimite…' : 'Trimite răspunsurile'}</span>
@@ -476,10 +480,10 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
   );
 }
 
-function formatTime(seconds: number) {
+function formatTime(seconds: number, showSeconds = true) {
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
-  const s = seconds % 60;
+  const s = showSeconds ? seconds % 60 : 0;
   if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
