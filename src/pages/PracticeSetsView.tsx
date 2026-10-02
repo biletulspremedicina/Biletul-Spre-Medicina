@@ -224,7 +224,7 @@ function PracticeSetCard({
 
   return (
     <article id={`practice-set-${set.out_id}`}
-      className={`simulation-library__card simulation-library__card--biology practice-set-card ${shortTitle.length > 20 ? 'practice-set-card--long-title' : ''} ${focused ? 'ring-2 ring-rose-700 ring-offset-2' : ''}`}
+      className={`simulation-library__card simulation-library__card--biology practice-set-card ${isScheduled ? 'practice-set-card--scheduled' : ''} ${shortTitle.length > 20 ? 'practice-set-card--long-title' : ''} ${focused ? 'ring-2 ring-rose-700 ring-offset-2' : ''}`}
       aria-label={`${practiceSetName(lessonTitle, index + 1)}, ${set.out_question_count} grile`}>
       <div className="simulation-library__biology-heading">
         <h3 title={lessonTitle}>{shortTitle}</h3>
@@ -240,7 +240,7 @@ function PracticeSetCard({
         </span>
       </div>
 
-      <div className="simulation-library__biology-history">
+      {!isScheduled && <div className="simulation-library__biology-history">
         <h4>
           <button type="button" className="simulation-library__biology-history-toggle"
             onClick={toggleHistory} aria-expanded={historyOpen} aria-controls={`practice-history-${set.out_id}`}>
@@ -270,12 +270,12 @@ function PracticeSetCard({
             </ol>
           </div>
         </div>
-      </div>
+      </div>}
 
       <div className="simulation-library__biology-actions">
         {isScheduled && set.out_available_at ? (
           <div className="simulation-library__biology-countdown">
-            <span className="inline-flex items-center gap-1"><CalendarClock size={15} aria-hidden="true" /> Accesibil în</span>
+            <span className="practice-set-card__release-label"><CalendarClock size={17} aria-hidden="true" /> Accesibil în</span>
             <ReleaseCountdown target={set.out_available_at} onComplete={onReleaseReached} />
           </div>
         ) : (
@@ -319,14 +319,22 @@ function ReleaseCountdown({ target, onComplete }: { target: string; onComplete: 
     return () => window.clearInterval(interval);
   }, [target, onComplete]);
 
-  const totalSeconds = Math.ceil(remaining / 1000);
-  const days = Math.floor(totalSeconds / 86_400);
-  const hours = Math.floor((totalSeconds % 86_400) / 3_600);
-  const minutes = Math.floor((totalSeconds % 3_600) / 60);
-  const seconds = totalSeconds % 60;
+  const totalMinutes = Math.ceil(remaining / 60_000);
+  const days = Math.floor(totalMinutes / 1_440);
+  const hours = Math.floor((totalMinutes % 1_440) / 60);
+  const minutes = totalMinutes % 60;
+  const units = [
+    ...(days > 0 ? [{ value: days, label: days === 1 ? 'zi' : 'zile' }] : []),
+    ...(days > 0 || hours > 0 ? [{ value: hours, label: hours === 1 ? 'oră' : 'ore' }] : []),
+    { value: minutes, label: minutes === 1 ? 'minut' : 'minute' },
+  ];
   return (
-    <span className="mt-1 block font-bold tabular-nums">
-      {days > 0 ? `${days}z ` : ''}{String(hours).padStart(2, '0')}:{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+    <span className="practice-set-card__time" aria-label={units.map(({ value, label }) => `${value} ${label}`).join(', ')}>
+      {units.map(({ value, label }) => (
+        <span className="practice-set-card__time-unit" key={label}>
+          <strong>{value}</strong><small>{label}</small>
+        </span>
+      ))}
     </span>
   );
 }
