@@ -233,7 +233,7 @@ function PracticeSetCard({
       <div className="simulation-library__biology-meta">
         <span><strong>{set.out_question_count}</strong> {set.out_question_count === 1 ? 'grilă' : 'grile'}</span>
         <span aria-hidden="true">·</span>
-        <span className="font-bold">Cronometru disponibil</span>
+        <span className="font-bold">Timer disponibil</span>
         <span aria-hidden="true">·</span>
         <span className={isPremium ? 'simulation-library__biology-access--premium' : 'simulation-library__biology-access--free'}>
           {isPremium ? 'Necesită abonament' : 'Fără abonament'}
