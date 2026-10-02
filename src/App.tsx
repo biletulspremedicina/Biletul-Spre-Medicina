@@ -8,7 +8,6 @@ import StudentOnboarding from '@/pages/StudentOnboarding';
 import SimulationView from '@/pages/SimulationView';
 import ResultsView from '@/pages/ResultsView';
 import AdminDashboard from '@/pages/AdminDashboard';
-import PracticeSetsView from '@/pages/PracticeSetsView';
 import PracticeSetView from '@/pages/PracticeSetView';
 import PracticeResultsView from '@/pages/PracticeResultsView';
 import ChemistryLessonView from '@/pages/ChemistryLessonView';
@@ -23,7 +22,6 @@ type Route =
   | 'simulation'
   | 'results'
   | 'admin-dashboard'
-  | 'practice-sets'
   | 'practice-solve'
   | 'practice-results'
   | 'chemistry-lesson';
@@ -198,26 +196,6 @@ function AppContent() {
         <ChemistryLessonView
           lessonId={activeChemistryLessonId}
           onBack={() => { setStudentInitialTab('chemistry'); setRoute('student-dashboard'); }}
-        />
-        <SupportChat />
-      </>
-    );
-  }
-
-if (route === 'practice-sets' && activePracticeLessonId) {
-    return (
-      <>
-        <PracticeSetsView
-          key={`practice-sets-${activePracticeLessonId}-${practiceSubNonce}`}
-          lessonId={activePracticeLessonId}
-          lessonTitle={activePracticeLessonTitle}
-          focusSetId={focusedPracticeSetId || undefined}
-          onStartSet={handleStartPracticeSet}
-          onViewResults={handleViewPracticeResults}
-          onBack={() => { setStudentInitialTab('practice'); setRoute('student-dashboard'); }}
-          onHome={() => { setStudentInitialTab('dashboard'); setRoute('student-dashboard'); }}
-          onBuySubscription={handleBuySubscription}
-          buyingSub={practiceBuyingSub}
         />
         <SupportChat />
       </>
