@@ -223,10 +223,10 @@ function PracticeSetCard({
   return (
     <article id={`practice-set-${set.out_id}`}
       className={`simulation-library__card simulation-library__card--biology practice-set-card ${isScheduled ? 'practice-set-card--scheduled' : ''} ${shortTitle.length > 20 ? 'practice-set-card--long-title' : ''} ${focused ? 'ring-2 ring-rose-700 ring-offset-2' : ''}`}
-      aria-label={`${practiceSetName(lessonTitle, index + 1)}, ${set.out_question_count} grile`}>
+      aria-label={`${practiceSetName(lessonTitle, set.out_position + 1)}, ${set.out_question_count} grile`}>
       <div className="simulation-library__biology-heading">
-        <h3 title={lessonTitle}>{shortTitle}</h3>
-        <span className="simulation-library__biology-number" aria-hidden="true">{twoDigitNumber(index + 1)}</span>
+        <h3 title={practiceSetName(lessonTitle, set.out_position + 1)} aria-label={practiceSetName(lessonTitle, set.out_position + 1)}>{shortTitle}</h3>
+        <span className="simulation-library__biology-number" aria-hidden="true">{twoDigitNumber(set.out_position + 1)}</span>
       </div>
       <div className="simulation-library__biology-meta">
         <span><strong>{set.out_question_count}</strong> {set.out_question_count === 1 ? 'grilă' : 'grile'}</span>
