@@ -450,8 +450,9 @@ export default function PracticeSetView({ setId, onExit, onHome, onComplete }: P
             {introMeta && <><span>{introMeta.lessonTitle}</span><span aria-hidden="true">/</span></>}
             <strong>{introMeta ? `Set ${String(introMeta.position).padStart(2, '0')}` : 'Set de grile'}</strong>
           </nav>
+          {timeLeft !== null && <span className={`practice-exam__header-timer${timeLeft < 300 ? ' practice-exam__header-timer--urgent' : ''}`} role="timer" aria-label={`Timp rămas: ${formatPracticeTime(timeLeft)}`}>{formatPracticeTime(timeLeft)}</span>}
           <button className="practice-exam__submit" type="button" onClick={() => void submitAttempt()} disabled={submitting || questions.length === 0}>
-            {submitting ? 'Se trimite…' : 'Trimite răspunsurile'}
+            {submitting ? 'Se trimite…' : <><span className="practice-exam__submit-long">Trimite răspunsurile</span><span className="practice-exam__submit-short">Trimite</span></>}
           </button>
         </div>
       </header>
