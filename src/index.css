@@ -4,6 +4,9 @@
   @tailwind components;
   @tailwind utilities;
 
+  html.student-dark .brand-lockup:not(.brand-lockup--inverse) { color: #c0e3cd; }
+  html.student-dark .brand-lockup__medicine { color: #8bd6ad; }
+
   @layer base {
     body {
       @apply bg-stone-50 text-stone-800 font-sans antialiased;
