@@ -46,6 +46,14 @@
     onStartSimulation: (simulationId: string) => void;
     onViewResults: (simulationId: string, attemptId?: string) => void;
     onOpenPracticeLesson: (lessonId: string, lessonTitle: string, focusSetId?: string) => void;
+    activePracticeLesson: { id: string; title: string } | null;
+    focusedPracticeSetId?: string;
+    onBackToPracticeLessons: () => void;
+    onStartPracticeSet: (setId: string) => void;
+    onViewPracticeResults: (setId: string, attemptId?: string) => void;
+    onBuyPracticeSubscription: () => void;
+    practiceBuyingSub: boolean;
+    practiceSubNonce: number;
     onOpenChemistryLesson: (lessonId: string) => void;
     initialTab?: IncomingTab;
     theme: 'light' | 'dark' | 'system';
@@ -200,6 +208,14 @@
     onStartSimulation,
     onViewResults,
     onOpenPracticeLesson,
+    activePracticeLesson,
+    focusedPracticeSetId,
+    onBackToPracticeLessons,
+    onStartPracticeSet,
+    onViewPracticeResults,
+    onBuyPracticeSubscription,
+    practiceBuyingSub,
+    practiceSubNonce,
     onOpenChemistryLesson,
     initialTab = 'all',
     theme,
@@ -890,7 +906,15 @@
               />
             ) : page === 'practice' ? (
               <PracticeLibrary lessons={practiceLessons}
-                onOpen={(lesson) => onOpenPracticeLesson(lesson.out_id, lesson.out_title)} />
+                selectedLesson={activePracticeLesson}
+                focusSetId={focusedPracticeSetId}
+                onOpen={(lesson) => onOpenPracticeLesson(lesson.out_id, lesson.out_title)}
+                onBack={onBackToPracticeLessons}
+                onStartSet={onStartPracticeSet}
+                onViewResults={onViewPracticeResults}
+                onBuySubscription={onBuyPracticeSubscription}
+                buyingSub={practiceBuyingSub}
+                subscriptionNonce={practiceSubNonce} />
             ) : page === 'chemistry' ? (
               <section>
                 <PageHeading icon={<FlaskConical size={30} />} title="Lecții de chimie"
