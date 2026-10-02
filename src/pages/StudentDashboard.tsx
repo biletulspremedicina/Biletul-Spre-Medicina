@@ -991,6 +991,11 @@
               <section className="review-workspace">
                 <div className="review-workspace__heading">
                   <h1>Întrebări de revizuit</h1>
+                  <div className="review-workspace__ambient" aria-hidden="true">
+                    {Array.from({ length: 10 }, (_, index) => (
+                      <span className={`review-workspace__ambient-dot review-workspace__ambient-dot--${index + 1}`} key={index} />
+                    ))}
+                  </div>
                   <span className="review-workspace__arc review-workspace__arc--top" aria-hidden="true" />
                   <span className="review-workspace__arc review-workspace__arc--bottom" aria-hidden="true" />
                   <span className="review-workspace__arc review-workspace__arc--right" aria-hidden="true" />
