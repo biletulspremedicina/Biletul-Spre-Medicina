@@ -677,7 +677,7 @@
         {sidebar}
 
         <div className={`min-w-0${page === 'review' ? ' student-review-page__content' : ''}`}>
-          <header className="relative z-20 flex min-h-[60px] items-center justify-between border-b border-[#e6eaeb] bg-white px-5 py-2 sm:px-7">
+          <header className="sticky top-0 z-30 flex min-h-[60px] items-center justify-between border-b border-[#e6eaeb] bg-white px-5 py-2 sm:px-7">
             <button type="button" onClick={() => setMobileMenuOpen(true)}
               className="mr-3 rounded-lg p-2 text-[#164d3e] hover:bg-[#e9f5ef] lg:hidden" aria-label="Deschide meniul">
               <Menu size={22} />
