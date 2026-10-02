@@ -128,7 +128,7 @@ export default function PracticeSetView({ setId, lessonId, lessonTitle, onExit, 
       }
       setIntroMeta({
         lessonTitle: resolvedLessonTitle || 'Capitol',
-        position: selectedSet.out_position,
+        position: selectedSet.out_position + 1,
         questionCount: selectedSet.out_question_count,
       });
       setLoading(false);
@@ -465,8 +465,7 @@ export default function PracticeSetView({ setId, lessonId, lessonTitle, onExit, 
           <nav className="practice-exam__breadcrumb" aria-label="Locația curentă">
             <button type="button" onClick={onExit}>Antrenament pe capitole</button>
             <span aria-hidden="true">/</span>
-            {introMeta && <><span>{introMeta.lessonTitle}</span><span aria-hidden="true">/</span></>}
-            <strong>{introMeta ? `Set ${String(introMeta.position).padStart(2, '0')}` : 'Set de grile'}</strong>
+            <strong>{introMeta ? practiceSetName(introMeta.lessonTitle, introMeta.position) : 'Set de grile'}</strong>
           </nav>
           {timeLeft !== null && <span className={`practice-exam__header-timer${timeLeft < 300 ? ' practice-exam__header-timer--urgent' : ''}`} role="timer" aria-label={`Timp rămas: ${formatPracticeTime(timeLeft)}`}>{formatPracticeTime(timeLeft)}</span>}
           <button className="practice-exam__submit" type="button" onClick={() => void submitAttempt()} disabled={submitting || questions.length === 0}>
