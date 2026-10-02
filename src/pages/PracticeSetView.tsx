@@ -518,8 +518,8 @@ export default function PracticeSetView({ setId, lessonId, lessonTitle, onExit, 
               </p>
             )}
             <button className="practice-exam__submit" type="button" onClick={() => void submitAttempt()} disabled={submitting || questions.length === 0}>
-              <Send size={17} strokeWidth={1.8} aria-hidden="true" />
               <span>{submitting ? 'Se trimite…' : 'Trimite răspunsurile'}</span>
+              <Send size={17} strokeWidth={1.8} aria-hidden="true" />
             </button>
           </div>
         </aside>
