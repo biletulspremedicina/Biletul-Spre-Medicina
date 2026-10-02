@@ -58,6 +58,7 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
   const [attempt, setAttempt] = useState<Attempt | null>(null);
   const [timeLeft, setTimeLeft] = useState(0);
   const [showSeconds, setShowSeconds] = useState(true);
+  const [comfortMode, setComfortMode] = useState(false);
   const [started, setStarted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<SaveState>('idle');
@@ -405,7 +406,7 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
   const categoryName = simulation.student_section === 'umfcd' ? 'Examene UMFCD' : 'Simulări biologie';
 
   return (
-    <div className="practice-exam">
+    <div className={`practice-exam${comfortMode ? ' practice-exam--dark' : ''}`}>
       <header className="practice-exam__header">
         <div className="practice-exam__header-inner">
           <button className="practice-exam__brand" type="button" onClick={onExit} aria-label="Înapoi la materiale">
@@ -417,6 +418,10 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
             <strong>{displayName}</strong>
           </nav>
           <span className={`practice-exam__header-timer${timeLeft < 300 ? ' practice-exam__header-timer--urgent' : ''}`} role="timer" aria-label={`Timp rămas${showSeconds ? '' : ', secundele ascunse'}: ${formatTime(timeLeft, showSeconds)}`}>{formatTime(timeLeft, showSeconds)}</span>
+          <button className="practice-exam__comfort-control" type="button" role="switch" aria-label="Confort vizual" aria-checked={comfortMode} onClick={() => setComfortMode((current) => !current)}>
+            <span className="practice-exam__comfort-label">Confort vizual</span>
+            <span className="practice-exam__comfort-track" aria-hidden="true"><span className="practice-exam__comfort-thumb" /></span>
+          </button>
         </div>
       </header>
 
