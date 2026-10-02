@@ -317,6 +317,22 @@
   line-height: 1.1;
 }
 .practice-exam__timer--urgent strong { color: #a53838; }
+.practice-exam__seconds-toggle {
+  display: block;
+  margin: 10px 0 0 auto;
+  padding: 3px 0;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: transparent;
+  color: #64736b;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: right;
+  transition: color .18s ease, border-color .18s ease;
+}
+.practice-exam__seconds-toggle:hover { border-bottom-color: currentColor; color: #174a3c; }
 .practice-exam__progress .practice-exam__save { margin-top: 8px; color: #717b73; font-size: 12px; }
 
 .practice-exam__footer {
@@ -368,6 +384,8 @@ html.student-dark .practice-exam__progress-track { background: #34483e; }
 html.student-dark .practice-exam__progress-track span { background: #85c69d; }
 html.student-dark .practice-exam__timer strong { color: #d0ebd7; }
 html.student-dark .practice-exam__timer--urgent strong { color: #f0a4a0; }
+html.student-dark .practice-exam__seconds-toggle { color: #a7b9ae; }
+html.student-dark .practice-exam__seconds-toggle:hover { color: #d0ebd7; }
 html.student-dark .practice-exam__header-timer { color: #d0ebd7; }
 html.student-dark .practice-exam__header-timer--urgent { color: #f0a4a0; }
 
