@@ -19,10 +19,11 @@ type Props = {
   onHome: () => void;
   onBuySubscription: () => void;
   buyingSub: boolean;
+  embedded?: boolean;
 };
 
 export default function PracticeSetsView({
-  lessonId, lessonTitle, focusSetId, onStartSet, onViewResults, onBack, onHome, onBuySubscription, buyingSub,
+  lessonId, lessonTitle, focusSetId, onStartSet, onViewResults, onBack, onHome, onBuySubscription, buyingSub, embedded = false,
 }: Props) {
   const { profile } = useAuth();
   const [sets, setSets] = useState<PracticeSetRPC[]>([]);
@@ -86,8 +87,8 @@ export default function PracticeSetsView({
   const totalQuestions = sets.reduce((total, set) => total + set.out_question_count, 0);
 
   return (
-    <div className="practice-sets-page min-h-screen bg-stone-50">
-      <header className="practice-sets-page__topbar sticky top-0 z-10 border-b border-stone-200 bg-white/90 backdrop-blur-sm">
+    <div className={`practice-sets-page bg-stone-50 ${embedded ? 'practice-sets-page--embedded' : 'min-h-screen'}`}>
+      {!embedded && <header className="practice-sets-page__topbar sticky top-0 z-10 border-b border-stone-200 bg-white/90 backdrop-blur-sm">
         <div className="flex w-full items-center justify-between gap-4 px-5 py-3 sm:px-7 lg:px-8">
           <div className="flex origin-left scale-[0.9] items-center gap-1 sm:scale-100 sm:gap-1.5">
             <div className="sm:hidden"><Logo size="sm" /></div>
@@ -105,9 +106,10 @@ export default function PracticeSetsView({
             </button>
           </div>
         </div>
-      </header>
+      </header>}
 
-      <main className="practice-sets-page__content w-full px-3 py-5 sm:px-4 lg:px-5">
+      <main className={`practice-sets-page__content w-full ${embedded ? '' : 'px-3 py-5 sm:px-4 lg:px-5'}`}>
+        {embedded && <button type="button" onClick={onBack} className="practice-sets-page__inline-back"><ChevronLeft size={18} aria-hidden="true" /> Toate capitolele</button>}
         <section className="practice-sets-page__hero" aria-labelledby="practice-lesson-title">
           <img className="practice-sets-page__hero-photo" src={practiceChapterImageFor(lessonTitle, true)} alt="" />
           <div className="practice-sets-page__hero-veil" />
