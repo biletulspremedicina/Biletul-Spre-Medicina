@@ -300,6 +300,7 @@
   padding-top: 24px;
   border-top: 1px solid #dedfda;
 }
+.practice-exam__timer-section .practice-exam__section-label { text-align: center; }
 .practice-exam__timer {
   display: flex;
   width: 100%;
