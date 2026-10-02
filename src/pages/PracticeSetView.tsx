@@ -1,12 +1,11 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase, type PracticeQuestionRPC, type PracticeSetRPC } from '@/lib/supabase';
-import {
-  ChevronLeft, Send, AlertTriangle, Loader2, FileText, Save, CheckCircle2, XCircle, Clock,
-} from 'lucide-react';
+import { ChevronLeft, AlertTriangle } from 'lucide-react';
 import Logo from '@/components/Logo';
 import Loading from '@/components/Loading';
 import { practiceSetName } from '@/lib/materialDisplayNames';
 import './SimulationView.css';
+import './PracticeSetView.css';
 
 type Props = {
   setId: string;
@@ -75,6 +74,7 @@ export default function PracticeSetView({ setId, onExit, onHome, onComplete }: P
   const [minutesError, setMinutesError] = useState<string | null>(null);
   const [deadline, setDeadline] = useState<number | null>(null);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const [activeQuestion, setActiveQuestion] = useState(0);
 
   const answersRef = useRef<Record<string, string>>({});
   const attemptIdRef = useRef<string | null>(null);
@@ -194,6 +194,30 @@ export default function PracticeSetView({ setId, onExit, onHome, onComplete }: P
       setLoading(false);
     })();
   }, [started, setId]);
+
+  useEffect(() => {
+    if (!started || questions.length === 0) return;
+    let frame = 0;
+    const updateActiveQuestion = () => {
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(() => {
+        let current = 0;
+        questions.forEach((question, index) => {
+          const element = document.getElementById(`practice-question-${question.out_id}`);
+          if (element && element.getBoundingClientRect().top <= window.innerHeight * 0.35) current = index;
+        });
+        setActiveQuestion(current);
+      });
+    };
+    updateActiveQuestion();
+    window.addEventListener('scroll', updateActiveQuestion, { passive: true });
+    window.addEventListener('resize', updateActiveQuestion);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', updateActiveQuestion);
+      window.removeEventListener('resize', updateActiveQuestion);
+    };
+  }, [started, questions]);
 
   const saveProgress = useCallback(async (answersToSave: Record<string, string>) => {
     if (!attemptIdRef.current || submittedRef.current) return;
@@ -410,55 +434,51 @@ export default function PracticeSetView({ setId, onExit, onHome, onComplete }: P
   }
 
   const answeredCount = Object.keys(answers).length;
+  const remainingCount = Math.max(0, questions.length - answeredCount);
 
   return (
-    <div className="min-h-screen bg-stone-50">
-      <header className="sticky top-0 z-20 border-b border-stone-200 bg-white/95 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 py-3">
-          <div className="flex items-center gap-3">
-            <Logo size="sm" showText={false} />
-            <span className="text-sm font-medium text-stone-700 hidden sm:inline">Set de grile</span>
-          </div>
-          <div className="flex items-center gap-2 sm:gap-4">
-            {saveState !== 'idle' && (
-              <span className="hidden sm:flex items-center gap-1 text-xs text-stone-500">
-                {saveState === 'saving' && <><Save size={12} /> Se salvează…</>}
-                {saveState === 'saved' && <><CheckCircle2 size={12} className="text-brand-600" /> Progres salvat</>}
-                {saveState === 'error' && <><XCircle size={12} className="text-red-500" /> Salvarea a eșuat</>}
-              </span>
-            )}
-            {timeLeft !== null && (
-              <div className={`flex items-center gap-2 rounded-lg px-3 py-1.5 font-mono text-sm font-bold ${timeLeft < 300 ? 'bg-red-100 text-red-700' : 'bg-brand-100 text-brand-700'}`}
-                role="timer" aria-label={`Timp rămas: ${formatPracticeTime(timeLeft)}`}>
-                <Clock size={16} aria-hidden="true" />
-                <span aria-hidden="true">{formatPracticeTime(timeLeft)}</span>
-              </div>
-            )}
-            <button
-              onClick={() => submitAttempt()}
-              disabled={submitting}
-              className="btn-primary"
-            >
-              {submitting && <Loader2 size={16} className="animate-spin" />}
-              <Send size={16} />
-              <span className="hidden sm:inline">Trimite</span>
-            </button>
-          </div>
+    <div className="practice-exam">
+      <header className="practice-exam__header">
+        <div className="practice-exam__header-inner">
+          <button className="practice-exam__brand" type="button" onClick={onHome} aria-label="Acasă — Biletul spre Medicină">
+            <img src="/Logo_final.png" alt="" />
+            <span><strong>Biletul</strong><strong>Spre</strong><strong>Medicină</strong></span>
+          </button>
+          <nav className="practice-exam__breadcrumb" aria-label="Locația curentă">
+            <button type="button" onClick={onExit}>Antrenament pe capitole</button>
+            <span aria-hidden="true">/</span>
+            {introMeta && <><span>{introMeta.lessonTitle}</span><span aria-hidden="true">/</span></>}
+            <strong>{introMeta ? `Set ${String(introMeta.position).padStart(2, '0')}` : 'Set de grile'}</strong>
+          </nav>
+          <button className="practice-exam__submit" type="button" onClick={() => void submitAttempt()} disabled={submitting || questions.length === 0}>
+            {submitting ? 'Se trimite…' : 'Trimite răspunsurile'}
+          </button>
         </div>
       </header>
 
-      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-6 flex items-center justify-between text-sm text-stone-500">
-          <span>{answeredCount} din {questions.length} grile completate</span>
-          <div className="h-2 flex-1 mx-4 rounded-full bg-stone-200 overflow-hidden max-w-xs">
-            <div
-              className="h-full bg-brand-500 transition-all"
-              style={{ width: `${questions.length > 0 ? (answeredCount / questions.length) * 100 : 0}%` }}
-            />
+      <div className="practice-exam__layout">
+        <aside className="practice-exam__rail" aria-label="Parcursul grilelor">
+          <div className="practice-exam__sticky">
+            <h2>Parcurs</h2>
+            <ol>
+              {questions.map((question, index) => (
+                <li key={question.out_id}>
+                  <button
+                    type="button"
+                    className={`practice-exam__number${activeQuestion === index ? ' practice-exam__number--active' : ''}${answers[question.out_id] ? ' practice-exam__number--answered' : ''}`}
+                    onClick={() => document.getElementById(`practice-question-${question.out_id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                    aria-label={`Mergi la întrebarea ${index + 1}${answers[question.out_id] ? ', completată' : ''}`}
+                    aria-current={activeQuestion === index ? 'location' : undefined}
+                  >
+                    {index + 1}
+                  </button>
+                </li>
+              ))}
+            </ol>
           </div>
-        </div>
+        </aside>
 
-        <div className="space-y-6">
+        <main className="practice-exam__questions" aria-label="Grilele setului">
           {questions.map((q, idx) => (
             <QuestionCard
               key={q.out_id}
@@ -468,28 +488,41 @@ export default function PracticeSetView({ setId, onExit, onHome, onComplete }: P
               onSelect={(letter) => handleAnswer(q.out_id, letter)}
             />
           ))}
-        </div>
 
-        {questions.length === 0 && (
-          <div className="card p-12 text-center text-stone-500">
-            <FileText size={40} className="mx-auto mb-4 text-stone-300" />
-            <p>Nu există întrebări în acest set.</p>
-          </div>
-        )}
+          {questions.length === 0 && <p className="practice-exam__empty">Nu există întrebări în acest set.</p>}
 
-        {questions.length > 0 && (
-          <div className="mt-8 flex justify-end">
-            <button
-              onClick={() => submitAttempt()}
-              disabled={submitting}
-              className="btn-primary"
-            >
-              {submitting && <Loader2 size={16} className="animate-spin" />}
-              <Send size={16} />
-              Trimite răspunsurile
-            </button>
+          {questions.length > 0 && (
+            <footer className="practice-exam__footer">
+              <span>Ai ajuns la finalul setului.</span>
+              <button type="button" onClick={() => void submitAttempt()} disabled={submitting}>
+                {submitting ? 'Se trimite…' : 'Trimite răspunsurile'}
+              </button>
+            </footer>
+          )}
+        </main>
+
+        <aside className="practice-exam__progress" aria-label="Progresul setului">
+          <div className="practice-exam__sticky">
+            <h2>Progres</h2>
+            <p><strong>{answeredCount}</strong> din {questions.length} completate</p>
+            <div className="practice-exam__progress-track" role="progressbar" aria-valuenow={answeredCount} aria-valuemin={0} aria-valuemax={questions.length} aria-label="Grile completate">
+              <span style={{ width: `${questions.length ? (answeredCount / questions.length) * 100 : 0}%` }} />
+            </div>
+            <p className="practice-exam__remaining">{remainingCount} {remainingCount === 1 ? 'rămasă' : 'rămase'}</p>
+            {timeLeft !== null && (
+              <div className={`practice-exam__timer${timeLeft < 300 ? ' practice-exam__timer--urgent' : ''}`} role="timer" aria-label={`Timp rămas: ${formatPracticeTime(timeLeft)}`}>
+                <span>Timp rămas</span><strong aria-hidden="true">{formatPracticeTime(timeLeft)}</strong>
+              </div>
+            )}
+            {saveState !== 'idle' && (
+              <p className="practice-exam__save" role="status">
+                {saveState === 'saving' && 'Se salvează…'}
+                {saveState === 'saved' && 'Progres salvat'}
+                {saveState === 'error' && 'Salvarea a eșuat'}
+              </p>
+            )}
           </div>
-        )}
+        </aside>
       </div>
     </div>
   );
@@ -506,38 +539,29 @@ function QuestionCard({
   const isCG = question.out_type === 'CG';
 
   return (
-    <div className="card p-6">
-      <div className="mb-4 flex items-start gap-3">
-        <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-stone-100 text-xs font-bold text-stone-600">
-          {index + 1}
-        </span>
-        <div className="flex-1">
-          <span className="badge bg-stone-100 text-stone-600 mb-2">
-            {isCG ? 'Complement Grupat' : 'Complement Simplu'}
-          </span>
-          <p className="text-stone-900 font-medium leading-relaxed">{question.out_question_text}</p>
-        </div>
-      </div>
+    <section className="practice-exam__question" id={`practice-question-${question.out_id}`} aria-labelledby={`practice-question-title-${question.out_id}`}>
+      <p className="practice-exam__eyebrow">Întrebarea {index + 1} <span aria-hidden="true">/</span> {isCG ? 'Complement grupat' : 'Complement simplu'}</p>
+      <h2 id={`practice-question-title-${question.out_id}`}>{question.out_question_text}</h2>
 
       {isCG && (
-        <div className="mb-4 ml-10 space-y-2">
+        <div className="practice-exam__statements">
           {[1, 2, 3, 4].map((n) => {
             const text = question[`out_statement_${n}` as keyof PracticeQuestionRPC] as string;
             if (!text) return null;
             return (
-              <div key={n} className="flex gap-2 text-sm text-stone-700">
-                <span className="font-semibold text-stone-500">{n}.</span>
+              <div key={n} className="practice-exam__statement">
+                <span>{n}.</span>
                 <span>{text}</span>
               </div>
             );
           })}
-          <div className="mt-3 rounded-lg bg-stone-50 border border-stone-200 p-3 text-xs text-stone-500">
+          <p className="practice-exam__combination-key">
             <strong>Variante:</strong> A = 1, 2, 3 · B = 1, 3 · C = 2, 4 · D = doar 4 · E = toate sau altă combinație
-          </div>
+          </p>
         </div>
       )}
 
-      <div className="ml-10 grid gap-2">
+      <div className="practice-exam__options" role="group" aria-label={`Răspunsuri pentru întrebarea ${index + 1}`}>
         {LETTERS.map((letter) => {
           const optionText = isCG
             ? getCGLabel(letter)
@@ -550,24 +574,18 @@ function QuestionCard({
           return (
             <button
               key={letter}
+              type="button"
               onClick={() => onSelect(letter)}
-              className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm transition-all ${
-                isSelected
-                  ? 'border-brand-500 bg-brand-50 text-brand-900 ring-1 ring-brand-500/20'
-                  : 'border-stone-200 bg-white text-stone-700 hover:border-stone-300 hover:bg-stone-50'
-              }`}
+              className={`practice-exam__option${isSelected ? ' practice-exam__option--selected' : ''}`}
+              aria-pressed={isSelected}
             >
-              <span className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                isSelected ? 'bg-brand-600 text-white' : 'bg-stone-100 text-stone-600'
-              }`}>
-                {letter}
-              </span>
-              <span>{optionText}</span>
+              <span className="practice-exam__option-letter">{letter}</span>
+              <span className="practice-exam__option-text">{optionText}</span>
             </button>
           );
         })}
       </div>
-    </div>
+    </section>
   );
 }
 
