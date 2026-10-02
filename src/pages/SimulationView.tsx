@@ -5,6 +5,7 @@ import { AlertTriangle, ChevronLeft, Send } from 'lucide-react';
 import Logo from '@/components/Logo';
 import QuestionRail from '@/components/QuestionRail';
 import Loading from '@/components/Loading';
+import { useVisualComfort } from '@/hooks/useVisualComfort';
 import { biologySimulationName, umfcdSimulationName } from '@/lib/materialDisplayNames';
 import './SimulationView.css';
 import './PracticeSetView.css';
@@ -58,7 +59,7 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
   const [attempt, setAttempt] = useState<Attempt | null>(null);
   const [timeLeft, setTimeLeft] = useState(0);
   const [showSeconds, setShowSeconds] = useState(true);
-  const [comfortMode, setComfortMode] = useState(false);
+  const { comfortMode, rememberComfort, toggleComfort, setRememberComfort } = useVisualComfort();
   const [started, setStarted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<SaveState>('idle');
@@ -418,10 +419,18 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
             <strong>{displayName}</strong>
           </nav>
           <span className={`practice-exam__header-timer${timeLeft < 300 ? ' practice-exam__header-timer--urgent' : ''}`} role="timer" aria-label={`Timp rămas${showSeconds ? '' : ', secundele ascunse'}: ${formatTime(timeLeft, showSeconds)}`}>{formatTime(timeLeft, showSeconds)}</span>
-          <button className="practice-exam__comfort-control" type="button" role="switch" aria-label="Confort vizual" aria-checked={comfortMode} onClick={() => setComfortMode((current) => !current)}>
+          <div className="practice-exam__comfort-control" role="group" aria-label="Setări de confort vizual">
             <span className="practice-exam__comfort-label">Confort vizual</span>
-            <span className="practice-exam__comfort-track" aria-hidden="true"><span className="practice-exam__comfort-thumb" /></span>
-          </button>
+            <div className="practice-exam__comfort-actions">
+              <button className="practice-exam__comfort-switch" type="button" role="switch" aria-label="Confort vizual" aria-checked={comfortMode} onClick={toggleComfort}>
+                <span className="practice-exam__comfort-track" aria-hidden="true"><span className="practice-exam__comfort-thumb" /></span>
+              </button>
+              <label className="practice-exam__comfort-remember">
+                <span>Reține</span>
+                <input type="checkbox" checked={rememberComfort} onChange={(event) => setRememberComfort(event.target.checked)} aria-label="Reține alegerea modului de confort vizual" />
+              </label>
+            </div>
+          </div>
         </div>
       </header>
 
