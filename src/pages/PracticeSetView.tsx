@@ -24,6 +24,7 @@ type Props = {
 const LETTERS = ['A', 'B', 'C', 'D', 'E'] as const;
 const MAX_TIME_LIMIT_MINUTES = 1440;
 const practiceTimerKey = (attemptId: string) => `bsm-practice-timer:${attemptId}`;
+const practiceTimerDurationKey = (attemptId: string) => `bsm-practice-timer-duration:${attemptId}`;
 
 function readPracticeDeadline(attemptId: string): number | null {
   try {
@@ -36,9 +37,19 @@ function readPracticeDeadline(attemptId: string): number | null {
   }
 }
 
-function savePracticeDeadline(attemptId: string, deadline: number) {
+function readPracticeTimerDuration(attemptId: string): number | null {
+  try {
+    const duration = Number(window.localStorage.getItem(practiceTimerDurationKey(attemptId)));
+    return Number.isFinite(duration) && duration > 0 ? duration : null;
+  } catch {
+    return null;
+  }
+}
+
+function savePracticeDeadline(attemptId: string, deadline: number, duration: number) {
   try {
     window.localStorage.setItem(practiceTimerKey(attemptId), String(deadline));
+    window.localStorage.setItem(practiceTimerDurationKey(attemptId), String(duration));
   } catch {
     // The timer still works for the current session if storage is unavailable.
   }
@@ -47,6 +58,7 @@ function savePracticeDeadline(attemptId: string, deadline: number) {
 function clearPracticeDeadline(attemptId: string) {
   try {
     window.localStorage.removeItem(practiceTimerKey(attemptId));
+    window.localStorage.removeItem(practiceTimerDurationKey(attemptId));
   } catch {
     // Best effort.
   }
@@ -55,7 +67,7 @@ function clearPracticeDeadline(attemptId: string) {
 function formatPracticeTime(seconds: number, showSeconds = true) {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
-  if (hours > 0) return `${hours}:${String(minutes).padStart(2, '0')}`;
+  if (hours > 0) return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
   const remainingSeconds = showSeconds ? seconds % 60 : 0;
   return `${minutes}:${String(remainingSeconds).padStart(2, '0')}`;
 }
@@ -82,6 +94,7 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
   const [minutesError, setMinutesError] = useState<string | null>(null);
   const [deadline, setDeadline] = useState<number | null>(null);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const [timerDuration, setTimerDuration] = useState<number | null>(null);
   const [showSeconds, setShowSeconds] = useState(true);
   const { comfortTheme, setComfortTheme } = useVisualComfort();
   const [activeQuestion, setActiveQuestion] = useState(0);
@@ -228,14 +241,21 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
         }
 
         const nextDeadline = savedDeadline ?? (selectedMinutes === null ? null : Date.now() + selectedMinutes * 60_000);
-        if (savedDeadline === null && nextDeadline !== null) savePracticeDeadline(att.out_id, nextDeadline);
+        const initialTimeLeft = nextDeadline === null ? null : Math.max(0, Math.ceil((nextDeadline - Date.now()) / 1000));
+        const nextTimerDuration = nextDeadline === null ? null : (
+          savedDeadline === null ? selectedMinutes! * 60 : readPracticeTimerDuration(att.out_id) ?? initialTimeLeft
+        );
+        if (savedDeadline === null && nextDeadline !== null && nextTimerDuration !== null) {
+          savePracticeDeadline(att.out_id, nextDeadline, nextTimerDuration);
+        }
         attemptIdRef.current = att.out_id;
         answersRef.current = att.out_answers || {};
         setAnswers(answersRef.current);
         submittedRef.current = false;
         autoSubmitTriggeredRef.current = false;
         setDeadline(nextDeadline);
-        setTimeLeft(nextDeadline === null ? null : Math.max(0, Math.ceil((nextDeadline - Date.now()) / 1000)));
+        setTimeLeft(initialTimeLeft);
+        setTimerDuration(nextTimerDuration);
         didStart = true;
         setStarted(true);
         return;
@@ -542,6 +562,8 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
   }
 
   const answeredCount = Object.keys(answers).length;
+  const ringSeconds = timeLeft === null ? 0 : timeLeft >= 3600 || !showSeconds ? Math.ceil(timeLeft / 60) * 60 : timeLeft;
+  const ringProgress = Math.min(100, Math.max(0, 100 * ringSeconds / (timerDuration || 1)));
 
   return (
     <div className={`practice-exam${comfortTheme === 'light' ? '' : ` practice-exam--${comfortTheme}`}`}>
@@ -556,16 +578,6 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
             <strong>{introMeta ? practiceSetName(introMeta.lessonTitle, introMeta.position) : 'Set de grile'}</strong>
           </nav>
           <div className="practice-exam__header-tools">
-            {timeLeft !== null && (
-              <button
-                type="button"
-                className={`practice-exam__header-timer${timeLeft < 300 ? ' practice-exam__header-timer--urgent' : ''}`}
-                disabled={timeLeft >= 3600}
-                aria-pressed={timeLeft < 3600 ? !showSeconds : undefined}
-                aria-label={`Timp rămas: ${formatPracticeTime(timeLeft, showSeconds)}${timeLeft < 3600 ? `. ${showSeconds ? 'Ascunde secundele' : 'Afișează secundele'}` : ''}`}
-                onClick={() => setShowSeconds((current) => !current)}
-              >{formatPracticeTime(timeLeft, showSeconds)}</button>
-            )}
             <VisualComfortPicker value={comfortTheme} onChange={setComfortTheme} />
           </div>
         </div>
@@ -597,7 +609,7 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
           )}
         </main>
 
-        <aside className="practice-exam__progress" aria-label="Progresul setului">
+        <aside className={`practice-exam__progress${timeLeft === null ? ' practice-exam__progress--untimed' : ''}`} aria-label="Progresul setului">
           <div className="practice-exam__sticky">
             <span className="practice-exam__section-label">Parcurs</span>
             <p><strong>{answeredCount}</strong> din {questions.length} completate</p>
@@ -611,6 +623,22 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
             <div className="practice-exam__progress-track" role="progressbar" aria-valuenow={answeredCount} aria-valuemin={0} aria-valuemax={questions.length} aria-label="Grile completate">
               <span style={{ width: `${questions.length ? (answeredCount / questions.length) * 100 : 0}%` }} />
             </div>
+            {timeLeft !== null && (
+              <div className={`practice-exam__timer-ring${timeLeft < 300 ? ' practice-exam__timer-ring--urgent' : ''}`}>
+                <svg viewBox="0 0 240 240" aria-hidden="true" focusable="false">
+                  <circle className="practice-exam__timer-ring-track" cx="120" cy="120" r="105" />
+                  <circle className="practice-exam__timer-ring-accent" cx="120" cy="120" r="105" pathLength="100" strokeDasharray={`${ringProgress} 100`} />
+                </svg>
+                <button
+                  type="button"
+                  className="practice-exam__timer-value"
+                  disabled={timeLeft >= 3600}
+                  aria-pressed={timeLeft < 3600 ? !showSeconds : undefined}
+                  aria-label={`Timp rămas: ${formatPracticeTime(timeLeft, showSeconds)}${timeLeft < 3600 ? `. ${showSeconds ? 'Ascunde secundele' : 'Afișează secundele'}` : ''}`}
+                  onClick={() => setShowSeconds((current) => !current)}
+                >{formatPracticeTime(timeLeft, showSeconds)}</button>
+              </div>
+            )}
             <button className="practice-exam__submit" type="button" onClick={() => void submitAttempt()} disabled={submitting || questions.length === 0}>
               <span>{submitting ? 'Se trimite…' : 'Trimite răspunsurile'}</span>
               <Send size={17} strokeWidth={1.8} aria-hidden="true" />
