@@ -105,19 +105,12 @@ export default function AuthPage({ mode, onSuccess, onSwitchMode, onBack }: Prop
 
   return (
     <main className={`auth-page${isSignup ? ' auth-page--signup' : ''}`}>
-      {!isSignup && (
-        <button type="button" className="auth-page__back" onClick={onBack}>
-          <ArrowLeft size={18} aria-hidden="true" />
-          <span>Înapoi la pagina principală</span>
-        </button>
-      )}
+      <button type="button" className="auth-page__back" onClick={onBack}>
+        <ArrowLeft size={18} aria-hidden="true" />
+        <span>Înapoi la pagina principală</span>
+      </button>
 
       <section className="auth-card" aria-labelledby="auth-title">
-        {isSignup && (
-          <button type="button" className="auth-card__back" onClick={onBack} aria-label="Înapoi la pagina principală">
-            <ArrowLeft size={19} aria-hidden="true" />
-          </button>
-        )}
         <div className="auth-card__brand"><Logo showText linked={false} /></div>
 
         <div className="auth-card__intro">
