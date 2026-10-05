@@ -22,7 +22,7 @@
   height: 112%;
   opacity: 1; 
   pointer-events: none;
-  transform: rotate(0deg);
+  transform: rotate(2deg);
   transform-origin: 50% 50%;
   clip-path: inset(0 100% 0 0);
   will-change: clip-path;
