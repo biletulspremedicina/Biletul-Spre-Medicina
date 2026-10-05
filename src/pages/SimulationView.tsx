@@ -608,7 +608,7 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
             <span aria-hidden="true">/</span>
             <strong>{displayName}</strong>
           </nav>
-          <ExamHeaderTools comfortTheme={comfortTheme} onComfortChange={setComfortTheme} onHome={() => void handleExit()} />
+          <ExamHeaderTools comfortTheme={comfortTheme} onComfortChange={setComfortTheme} onHome={() => void handleExit()} homeVariant={simulation.student_section === 'umfcd' ? 'umfcd' : 'biology'} />
         </div>
       </header>
 
