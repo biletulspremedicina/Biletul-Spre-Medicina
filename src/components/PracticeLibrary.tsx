@@ -141,14 +141,12 @@ export default function PracticeLibrary({
         <div ref={chapterPaneRef} className="practice-library__slide-pane" aria-hidden={!slideOpen}>
           <PracticeSetsView
             key={`${displayedLesson.id}-${subscriptionNonce}`}
-            embedded
             lessonId={displayedLesson.id}
             lessonTitle={displayedLesson.title}
             focusSetId={focusSetId}
             onStartSet={onStartSet}
             onViewResults={onViewResults}
             onBack={onBack}
-            onHome={onBack}
             onBuySubscription={onBuySubscription}
             buyingSub={buyingSub}
           />
