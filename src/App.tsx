@@ -167,6 +167,7 @@ function AppContent() {
   if (route === 'practice-solve' && activePracticeSetId) {
     return (
       <PracticeSetView
+        key={activePracticeSetId}
         setId={activePracticeSetId}
         lessonId={activePracticeLessonId || undefined}
         lessonTitle={activePracticeLessonTitle || undefined}
@@ -195,6 +196,7 @@ function AppContent() {
     return (
       <>
         <SimulationView
+          key={activeSimulationId}
           simulationId={activeSimulationId}
           onExit={() => { setRoute('student-dashboard'); setActiveSimulationId(null); }}
           onComplete={handleSimulationComplete}
