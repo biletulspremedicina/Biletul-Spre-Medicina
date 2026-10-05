@@ -214,6 +214,7 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
           out_id: string;
           out_set_id: string;
           out_answers: Record<string, string>;
+          out_started_at: string;
           out_submitted_at: string | null;
           out_is_new: boolean;
         };
@@ -245,10 +246,18 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
 
         const nextDeadline = savedDeadline ?? (selectedMinutes === null ? null : Date.now() + selectedMinutes * 60_000);
         const initialTimeLeft = nextDeadline === null ? null : Math.max(0, Math.ceil((nextDeadline - Date.now()) / 1000));
+        const savedDuration = savedDeadline === null ? null : readPracticeTimerDuration(att.out_id);
+        const startedAt = Date.parse(att.out_started_at);
+        const inferredDuration = savedDeadline !== null && Number.isFinite(startedAt)
+          ? Math.ceil((savedDeadline - startedAt) / 1000)
+          : null;
+        const validInferredDuration = inferredDuration !== null && initialTimeLeft !== null
+          && inferredDuration >= initialTimeLeft
+          ? inferredDuration : null;
         const nextTimerDuration = nextDeadline === null ? null : (
-          savedDeadline === null ? selectedMinutes! * 60 : readPracticeTimerDuration(att.out_id) ?? initialTimeLeft
+          savedDeadline === null ? selectedMinutes! * 60 : savedDuration ?? validInferredDuration ?? initialTimeLeft
         );
-        if (savedDeadline === null && nextDeadline !== null && nextTimerDuration !== null) {
+        if (nextDeadline !== null && nextTimerDuration !== null && (savedDeadline === null || savedDuration === null)) {
           savePracticeDeadline(att.out_id, nextDeadline, nextTimerDuration);
         }
         attemptIdRef.current = att.out_id;
