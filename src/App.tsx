@@ -170,16 +170,19 @@ function AppContent() {
 
   if (route === 'practice-solve' && activePracticeSetId) {
     return (
-      <PracticeSetView
-        key={activePracticeSetId}
-        setId={activePracticeSetId}
-        resume={resumePracticeSet}
-        lessonId={activePracticeLessonId || undefined}
-        lessonTitle={activePracticeLessonTitle || undefined}
-        onExit={() => { setStudentInitialTab('practice'); setRoute('student-dashboard'); }}
-        onHome={() => { setStudentInitialTab('dashboard'); setRoute('student-dashboard'); }}
-        onComplete={handlePracticeComplete}
-      />
+      <>
+        <PracticeSetView
+          key={activePracticeSetId}
+          setId={activePracticeSetId}
+          resume={resumePracticeSet}
+          lessonId={activePracticeLessonId || undefined}
+          lessonTitle={activePracticeLessonTitle || undefined}
+          onExit={() => { setStudentInitialTab('practice'); setRoute('student-dashboard'); }}
+          onHome={() => { setStudentInitialTab('dashboard'); setRoute('student-dashboard'); }}
+          onComplete={handlePracticeComplete}
+        />
+        <SupportChat hideFloatingButton />
+      </>
     );
   }
 
@@ -207,7 +210,7 @@ function AppContent() {
           onExit={() => { setRoute('student-dashboard'); setActiveSimulationId(null); }}
           onComplete={handleSimulationComplete}
         />
-        <SupportChat />
+        <SupportChat hideFloatingButton />
       </>
     );
   }
