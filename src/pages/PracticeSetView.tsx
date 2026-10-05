@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase, type PracticeQuestionRPC, type PracticeSetRPC } from '@/lib/supabase';
+import { useAuth } from '@/context/AuthContext';
 import { ChevronLeft, AlertTriangle, Send } from 'lucide-react';
 import Logo from '@/components/Logo';
 import QuestionRail from '@/components/QuestionRail';
@@ -11,6 +12,7 @@ import './PracticeSetView.css';
 
 type Props = {
   setId: string;
+  resume?: boolean;
   lessonId?: string;
   lessonTitle?: string;
   onExit: () => void;
@@ -65,7 +67,8 @@ type IntroMeta = {
   questionCount: number;
 };
 
-export default function PracticeSetView({ setId, lessonId, lessonTitle, onExit, onHome, onComplete }: Props) {
+export default function PracticeSetView({ setId, resume = false, lessonId, lessonTitle, onExit, onHome, onComplete }: Props) {
+  const { session } = useAuth();
   const [questions, setQuestions] = useState<PracticeQuestionRPC[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
@@ -89,6 +92,7 @@ export default function PracticeSetView({ setId, lessonId, lessonTitle, onExit, 
   const autoSubmitTriggeredRef = useRef(false);
   const mountedRef = useRef(true);
   const startingRef = useRef(false);
+  const autoResumeRef = useRef(false);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -245,6 +249,12 @@ export default function PracticeSetView({ setId, lessonId, lessonTitle, onExit, 
     }
   }, [setId, minutesInput]);
 
+  useEffect(() => {
+    if (!resume || !introMeta || loading || started || error || autoResumeRef.current) return;
+    autoResumeRef.current = true;
+    void startAttempt();
+  }, [resume, introMeta, loading, started, error, startAttempt]);
+
   // Load questions once started
   useEffect(() => {
     if (!started) return;
@@ -389,11 +399,29 @@ export default function PracticeSetView({ setId, lessonId, lessonTitle, onExit, 
     }, 800);
   };
 
+  const leaveAttempt = async (navigate: () => void) => {
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    if (started && attemptIdRef.current && !submittedRef.current && Object.keys(answersRef.current).length > 0) {
+      try {
+        const { error: saveError } = await supabase.rpc('save_practice_progress', {
+          p_attempt_id: attemptIdRef.current,
+          p_answers: answersRef.current,
+        });
+        if (saveError) throw saveError;
+      } catch (saveError) {
+        console.error('Save before exit error:', saveError);
+        setSaveState('error');
+        return;
+      }
+    }
+    navigate();
+  };
+
   // Save before unload
   useEffect(() => {
     if (!started) return;
     const handleBeforeUnload = () => {
-      if (attemptIdRef.current && !submittedRef.current && Object.keys(answersRef.current).length > 0) {
+      if (session?.access_token && attemptIdRef.current && !submittedRef.current && Object.keys(answersRef.current).length > 0) {
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
         const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
         try {
@@ -402,7 +430,7 @@ export default function PracticeSetView({ setId, lessonId, lessonTitle, onExit, 
             headers: {
               'Content-Type': 'application/json',
               'apikey': supabaseKey,
-              'Authorization': `Bearer ${supabaseKey}`,
+              'Authorization': `Bearer ${session.access_token}`,
             },
             body: JSON.stringify({
               p_attempt_id: attemptIdRef.current,
@@ -416,8 +444,12 @@ export default function PracticeSetView({ setId, lessonId, lessonTitle, onExit, 
       }
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [started]);
+    window.addEventListener('pagehide', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pagehide', handleBeforeUnload);
+    };
+  }, [started, session?.access_token]);
 
   if (loading) return <Loading message="Se încarcă setul de grile..." />;
 
@@ -428,7 +460,7 @@ export default function PracticeSetView({ setId, lessonId, lessonTitle, onExit, 
           <AlertTriangle size={32} className="mx-auto mb-4 text-red-500" />
           <p className="text-stone-700 font-medium mb-2">A apărut o eroare</p>
           <p className="text-sm text-stone-500 mb-6">{error}</p>
-          <button onClick={onExit} className="btn-secondary">
+          <button onClick={() => void leaveAttempt(onExit)} className="btn-secondary">
             <ChevronLeft size={16} /> Înapoi
           </button>
         </div>
@@ -445,7 +477,7 @@ export default function PracticeSetView({ setId, lessonId, lessonTitle, onExit, 
             <div className="simulation-intro__brand">
               <Logo showText />
             </div>
-            <button onClick={onHome} className="simulation-intro__home" type="button" aria-label="Acasă">
+            <button onClick={() => void leaveAttempt(onHome)} className="simulation-intro__home" type="button" aria-label="Acasă">
               <img src="/Home.png" alt="" width={22} height={22} /><span>Acasă</span>
             </button>
           </div>
@@ -499,7 +531,7 @@ export default function PracticeSetView({ setId, lessonId, lessonTitle, onExit, 
               {minutesError && <p id="practice-time-error" className="simulation-intro__time-error" role="alert">{minutesError}</p>}
               <div className="simulation-intro__actions">
                 <button onClick={startAttempt} className="simulation-intro__start" type="button" disabled={startingRef.current}>Începe setul</button>
-                <button onClick={onExit} className="simulation-intro__later" type="button">Nu acum</button>
+                <button onClick={() => void leaveAttempt(onExit)} className="simulation-intro__later" type="button">Nu acum</button>
               </div>
             </section>
           </div>
@@ -514,11 +546,11 @@ export default function PracticeSetView({ setId, lessonId, lessonTitle, onExit, 
     <div className={`practice-exam${comfortMode ? ' practice-exam--dark' : ''}`}>
       <header className="practice-exam__header">
         <div className="practice-exam__header-inner">
-          <button className="practice-exam__brand" type="button" onClick={onHome} aria-label="Acasă — Biletul spre Medicină">
+          <button className="practice-exam__brand" type="button" onClick={() => void leaveAttempt(onHome)} aria-label="Acasă — Biletul spre Medicină">
             <Logo showText linked={false} />
           </button>
           <nav className="practice-exam__breadcrumb" aria-label="Locația curentă">
-            <button type="button" onClick={onExit}>Antrenament pe capitole</button>
+            <button type="button" onClick={() => void leaveAttempt(onExit)}>Antrenament pe capitole</button>
             <span aria-hidden="true">/</span>
             <strong>{introMeta ? practiceSetName(introMeta.lessonTitle, introMeta.position) : 'Set de grile'}</strong>
           </nav>
