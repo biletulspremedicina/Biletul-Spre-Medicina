@@ -1,12 +1,13 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase, type PracticeQuestionRPC, type PracticeSetRPC } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
-import { ChevronLeft, AlertTriangle, Send } from 'lucide-react';
+import { ChevronLeft, AlertTriangle, Bookmark, MessageCircle, Send } from 'lucide-react';
 import Logo from '@/components/Logo';
 import VisualComfortPicker from '@/components/VisualComfortPicker';
 import QuestionRail from '@/components/QuestionRail';
 import Loading from '@/components/Loading';
 import { useVisualComfort } from '@/hooks/useVisualComfort';
+import { useQuestionMarks } from '@/hooks/useQuestionMarks';
 import { practiceSetName } from '@/lib/materialDisplayNames';
 import './SimulationView.css';
 import './PracticeSetView.css';
@@ -98,6 +99,8 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
   const [showSeconds, setShowSeconds] = useState(true);
   const { comfortTheme, setComfortTheme } = useVisualComfort();
   const [activeQuestion, setActiveQuestion] = useState(0);
+  const [markAttemptId, setMarkAttemptId] = useState<string | null>(null);
+  const { markedIds, toggleMark } = useQuestionMarks(markAttemptId);
 
   const answersRef = useRef<Record<string, string>>({});
   const attemptIdRef = useRef<string | null>(null);
@@ -249,6 +252,7 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
           savePracticeDeadline(att.out_id, nextDeadline, nextTimerDuration);
         }
         attemptIdRef.current = att.out_id;
+        setMarkAttemptId(att.out_id);
         answersRef.current = att.out_answers || {};
         setAnswers(answersRef.current);
         submittedRef.current = false;
@@ -562,6 +566,7 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
   }
 
   const answeredCount = Object.keys(answers).length;
+  const activeQuestionId = questions[activeQuestion]?.out_id;
   const ringSeconds = timeLeft === null ? 0 : timeLeft >= 3600 || !showSeconds ? Math.ceil(timeLeft / 60) * 60 : timeLeft;
   const ringProgress = Math.min(100, Math.max(0, 100 * ringSeconds / (timerDuration || 1)));
 
@@ -584,7 +589,7 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
       </header>
 
       <div className="practice-exam__layout">
-        <QuestionRail questionIds={questions.map((question) => question.out_id)} answers={answers} activeIndex={activeQuestion} questionIdPrefix="practice-question-" />
+        <QuestionRail questionIds={questions.map((question) => question.out_id)} answers={answers} markedIds={markedIds} activeIndex={activeQuestion} questionIdPrefix="practice-question-" />
 
         <main className="practice-exam__questions" aria-label="Grilele setului">
           {questions.map((q, idx) => (
@@ -639,6 +644,16 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
                 >{formatPracticeTime(timeLeft, showSeconds)}</button>
               </div>
             )}
+            <div className="practice-exam__side-actions">
+              <button className="practice-exam__side-action practice-exam__side-action--help" type="button" onClick={() => window.dispatchEvent(new Event('bsm:open-support'))}>
+                <MessageCircle size={19} strokeWidth={1.8} aria-hidden="true" />
+                <span><strong>Ai întrebări?</strong><small>Suntem aici pentru tine.</small></span>
+              </button>
+              <button className="practice-exam__side-action" type="button" disabled={!activeQuestionId} aria-pressed={activeQuestionId ? markedIds.has(activeQuestionId) : false} onClick={() => { if (activeQuestionId) toggleMark(activeQuestionId); }}>
+                <Bookmark size={18} strokeWidth={1.8} aria-hidden="true" />
+                <span>{activeQuestionId && markedIds.has(activeQuestionId) ? 'Demarchează grila' : 'Marchează grila'}</span>
+              </button>
+            </div>
             <button className="practice-exam__submit" type="button" onClick={() => void submitAttempt()} disabled={submitting || questions.length === 0}>
               <span>{submitting ? 'Se trimite…' : 'Trimite răspunsurile'}</span>
               <Send size={17} strokeWidth={1.8} aria-hidden="true" />
