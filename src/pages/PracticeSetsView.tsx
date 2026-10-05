@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase, PREMIUM_ATTEMPT_LIMIT, type PracticeAttempt, type PracticeSetRPC, type Subscription } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import { ChevronLeft, ChevronDown } from 'lucide-react';
-import Logo from '@/components/Logo';
 import Loading from '@/components/Loading';
 import { practiceChapterImageFor } from '@/lib/practiceChapterImages';
 import { practiceSetName, shortPracticeChapterTitle, twoDigitNumber } from '@/lib/materialDisplayNames';
@@ -14,14 +13,12 @@ type Props = {
   onStartSet: (setId: string, resume?: boolean) => void;
   onViewResults: (setId: string, attemptId?: string) => void;
   onBack: () => void;
-  onHome: () => void;
   onBuySubscription: () => void;
   buyingSub: boolean;
-  embedded?: boolean;
 };
 
 export default function PracticeSetsView({
-  lessonId, lessonTitle, focusSetId, onStartSet, onViewResults, onBack, onHome, onBuySubscription, buyingSub, embedded = false,
+  lessonId, lessonTitle, focusSetId, onStartSet, onViewResults, onBack, onBuySubscription, buyingSub,
 }: Props) {
   const { profile } = useAuth();
   const [sets, setSets] = useState<PracticeSetRPC[]>([]);
@@ -80,46 +77,30 @@ export default function PracticeSetsView({
   }, [focusSetId, loading, sets]);
 
   const hasActiveSub = !!subscription;
-  const totalQuestions = sets.reduce((total, set) => total + set.out_question_count, 0);
   const completedSetCount = sets.filter((set) => attempts.some((attempt) => attempt.set_id === set.out_id && !!attempt.submitted_at)).length;
 
   return (
-    <div className={`practice-sets-page bg-stone-50 ${embedded ? 'practice-sets-page--embedded' : 'min-h-screen'}`}>
-      {!embedded && <header className="practice-sets-page__topbar sticky top-0 z-10 border-b border-stone-200 bg-white/90 backdrop-blur-sm">
-        <div className="flex w-full items-center justify-between gap-4 px-5 py-3 sm:px-7 lg:px-8">
-          <Logo showText />
-          <div className="flex items-center gap-2">
-            <button type="button" onClick={onBack} className="practice-sets-page__nav-button practice-sets-page__nav-button--back" aria-label="Înapoi la capitole">
-              <ChevronLeft size={20} aria-hidden="true" /><span>Înapoi</span>
-            </button>
-            <button type="button" onClick={onHome} className="practice-sets-page__nav-button practice-sets-page__nav-button--home" aria-label="Acasă">
-              <img src="/Home.png" alt="" width={22} height={22} /><span>Acasă</span>
-            </button>
-          </div>
-        </div>
-      </header>}
-
-      <main className={`practice-sets-page__content w-full ${embedded ? '' : 'px-3 py-5 sm:px-4 lg:px-5'}`}>
+    <div className="practice-sets-page practice-sets-page--embedded bg-stone-50">
+      <main className="practice-sets-page__content w-full">
         <section className="practice-sets-page__hero" aria-labelledby="practice-lesson-title">
           <img className="practice-sets-page__hero-photo" src={practiceChapterImageFor(lessonTitle, true)} alt="" />
           <div className="practice-sets-page__hero-veil" />
           <div className="practice-sets-page__hero-copy">
-            {!embedded && <p>Antrenament pe capitole</p>}
             <h1 id="practice-lesson-title">{lessonTitle}</h1>
-            {embedded && <button type="button" onClick={onBack} className="practice-sets-page__inline-back"><ChevronLeft size={17} aria-hidden="true" /> Toate capitolele</button>}
+            <button type="button" onClick={onBack} className="practice-sets-page__inline-back"><ChevronLeft size={17} aria-hidden="true" /> Toate capitolele</button>
           </div>
         </section>
 
         <div className="practice-sets-page__section-heading">
-          <h2>{embedded ? 'Materiale relevante, riguros selecționate.' : 'Seturi disponibile'}</h2>
-          {!loading && (embedded ? (
+          <h2>Materiale relevante, riguros selecționate.</h2>
+          {!loading && (
             <div className="practice-sets-page__progress" aria-label={`${completedSetCount} din ${sets.length} seturi rezolvate`}>
               <span>{completedSetCount} din {sets.length} rezolvate</span>
               <div className="practice-sets-page__progress-track" role="progressbar" aria-valuenow={completedSetCount} aria-valuemin={0} aria-valuemax={sets.length || 1}>
                 <div style={{ width: `${sets.length ? (completedSetCount / sets.length) * 100 : 0}%` }} />
               </div>
             </div>
-          ) : <span>{sets.length} {sets.length === 1 ? 'set' : 'seturi'} · {totalQuestions} {totalQuestions === 1 ? 'grilă' : 'grile'}</span>)}
+          )}
         </div>
 
         {loading ? (
