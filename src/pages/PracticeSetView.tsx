@@ -55,8 +55,8 @@ function clearPracticeDeadline(attemptId: string) {
 function formatPracticeTime(seconds: number, showSeconds = true) {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
+  if (hours > 0) return `${hours}:${String(minutes).padStart(2, '0')}`;
   const remainingSeconds = showSeconds ? seconds % 60 : 0;
-  if (hours > 0) return `${hours}:${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
   return `${minutes}:${String(remainingSeconds).padStart(2, '0')}`;
 }
 
@@ -560,8 +560,9 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
               <button
                 type="button"
                 className={`practice-exam__header-timer${timeLeft < 300 ? ' practice-exam__header-timer--urgent' : ''}`}
-                aria-pressed={!showSeconds}
-                aria-label={`Timp rămas: ${formatPracticeTime(timeLeft, showSeconds)}. ${showSeconds ? 'Ascunde secundele' : 'Afișează secundele'}`}
+                disabled={timeLeft >= 3600}
+                aria-pressed={timeLeft < 3600 ? !showSeconds : undefined}
+                aria-label={`Timp rămas: ${formatPracticeTime(timeLeft, showSeconds)}${timeLeft < 3600 ? `. ${showSeconds ? 'Ascunde secundele' : 'Afișează secundele'}` : ''}`}
                 onClick={() => setShowSeconds((current) => !current)}
               >{formatPracticeTime(timeLeft, showSeconds)}</button>
             )}
