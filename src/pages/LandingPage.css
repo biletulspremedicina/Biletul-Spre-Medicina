@@ -13,13 +13,13 @@
 .landing-modern__paint {
   position: absolute;
   z-index: 0;
-  top: -17%;
+  top: -10%;
   left: -6%;
   display: block;
   width: 112%;
-  height: 137%;
+  height: 112%;
   pointer-events: none;
-  transform: rotate(2.5deg);
+  transform: rotate(8.5deg);
   transform-origin: 50% 50%;
   clip-path: inset(0 100% 0 0);
   will-change: clip-path;
