@@ -20,6 +20,7 @@
   display: block;
   width: 112%;
   height: 112%;
+  opacity: 0.85; 
   pointer-events: none;
   transform: rotate(2.5deg);
   transform-origin: 50% 50%;
