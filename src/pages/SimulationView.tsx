@@ -489,6 +489,8 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
 
   const answeredCount = Object.keys(answers).length;
   const categoryName = simulation.student_section === 'umfcd' ? 'Examene UMFCD' : 'Simulări biologie';
+  const ringSeconds = timeLeft >= 3600 || !showSeconds ? Math.ceil(timeLeft / 60) * 60 : timeLeft;
+  const ringProgress = Math.min(100, Math.max(0, 100 * ringSeconds / Math.max(1, simulation.duration_minutes * 60)));
 
   return (
     <div className={`practice-exam${comfortTheme === 'light' ? '' : ` practice-exam--${comfortTheme}`}`}>
@@ -503,14 +505,6 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
             <strong>{displayName}</strong>
           </nav>
           <div className="practice-exam__header-tools">
-            <button
-              type="button"
-              className={`practice-exam__header-timer${timeLeft < 300 ? ' practice-exam__header-timer--urgent' : ''}`}
-              disabled={timeLeft >= 3600}
-              aria-pressed={timeLeft < 3600 ? !showSeconds : undefined}
-              aria-label={`Timp rămas: ${formatTime(timeLeft, showSeconds)}${timeLeft < 3600 ? `. ${showSeconds ? 'Ascunde secundele' : 'Afișează secundele'}` : ''}`}
-              onClick={() => setShowSeconds((current) => !current)}
-            >{formatTime(timeLeft, showSeconds)}</button>
             <VisualComfortPicker value={comfortTheme} onChange={setComfortTheme} />
           </div>
         </div>
@@ -556,6 +550,20 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
             <div className="practice-exam__progress-track" role="progressbar" aria-valuenow={answeredCount} aria-valuemin={0} aria-valuemax={questions.length} aria-label="Grile completate">
               <span style={{ width: `${questions.length ? (answeredCount / questions.length) * 100 : 0}%` }} />
             </div>
+            <div className={`practice-exam__timer-ring${timeLeft < 300 ? ' practice-exam__timer-ring--urgent' : ''}`}>
+              <svg viewBox="0 0 240 240" aria-hidden="true" focusable="false">
+                <circle className="practice-exam__timer-ring-track" cx="120" cy="120" r="105" />
+                <circle className="practice-exam__timer-ring-accent" cx="120" cy="120" r="105" pathLength="100" strokeDasharray={`${ringProgress} 100`} />
+              </svg>
+              <button
+                type="button"
+                className="practice-exam__timer-value"
+                disabled={timeLeft >= 3600}
+                aria-pressed={timeLeft < 3600 ? !showSeconds : undefined}
+                aria-label={`Timp rămas: ${formatTime(timeLeft, showSeconds)}${timeLeft < 3600 ? `. ${showSeconds ? 'Ascunde secundele' : 'Afișează secundele'}` : ''}`}
+                onClick={() => setShowSeconds((current) => !current)}
+              >{formatTime(timeLeft, showSeconds)}</button>
+            </div>
             <button className="practice-exam__submit" type="button" onClick={() => void submitAttempt(false)} disabled={submitting || questions.length === 0}>
               <span>{submitting ? 'Se trimite…' : 'Trimite răspunsurile'}</span>
               <Send size={17} strokeWidth={1.8} aria-hidden="true" />
@@ -570,7 +578,7 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
 function formatTime(seconds: number, showSeconds = true) {
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
-  if (h > 0) return `${h}:${m.toString().padStart(2, '0')}`;
+  if (h > 0) return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
   const s = showSeconds ? seconds % 60 : 0;
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
