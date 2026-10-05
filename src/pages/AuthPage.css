@@ -40,6 +40,7 @@
 
 .auth-page__back {
   position: absolute;
+  z-index: 2;
   top: 28px;
   left: clamp(24px, 4vw, 72px);
   display: inline-flex;
@@ -221,7 +222,9 @@
 
 .auth-card__footer button { padding: 0; border: 0; background: transparent; color: #236a4e; font-size: inherit; font-weight: 750; }
 
-.auth-page--signup { align-items: start; padding-top: 0; }
+.auth-page--signup { align-items: start; padding-top: 0; padding-bottom: 0; }
+.auth-page--signup .auth-card__intro { margin-top: 34px; }
+.auth-page--signup .auth-card__footer { margin-top: auto; }
 
 .auth-page :is(button, input):focus-visible { outline: 3px solid rgba(42, 107, 78, .45); outline-offset: 3px; }
 
@@ -233,7 +236,7 @@
   .auth-page--signup .auth-form__submit { min-height: 48px; margin-top: 4px; }
   .auth-page--signup .auth-card__social { margin-top: 18px; }
   .auth-page--signup .auth-card__social-button { min-height: 52px; }
-  .auth-page--signup .auth-card__footer { margin-top: 18px; padding-top: 14px; }
+  .auth-page--signup .auth-card__footer { margin-top: auto; padding-top: 14px; }
 }
 
 @media (max-height: 730px) {
@@ -241,12 +244,12 @@
   .auth-page--signup .auth-card__intro { margin: 16px 0; }
   .auth-page--signup .auth-form { gap: 11px; }
   .auth-page--signup .auth-card__social { margin-top: 16px; }
-  .auth-page--signup .auth-card__footer { margin-top: 16px; }
+  .auth-page--signup .auth-card__footer { margin-top: auto; }
 }
 
 @media (max-width: 600px) {
   .auth-page { padding: 54px 15px 14px; }
-  .auth-page--signup { padding-top: 0; }
+  .auth-page--signup { padding-top: 0; padding-bottom: 0; }
   .auth-page::before { top: -180px; left: -230px; width: 480px; height: 480px; }
   .auth-page::after { right: -240px; bottom: -220px; width: 490px; height: 490px; }
   .auth-page__back { top: 17px; left: 20px; font-size: 12px; }
@@ -260,7 +263,7 @@
 
 @media (max-height: 700px) {
   .auth-page { padding-top: 48px; padding-bottom: 10px; }
-  .auth-page--signup { padding-top: 0; }
+  .auth-page--signup { padding-top: 0; padding-bottom: 0; }
   .auth-page__back { top: 11px; }
   .auth-card { padding: 18px; }
   .auth-card__brand .brand-lockup img { width: 56px; height: 38px; }
@@ -287,12 +290,12 @@
   .auth-page--signup .auth-form__submit { min-height: 44px; margin-top: 4px; }
   .auth-page--signup .auth-card__social { margin-top: 12px; }
   .auth-page--signup .auth-card__social-button { min-height: 48px; }
-  .auth-page--signup .auth-card__footer { margin-top: 12px; padding-top: 10px; }
+  .auth-page--signup .auth-card__footer { margin-top: auto; padding-top: 10px; }
 }
 
 @media (max-height: 660px) {
   .auth-page { padding-top: 40px; padding-bottom: 4px; }
-  .auth-page--signup { padding-top: 0; }
+  .auth-page--signup { padding-top: 0; padding-bottom: 0; }
   .auth-card { padding: 14px; }
   .auth-card__brand .brand-lockup img { width: 48px; height: 32px; }
   .auth-card__brand .brand-lockup > span { font-size: 12px; }
@@ -316,8 +319,26 @@
   .auth-page--signup .auth-form__submit { min-height: 40px; margin-top: 2px; }
   .auth-page--signup .auth-card__social { margin-top: 8px; }
   .auth-page--signup .auth-card__social-button { min-height: 40px; }
-  .auth-page--signup .auth-card__footer { margin-top: 8px; padding-top: 8px; }
+  .auth-page--signup .auth-card__footer { margin-top: auto; padding-top: 8px; }
   .auth-page--signup .auth-form__error { padding: 6px 8px; font-size: 11px; line-height: 1.2; }
+}
+
+/* Panoul de creare a contului atinge exact marginile de sus și de jos. */
+.auth-page--signup .auth-card {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  display: flex;
+  width: min(512px, calc(100vw - 48px));
+  height: auto;
+  flex-direction: column;
+  border-radius: 24px 24px 0 0;
+  transform: translateX(-50%);
+}
+
+@media (max-width: 600px) {
+  .auth-page--signup .auth-card { width: calc(100vw - 30px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
