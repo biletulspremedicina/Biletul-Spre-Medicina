@@ -1,9 +1,9 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase, type Simulation, type ExamQuestion, type Attempt } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
-import { AlertTriangle, Bookmark, ChevronLeft, MessageCircle, Send } from 'lucide-react';
+import { AlertTriangle, Bookmark, ChevronLeft, Send } from 'lucide-react';
 import Logo from '@/components/Logo';
-import VisualComfortPicker from '@/components/VisualComfortPicker';
+import ExamHeaderTools from '@/components/ExamHeaderTools';
 import QuestionRail from '@/components/QuestionRail';
 import Loading from '@/components/Loading';
 import { useVisualComfort } from '@/hooks/useVisualComfort';
@@ -608,9 +608,7 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
             <span aria-hidden="true">/</span>
             <strong>{displayName}</strong>
           </nav>
-          <div className="practice-exam__header-tools">
-            <VisualComfortPicker value={comfortTheme} onChange={setComfortTheme} />
-          </div>
+          <ExamHeaderTools comfortTheme={comfortTheme} onComfortChange={setComfortTheme} onHome={() => void handleExit()} />
         </div>
       </header>
 
@@ -669,10 +667,6 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
               >{formatTime(timeLeft, showSeconds)}</button>
             </div>
             <div className="practice-exam__side-actions">
-              <button className="practice-exam__side-action practice-exam__side-action--help" type="button" onClick={() => window.dispatchEvent(new Event('bsm:open-support'))}>
-                <MessageCircle size={19} strokeWidth={1.8} aria-hidden="true" />
-                <span><strong>Ai întrebări?</strong><small>Suntem aici pentru tine.</small></span>
-              </button>
               <button className="practice-exam__side-action" type="button" disabled={!activeQuestionId} aria-pressed={activeQuestionId ? markedIds.has(activeQuestionId) : false} onClick={() => { if (activeQuestionId) toggleMark(activeQuestionId); }}>
                 <Bookmark size={18} strokeWidth={1.8} aria-hidden="true" />
                 <span>{activeQuestionId && markedIds.has(activeQuestionId) ? 'Demarchează grila' : 'Marchează grila'}</span>
