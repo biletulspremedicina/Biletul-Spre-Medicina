@@ -589,12 +589,12 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
           <section className="simulation-intro__editorial" aria-labelledby="practice-intro-title">
             <p className="simulation-intro__eyebrow">ANTRENAMENT PE CAPITOLE</p>
             <h1 id="practice-intro-title">Înainte să începi</h1>
-            <p className="simulation-intro__lead">Lucrează setul în ritmul tău.</p>
+            <p className="simulation-intro__lead">Rezervă-ți timpul și intră în ritmul de examen.</p>
             <div className="simulation-intro__rule" />
             <h2>De știut înainte de start</h2>
             <ol className="simulation-intro__steps">
               <li><span className="simulation-intro__step-number">1</span><span>Poți introduce timpul-limită pentru acest set.<strong className="simulation-intro__step-note">( Câmp gol = Fără limită )</strong></span></li>
-              <li><span className="simulation-intro__step-number">2</span><span>A intervenit ceva? Cronometrul se oprește cât ești plecat.</span></li>
+              <li><span className="simulation-intro__step-number">2</span><span>Poți reveni la set; cronometrul se oprește cât ești plecat.</span></li>
               <li><span className="simulation-intro__step-number">3</span><span>La expirare, răspunsurile <strong>se trimit automat.</strong></span></li>
             </ol>
           </section>
