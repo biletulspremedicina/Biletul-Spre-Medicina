@@ -36,6 +36,8 @@ function AppContent() {
   const [focusedPracticeSetId, setFocusedPracticeSetId] = useState<string | null>(null);
   const [activePracticeSetId, setActivePracticeSetId] = useState<string | null>(null);
   const [activePracticeAttemptId, setActivePracticeAttemptId] = useState<string | null>(null);
+  const [resumePracticeSet, setResumePracticeSet] = useState(false);
+  const [resumeSimulation, setResumeSimulation] = useState(false);
   const [activeChemistryLessonId, setActiveChemistryLessonId] = useState<string | null>(null);
   const [practiceBuyingSub, setPracticeBuyingSub] = useState(false);
   const [practiceSubNonce, setPracticeSubNonce] = useState(0);
@@ -62,9 +64,10 @@ function AppContent() {
   const handleSignIn = () => setRoute('signin');
   const handleBackToLanding = () => setRoute('landing');
 
-  const handleStartSimulation = (simId: string) => {
+  const handleStartSimulation = (simId: string, resume = false) => {
     setActiveSimulationId(simId);
     setActiveAttemptId(null);
+    setResumeSimulation(resume);
     setRoute('simulation');
   };
 
@@ -87,9 +90,10 @@ function AppContent() {
     setRoute('student-dashboard');
   };
 
-  const handleStartPracticeSet = (setId: string) => {
+  const handleStartPracticeSet = (setId: string, resume = false) => {
     setActivePracticeSetId(setId);
     setActivePracticeAttemptId(null);
+    setResumePracticeSet(resume);
     setRoute('practice-solve');
   };
 
@@ -169,6 +173,7 @@ function AppContent() {
       <PracticeSetView
         key={activePracticeSetId}
         setId={activePracticeSetId}
+        resume={resumePracticeSet}
         lessonId={activePracticeLessonId || undefined}
         lessonTitle={activePracticeLessonTitle || undefined}
         onExit={() => { setStudentInitialTab('practice'); setRoute('student-dashboard'); }}
@@ -198,6 +203,7 @@ function AppContent() {
         <SimulationView
           key={activeSimulationId}
           simulationId={activeSimulationId}
+          resume={resumeSimulation}
           onExit={() => { setRoute('student-dashboard'); setActiveSimulationId(null); }}
           onComplete={handleSimulationComplete}
         />
