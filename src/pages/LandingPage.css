@@ -8,6 +8,10 @@
 .landing-modern__text {
   position: relative;
   z-index: 1;
+  display: block;
+  color: #fafaf9;
+  clip-path: inset(0 100% 0 0);
+  animation: landing-modern-brush .72s cubic-bezier(.25, .72, .22, 1) 1.06s both;
 }
 
 .landing-modern__paint {
@@ -39,7 +43,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .landing-modern__paint {
+  .landing-modern__paint,
+  .landing-modern__text {
     animation: none;
     clip-path: none;
   }
