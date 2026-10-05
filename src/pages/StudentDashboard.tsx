@@ -44,13 +44,13 @@
   type PageId = 'home' | 'all' | 'practice' | 'umfcd' | 'chemistry' | 'review' | 'settings';
 
   type Props = {
-    onStartSimulation: (simulationId: string) => void;
+    onStartSimulation: (simulationId: string, resume?: boolean) => void;
     onViewResults: (simulationId: string, attemptId?: string) => void;
     onOpenPracticeLesson: (lessonId: string, lessonTitle: string, focusSetId?: string) => void;
     activePracticeLesson: { id: string; title: string } | null;
     focusedPracticeSetId?: string;
     onBackToPracticeLessons: () => void;
-    onStartPracticeSet: (setId: string) => void;
+    onStartPracticeSet: (setId: string, resume?: boolean) => void;
     onViewPracticeResults: (setId: string, attemptId?: string) => void;
     onBuyPracticeSubscription: () => void;
     practiceBuyingSub: boolean;
@@ -1012,7 +1012,7 @@
                       <ArchiveSimCard key={sim.id} sim={sim} index={index} editorial focused={sim.id === focusedSimulationId} hasActiveSub={hasActiveSub}
                         initialHistoryOpen={openSimulationHistories.current[sim.id] ?? false}
                         onHistoryOpenChange={(open) => { openSimulationHistories.current[sim.id] = open; }}
-                        onStart={() => onStartSimulation(sim.id)}
+                        onStart={() => onStartSimulation(sim.id, sim.hasInProgress)}
                         onViewResults={(attemptId) => onViewResults(sim.id, attemptId)}
                         onBuySubscription={handleBuySubscription} buyingSub={buyingSub}
                         onReleaseReached={() => void loadDashboard()} />
@@ -1572,7 +1572,7 @@
                 )}
                 {paidLimitReached ? null : isFree || hasActiveSub ? (
                   <button type="button" onClick={onStart} className="simulation-library__biology-primary">
-                    {sim.hasInProgress ? `Continuă ${cardTitle === 'Examen' ? 'examenul' : 'simularea'}` : `Rezolvă ${cardTitle === 'Examen' ? 'examenul' : 'simularea'}`}
+                    {sim.hasInProgress ? 'Continuă rezolvarea' : `Rezolvă ${cardTitle === 'Examen' ? 'examenul' : 'simularea'}`}
                   </button>
                 ) : (
                   <button type="button" disabled
@@ -1608,12 +1608,12 @@
           <h3 className="line-clamp-2 min-w-0 flex-1 font-display text-base font-semibold leading-snug text-stone-900">
             {isUmfcd ? umfcdSimulationName(sim) : biologySimulationName(sim.display_order ?? index + 1)}
           </h3>
-          {hasSubmitted ? (
+          {sim.hasInProgress ? (
+            <span className="badge shrink-0 bg-amber-100 text-amber-700">În curs</span>
+          ) : hasSubmitted ? (
             <span className="badge shrink-0 bg-brand-100 text-brand-700">
               <CheckCircle2 size={12} /> Susținut{isFree ? ` (${submitted.length}x)` : ''}
             </span>
-          ) : editorial && sim.hasInProgress ? (
-            <span className="badge shrink-0 bg-amber-100 text-amber-700">În curs</span>
           ) : editorial && isScheduled ? (
             <span className="badge shrink-0 bg-blue-50 text-blue-700">Programată</span>
           ) : editorial && (isFree || hasActiveSub) ? (
@@ -1649,7 +1649,7 @@
           ) : isFree ? (
             <>
               <button type="button" onClick={onStart} className="btn-primary w-full">
-                {sim.hasInProgress ? <><PlayCircle size={16} /> {isUmfcd ? 'Continuă examenul' : 'Continuă simularea'}</>
+                {sim.hasInProgress ? <><PlayCircle size={16} /> Continuă rezolvarea</>
                   : hasSubmitted ? <><RotateCcw size={16} /> Rezolvă din nou</>
                   : <><PlayCircle size={16} /> {isUmfcd ? 'Rezolvă examenul' : 'Rezolvă simularea'}</>}
               </button>
@@ -1679,7 +1679,7 @@
             <>
               <button type="button" onClick={onStart} className="btn-primary w-full">
                 <PlayCircle size={16} /> {sim.hasInProgress
-                  ? (isUmfcd ? 'Continuă examenul' : 'Continuă simularea')
+                  ? 'Continuă rezolvarea'
                   : (isUmfcd ? 'Rezolvă examenul' : 'Rezolvă simularea')}
               </button>
               {hasSubmitted && (
