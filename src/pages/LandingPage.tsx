@@ -41,7 +41,8 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
             Standardul{' '}
             <span className="landing-modern">
               <span className="landing-modern__paint" aria-hidden="true">
-                <svg viewBox="75 10 590 215" preserveAspectRatio="none" focusable="false">
+                <span className="landing-modern__art">
+                  <svg viewBox="75 10 590 215" preserveAspectRatio="none" focusable="false">
                   <defs>
                     <filter id="landing-brush-alpha" colorInterpolationFilters="sRGB">
                       <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  -.2126 -.7152 -.0722 0 1" />
@@ -53,8 +54,9 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
                       <image href="/modern-brush-reference.png" x="0" y="0" width="721" height="237" filter="url(#landing-brush-alpha)" />
                     </mask>
                   </defs>
-                  <rect x="0" y="0" width="721" height="237" fill="#27644a" mask="url(#landing-brush-photo-mask)" />
-                </svg>
+                  <rect x="0" y="0" width="721" height="237" fill="#78b193" mask="url(#landing-brush-photo-mask)" />
+                  </svg>
+                </span>
               </span>
               <span className="landing-modern__text">modern</span>
             </span>{' '}în pregătirea pentru{' '}
