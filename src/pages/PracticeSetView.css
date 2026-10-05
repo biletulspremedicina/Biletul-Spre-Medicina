@@ -149,11 +149,11 @@
   background: transparent;
   color: #174a3c;
   cursor: pointer;
-  font-family: Inter, "Plus Jakarta Sans", sans-serif;
+  font-family: Georgia, Cambria, "Times New Roman", serif;
   font-size: clamp(32px, 2.6vw, 40px);
   font-variant-numeric: tabular-nums;
   font-weight: 600;
-  letter-spacing: -.015em;
+  letter-spacing: -.025em;
   line-height: 1;
   white-space: nowrap;
 }
