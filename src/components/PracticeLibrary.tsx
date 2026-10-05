@@ -10,7 +10,7 @@ type Props = {
   selectedLesson: { id: string; title: string } | null;
   focusSetId?: string;
   onBack: () => void;
-  onStartSet: (setId: string) => void;
+  onStartSet: (setId: string, resume?: boolean) => void;
   onViewResults: (setId: string, attemptId?: string) => void;
   onBuySubscription: () => void;
   buyingSub: boolean;
