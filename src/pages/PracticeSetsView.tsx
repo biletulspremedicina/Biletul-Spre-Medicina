@@ -1,807 +1,332 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { supabase, type PracticeQuestionRPC, type PracticeSetRPC } from '@/lib/supabase';
+import { supabase, PREMIUM_ATTEMPT_LIMIT, type PracticeAttempt, type PracticeSetRPC, type Subscription } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
-import { ChevronLeft, AlertTriangle, Bookmark, Send } from 'lucide-react';
+import { ChevronLeft, ChevronDown } from 'lucide-react';
 import Logo from '@/components/Logo';
-import ExamHeaderTools from '@/components/ExamHeaderTools';
-import QuestionRail from '@/components/QuestionRail';
 import Loading from '@/components/Loading';
-import { useVisualComfort } from '@/hooks/useVisualComfort';
-import { useQuestionMarks } from '@/hooks/useQuestionMarks';
-import { practiceSetName } from '@/lib/materialDisplayNames';
-import './SimulationView.css';
-import './PracticeSetView.css';
+import { practiceChapterImageFor } from '@/lib/practiceChapterImages';
+import { practiceSetName, shortPracticeChapterTitle, twoDigitNumber } from '@/lib/materialDisplayNames';
 
 type Props = {
-  setId: string;
-  resume?: boolean;
-  lessonId?: string;
-  lessonTitle?: string;
-  onExit: () => void;
-  onHome: () => void;
-  onComplete: (attemptId: string) => void;
-};
-
-const LETTERS = ['A', 'B', 'C', 'D', 'E'] as const;
-const MAX_TIME_LIMIT_MINUTES = 1440;
-const practiceTimerKey = (attemptId: string) => `bsm-practice-timer:${attemptId}`;
-const practiceTimerDurationKey = (attemptId: string) => `bsm-practice-timer-duration:${attemptId}`;
-const practiceTimerRemainingKey = (attemptId: string) => `bsm-practice-timer-remaining:${attemptId}`;
-
-function readPracticeDeadline(attemptId: string): number | null {
-  try {
-    const saved = window.localStorage.getItem(practiceTimerKey(attemptId));
-    if (!saved) return null;
-    const deadline = Number(saved);
-    return Number.isFinite(deadline) && deadline > 0 ? deadline : null;
-  } catch {
-    return null;
-  }
-}
-
-function readPracticeTimerDuration(attemptId: string): number | null {
-  try {
-    const duration = Number(window.localStorage.getItem(practiceTimerDurationKey(attemptId)));
-    return Number.isFinite(duration) && duration > 0 ? duration : null;
-  } catch {
-    return null;
-  }
-}
-
-function readPracticeRemaining(attemptId: string): number | null {
-  try {
-    const saved = window.localStorage.getItem(practiceTimerRemainingKey(attemptId));
-    if (saved === null) return null;
-    const remaining = Number(saved);
-    return Number.isFinite(remaining) && remaining >= 0 ? remaining : null;
-  } catch {
-    return null;
-  }
-}
-
-function savePracticeRemaining(attemptId: string, remaining: number) {
-  try {
-    window.localStorage.setItem(practiceTimerRemainingKey(attemptId), String(remaining));
-  } catch {
-    // Best effort; the current session still keeps the timer in memory.
-  }
-}
-
-function savePracticeDeadline(attemptId: string, deadline: number, duration: number) {
-  try {
-    window.localStorage.setItem(practiceTimerKey(attemptId), String(deadline));
-    window.localStorage.setItem(practiceTimerDurationKey(attemptId), String(duration));
-  } catch {
-    // The timer still works for the current session if storage is unavailable.
-  }
-}
-
-function clearPracticeDeadline(attemptId: string) {
-  try {
-    window.localStorage.removeItem(practiceTimerKey(attemptId));
-    window.localStorage.removeItem(practiceTimerDurationKey(attemptId));
-    window.localStorage.removeItem(practiceTimerRemainingKey(attemptId));
-  } catch {
-    // Best effort.
-  }
-}
-
-function formatPracticeTime(seconds: number, showSeconds = true) {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  if (hours > 0) return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-  const remainingSeconds = showSeconds ? seconds % 60 : 0;
-  return `${minutes}:${String(remainingSeconds).padStart(2, '0')}`;
-}
-
-type SaveState = 'idle' | 'saving' | 'saved' | 'error';
-
-type IntroMeta = {
+  lessonId: string;
   lessonTitle: string;
-  position: number;
-  questionCount: number;
+  focusSetId?: string;
+  onStartSet: (setId: string, resume?: boolean) => void;
+  onViewResults: (setId: string, attemptId?: string) => void;
+  onBack: () => void;
+  onHome: () => void;
+  onBuySubscription: () => void;
+  buyingSub: boolean;
+  embedded?: boolean;
 };
 
-export default function PracticeSetView({ setId, resume = false, lessonId, lessonTitle, onExit, onHome, onComplete }: Props) {
-  const { session } = useAuth();
-  const [questions, setQuestions] = useState<PracticeQuestionRPC[]>([]);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+export default function PracticeSetsView({
+  lessonId, lessonTitle, focusSetId, onStartSet, onViewResults, onBack, onHome, onBuySubscription, buyingSub, embedded = false,
+}: Props) {
+  const { profile } = useAuth();
+  const [sets, setSets] = useState<PracticeSetRPC[]>([]);
+  const [attempts, setAttempts] = useState<PracticeAttempt[]>([]);
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [saveState, setSaveState] = useState<SaveState>('idle');
-  const [started, setStarted] = useState(false);
-  const [introMeta, setIntroMeta] = useState<IntroMeta | null>(null);
-  const [minutesInput, setMinutesInput] = useState('');
-  const [minutesError, setMinutesError] = useState<string | null>(null);
-  const [deadline, setDeadline] = useState<number | null>(null);
-  const [timeLeft, setTimeLeft] = useState<number | null>(null);
-  const [timerDuration, setTimerDuration] = useState<number | null>(null);
-  const [showSeconds, setShowSeconds] = useState(true);
-  const { comfortTheme, setComfortTheme } = useVisualComfort();
-  const [activeQuestion, setActiveQuestion] = useState(0);
-  const [markAttemptId, setMarkAttemptId] = useState<string | null>(null);
-  const { markedIds, toggleMark } = useQuestionMarks(markAttemptId);
+  const openHistories = useRef<Record<string, boolean>>({});
 
-  const deadlineRef = useRef<number | null>(null);
-  const timeLeftRef = useRef<number | null>(null);
-  const timerPausedRef = useRef(false);
-
-  const answersRef = useRef<Record<string, string>>({});
-  const attemptIdRef = useRef<string | null>(null);
-  const submittedRef = useRef(false);
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const autoSubmitTriggeredRef = useRef(false);
-  const mountedRef = useRef(true);
-  const startingRef = useRef(false);
-  const autoResumeRef = useRef(false);
-
-  useEffect(() => {
-    mountedRef.current = true;
-    return () => {
-      mountedRef.current = false;
-      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    };
-  }, []);
-
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      let resolvedLessonId = lessonId;
-      if (!resolvedLessonId) {
-        const { data: set, error: setLookupError } = await supabase
-          .from('practice_sets')
-          .select('lesson_id')
-          .eq('id', setId)
-          .maybeSingle();
-        if (!active) return;
-        if (setLookupError || !set) {
-          if (setLookupError) console.error('practice_sets lookup error:', setLookupError);
-          setError('Nu s-au putut încărca datele setului. Întoarce-te la capitol și deschide setul din nou.');
-          setLoading(false);
-          return;
-        }
-        resolvedLessonId = set.lesson_id;
-      }
-
-      const setsResult = await supabase.rpc('get_practice_sets', { p_lesson_id: resolvedLessonId });
-      if (!active) return;
-      const selectedSet = ((setsResult.data || []) as PracticeSetRPC[])
-        .find((item) => item.out_id === setId);
-      if (setsResult.error || !selectedSet) {
-        if (setsResult.error) console.error('get_practice_sets error:', setsResult.error);
-        setError('Setul nu mai este disponibil în acest capitol. Reîncarcă lista și încearcă din nou.');
-        setLoading(false);
-        return;
-      }
-      let resolvedLessonTitle = lessonTitle;
-      if (!resolvedLessonTitle) {
-        const { data: lesson, error: lessonError } = await supabase
-          .from('practice_lessons')
-          .select('title')
-          .eq('id', resolvedLessonId)
-          .maybeSingle();
-        if (!active) return;
-        if (lessonError) console.error('practice_lessons lookup error:', lessonError);
-        resolvedLessonTitle = lesson?.title || 'Capitol';
-      }
-      setIntroMeta({
-        lessonTitle: resolvedLessonTitle || 'Capitol',
-        position: selectedSet.out_position + 1,
-        questionCount: selectedSet.out_question_count,
-      });
-      setLoading(false);
-    })();
-    return () => { active = false; };
-  }, [setId, lessonId, lessonTitle]);
-
-  // Start or resume attempt
-  const startAttempt = useCallback(async () => {
-    if (startingRef.current) return;
-    const selectedMinutes = minutesInput.trim() === '' ? null : Number(minutesInput);
-    if (selectedMinutes !== null && (
-      !Number.isInteger(selectedMinutes) || selectedMinutes < 1 || selectedMinutes > MAX_TIME_LIMIT_MINUTES
-    )) {
-      setMinutesError(`Introdu un număr întreg între 1 și ${MAX_TIME_LIMIT_MINUTES} sau lasă câmpul gol.`);
-      return;
-    }
-    startingRef.current = true;
-    setMinutesError(null);
-    setError(null);
+  const load = useCallback(async () => {
+    if (!profile) return;
     setLoading(true);
-    let didStart = false;
-    try {
-      for (let pass = 0; pass < 2; pass += 1) {
-        const { data, error: startError } = await supabase.rpc('start_practice_attempt', {
-          p_set_id: setId,
-        });
-        if (!mountedRef.current) return;
-        if (startError) {
-          console.error('start_practice_attempt error:', startError);
-          const msg = startError.message || '';
-          if (msg.includes('Abonament necesar')) {
-            setError('Ai nevoie de un abonament activ pentru a accesa acest set.');
-          } else if (msg.includes('Limita de 3 încercări')) {
-            setError('Ai folosit toate cele 3 încercări pentru acest set.');
-          } else if (msg.includes('nu este disponibil')) {
-            setError('Acest set nu este disponibil momentan.');
-          } else {
-            setError('Nu s-a putut porni setul. Încearcă din nou.');
-          }
-          return;
-        }
-        if (!data || data.length === 0) {
-          setError('Nu s-a putut crea încercarea.');
-          return;
-        }
 
-        const att = data[0] as {
-          out_id: string;
-          out_set_id: string;
-          out_answers: Record<string, string>;
-          out_started_at: string;
-          out_submitted_at: string | null;
-          out_is_new: boolean;
-        };
-        if (att.out_set_id !== setId) {
-          setError('Încercarea primită nu aparține acestui set. Reîncarcă pagina și încearcă din nou.');
-          return;
-        }
-        if (att.out_submitted_at) {
-          clearPracticeDeadline(att.out_id);
-          setError('S-a primit o încercare deja încheiată. Reîncarcă pagina și încearcă din nou.');
-          return;
-        }
-
-        const savedDeadline = att.out_is_new ? null : readPracticeDeadline(att.out_id);
-        const savedRemaining = att.out_is_new ? null : readPracticeRemaining(att.out_id);
-        if (savedRemaining === null && savedDeadline !== null && savedDeadline <= Date.now()) {
-          const { error: expireError } = await supabase.rpc('submit_practice_attempt', {
-            p_set_id: setId,
-            p_answers: att.out_answers || {},
-          });
-          if (!mountedRef.current) return;
-          if (expireError) {
-            console.error('Expired practice attempt could not be finalized:', expireError);
-            setError('Încercarea anterioară a expirat, dar nu a putut fi încheiată. Încearcă din nou.');
-            return;
-          }
-          clearPracticeDeadline(att.out_id);
-          continue;
-        }
-
-        const nextDeadline = savedRemaining !== null
-          ? Date.now() + savedRemaining * 1000
-          : savedDeadline ?? (selectedMinutes === null ? null : Date.now() + selectedMinutes * 60_000);
-        const initialTimeLeft = savedRemaining ?? (nextDeadline === null ? null : Math.max(0, Math.ceil((nextDeadline - Date.now()) / 1000)));
-        const savedDuration = att.out_is_new ? null : readPracticeTimerDuration(att.out_id);
-        const startedAt = Date.parse(att.out_started_at);
-        const inferredDuration = savedDeadline !== null && Number.isFinite(startedAt)
-          ? Math.ceil((savedDeadline - startedAt) / 1000)
-          : null;
-        const validInferredDuration = inferredDuration !== null && initialTimeLeft !== null
-          && inferredDuration >= initialTimeLeft
-          ? inferredDuration : null;
-        const nextTimerDuration = nextDeadline === null ? null : (
-          savedDeadline === null && savedRemaining === null
-            ? selectedMinutes! * 60
-            : savedDuration ?? validInferredDuration ?? initialTimeLeft
-        );
-        if (nextDeadline !== null && nextTimerDuration !== null) {
-          savePracticeDeadline(att.out_id, nextDeadline, nextTimerDuration);
-          if (initialTimeLeft !== null) savePracticeRemaining(att.out_id, initialTimeLeft);
-        }
-        attemptIdRef.current = att.out_id;
-        setMarkAttemptId(att.out_id);
-        answersRef.current = att.out_answers || {};
-        setAnswers(answersRef.current);
-        submittedRef.current = false;
-        autoSubmitTriggeredRef.current = false;
-        setDeadline(nextDeadline);
-        setTimeLeft(initialTimeLeft);
-        deadlineRef.current = nextDeadline;
-        timeLeftRef.current = initialTimeLeft;
-        timerPausedRef.current = document.hidden;
-        setTimerDuration(nextTimerDuration);
-        didStart = true;
-        setStarted(true);
-        return;
-      }
-      setError('Încercarea anterioară a expirat. Reîncearcă pornirea setului.');
-    } catch (err) {
-      console.error('Unexpected practice start error:', err);
-      if (mountedRef.current) setError('Nu s-a putut porni setul. Încearcă din nou.');
-    } finally {
-      startingRef.current = false;
-      if (mountedRef.current && !didStart) setLoading(false);
-    }
-  }, [setId, minutesInput]);
-
-  useEffect(() => {
-    if (!resume || !introMeta || loading || started || error || autoResumeRef.current) return;
-    autoResumeRef.current = true;
-    void startAttempt();
-  }, [resume, introMeta, loading, started, error, startAttempt]);
-
-  // Load questions once started
-  useEffect(() => {
-    if (!started) return;
-    (async () => {
-      const { data: qs, error: qError } = await supabase.rpc('get_practice_questions', {
-        p_set_id: setId,
-      });
-      if (qError) {
-        setError('Nu s-au putut încărca întrebările.');
-        setLoading(false);
-        return;
-      }
-      setQuestions((qs || []) as unknown as PracticeQuestionRPC[]);
-      setLoading(false);
-    })();
-  }, [started, setId]);
-
-  useEffect(() => {
-    if (!started || questions.length === 0) return;
-    let frame = 0;
-    const updateActiveQuestion = () => {
-      window.cancelAnimationFrame(frame);
-      frame = window.requestAnimationFrame(() => {
-        let current = 0;
-        questions.forEach((question, index) => {
-          const element = document.getElementById(`practice-question-${question.out_id}`);
-          if (element && element.getBoundingClientRect().top <= window.innerHeight * 0.35) current = index;
-        });
-        setActiveQuestion(current);
-      });
-    };
-    updateActiveQuestion();
-    window.addEventListener('scroll', updateActiveQuestion, { passive: true });
-    window.addEventListener('resize', updateActiveQuestion);
-    return () => {
-      window.cancelAnimationFrame(frame);
-      window.removeEventListener('scroll', updateActiveQuestion);
-      window.removeEventListener('resize', updateActiveQuestion);
-    };
-  }, [started, questions]);
-
-  const saveProgress = useCallback(async (answersToSave: Record<string, string>) => {
-    if (!attemptIdRef.current || submittedRef.current) return;
-    setSaveState('saving');
-    try {
-      const { error: saveError } = await supabase.rpc('save_practice_progress', {
-        p_attempt_id: attemptIdRef.current,
-        p_answers: answersToSave,
-      });
-      if (saveError) {
-        setSaveState('error');
-      } else {
-        setSaveState('saved');
-      }
-    } catch {
-      setSaveState('error');
-    }
-  }, []);
-
-  const submitAttempt = useCallback(async () => {
-    if (!mountedRef.current || submittedRef.current) return;
-    submittedRef.current = true;
-    setSubmitting(true);
-
-    const finalAnswers = answersRef.current;
-
-    if (attemptIdRef.current && Object.keys(finalAnswers).length > 0) {
-      try {
-        await supabase.rpc('save_practice_progress', {
-          p_attempt_id: attemptIdRef.current,
-          p_answers: finalAnswers,
-        });
-      } catch {
-        // best effort
-      }
-    }
-
-    const { data, error: submitError } = await supabase.rpc('submit_practice_attempt', {
-      p_set_id: setId,
-      p_answers: finalAnswers,
+    const { data: setsData, error: setsError } = await supabase.rpc('get_practice_sets', {
+      p_lesson_id: lessonId,
     });
+    if (setsError) console.error('get_practice_sets error:', setsError);
+    const lessonSets = (setsData || []) as unknown as PracticeSetRPC[];
+    setSets(lessonSets);
 
-    if (!mountedRef.current) return;
-
-    if (submitError) {
-      const msg = submitError.message || '';
-      if (msg.includes('Abonament necesar')) {
-        setError('Abonamentul nu mai este activ.');
-      } else {
-        setError('Nu s-a putut trimite setul. Încearcă din nou.');
-      }
-      submittedRef.current = false;
-      setSubmitting(false);
-      return;
-    }
-
-    if (data && data.length > 0) {
-      const result = data[0] as { out_id: string };
-      if (result.out_id !== attemptIdRef.current) {
-        setError('Răspunsul primit nu corespunde încercării curente. Verifică istoricul înainte de a relua.');
-        submittedRef.current = false;
-        setSubmitting(false);
-        return;
-      }
-      if (attemptIdRef.current) clearPracticeDeadline(attemptIdRef.current);
-      setSubmitting(false);
-      onComplete(result.out_id);
+    if (lessonSets.length > 0) {
+      const { data: attemptData, error: attemptsError } = await supabase
+        .from('practice_attempts')
+        .select('*')
+        .eq('user_id', profile.id)
+        .in('set_id', lessonSets.map((set) => set.out_id));
+      if (attemptsError) console.error('practice_attempts error:', attemptsError);
+      setAttempts((attemptData || []) as PracticeAttempt[]);
     } else {
-      setError('Nu am primit confirmarea trimiterii. Verifică istoricul înainte de a relua.');
-      submittedRef.current = false;
-      setSubmitting(false);
+      setAttempts([]);
     }
-  }, [setId, onComplete]);
 
-  const pausePracticeTimer = useCallback(() => {
-    if (timerPausedRef.current || deadlineRef.current === null) return;
-    const remaining = Math.max(0, Math.min(
-      timeLeftRef.current ?? Infinity,
-      Math.ceil((deadlineRef.current - Date.now()) / 1000)
-    ));
-    timerPausedRef.current = true;
-    timeLeftRef.current = remaining;
-    setTimeLeft(remaining);
-    if (attemptIdRef.current) savePracticeRemaining(attemptIdRef.current, remaining);
-  }, []);
+    const { data: subs } = await supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('user_id', profile.id)
+      .order('end_at', { ascending: false });
+    const now = new Date();
+    const activeSub = (subs || []).find(
+      (s) => s.status === 'active' && new Date(s.end_at) > now
+    ) as Subscription | undefined;
+    setSubscription(activeSub || null);
 
-  const resumePracticeTimer = useCallback(() => {
-    if (!timerPausedRef.current || timeLeftRef.current === null) return;
-    const nextDeadline = Date.now() + timeLeftRef.current * 1000;
-    timerPausedRef.current = false;
-    deadlineRef.current = nextDeadline;
-    setDeadline(nextDeadline);
-    if (attemptIdRef.current) {
-      savePracticeDeadline(attemptIdRef.current, nextDeadline, timerDuration ?? timeLeftRef.current);
-    }
-  }, [timerDuration]);
+    setLoading(false);
+  }, [lessonId, profile]);
 
   useEffect(() => {
-    if (!started || deadline === null) return;
-    const tick = () => {
-      if (timerPausedRef.current || document.hidden) return;
-      const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
-      timeLeftRef.current = remaining;
-      setTimeLeft(remaining);
-      if (attemptIdRef.current) savePracticeRemaining(attemptIdRef.current, remaining);
-      if (remaining === 0 && !autoSubmitTriggeredRef.current) {
-        autoSubmitTriggeredRef.current = true;
-        void submitAttempt();
-      }
-    };
-    const handleVisibility = () => {
-      if (document.hidden) pausePracticeTimer();
-      else resumePracticeTimer();
-    };
-    if (document.hidden) pausePracticeTimer();
-    tick();
-    const interval = window.setInterval(tick, 1000);
-    document.addEventListener('visibilitychange', handleVisibility);
-    return () => {
-      window.clearInterval(interval);
-      document.removeEventListener('visibilitychange', handleVisibility);
-    };
-  }, [started, deadline, submitAttempt, pausePracticeTimer, resumePracticeTimer]);
+    load();
+  }, [load]);
 
-  const handleAnswer = (questionId: string, letter: string) => {
-    const newAnswers = { ...answersRef.current, [questionId]: letter };
-    answersRef.current = newAnswers;
-    setAnswers(newAnswers);
-
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(() => {
-      saveProgress(newAnswers);
-    }, 800);
-  };
-
-  const leaveAttempt = async (navigate: () => void) => {
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    pausePracticeTimer();
-    if (started && attemptIdRef.current && !submittedRef.current && Object.keys(answersRef.current).length > 0) {
-      try {
-        const { error: saveError } = await supabase.rpc('save_practice_progress', {
-          p_attempt_id: attemptIdRef.current,
-          p_answers: answersRef.current,
-        });
-        if (saveError) throw saveError;
-      } catch (saveError) {
-        console.error('Save before exit error:', saveError);
-        setSaveState('error');
-        if (!document.hidden) resumePracticeTimer();
-        return;
-      }
-    }
-    navigate();
-  };
-
-  // Save before unload
   useEffect(() => {
-    if (!started) return;
-    const handleBeforeUnload = () => {
-      pausePracticeTimer();
-      if (session?.access_token && attemptIdRef.current && !submittedRef.current && Object.keys(answersRef.current).length > 0) {
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-        const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
-        try {
-          fetch(`${supabaseUrl}/rest/v1/rpc/save_practice_progress`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'apikey': supabaseKey,
-              'Authorization': `Bearer ${session.access_token}`,
-            },
-            body: JSON.stringify({
-              p_attempt_id: attemptIdRef.current,
-              p_answers: answersRef.current,
-            }),
-            keepalive: true,
-          });
-        } catch {
-          // best effort
-        }
-      }
-    };
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    window.addEventListener('pagehide', handleBeforeUnload);
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      window.removeEventListener('pagehide', handleBeforeUnload);
-      if (!mountedRef.current && !timerPausedRef.current && !submittedRef.current) handleBeforeUnload();
-    };
-  }, [started, session?.access_token, pausePracticeTimer]);
+    if (loading || !focusSetId || !sets.some((set) => set.out_id === focusSetId)) return;
+    const frame = window.requestAnimationFrame(() => {
+      document.getElementById(`practice-set-${focusSetId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [focusSetId, loading, sets]);
 
-  if (loading) return <Loading message="Se încarcă setul de grile..." />;
+  const hasActiveSub = !!subscription;
+  const totalQuestions = sets.reduce((total, set) => total + set.out_question_count, 0);
+  const completedSetCount = sets.filter((set) => attempts.some((attempt) => attempt.set_id === set.out_id && !!attempt.submitted_at)).length;
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
-        <div className="card p-8 max-w-md text-center">
-          <AlertTriangle size={32} className="mx-auto mb-4 text-red-500" />
-          <p className="text-stone-700 font-medium mb-2">A apărut o eroare</p>
-          <p className="text-sm text-stone-500 mb-6">{error}</p>
-          <button onClick={() => void leaveAttempt(onExit)} className="btn-secondary">
-            <ChevronLeft size={16} /> Înapoi
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!started && introMeta) {
-    const displayName = practiceSetName(introMeta.lessonTitle, introMeta.position);
-    return (
-      <div className="simulation-intro simulation-intro--practice">
-        <header className="simulation-intro__header">
-          <div className="simulation-intro__header-inner">
-            <div className="simulation-intro__brand">
-              <Logo showText linked={false} />
-            </div>
-            <button onClick={() => void leaveAttempt(onHome)} className="simulation-intro__home" type="button" aria-label="Acasă">
+  return (
+    <div className={`practice-sets-page bg-stone-50 ${embedded ? 'practice-sets-page--embedded' : 'min-h-screen'}`}>
+      {!embedded && <header className="practice-sets-page__topbar sticky top-0 z-10 border-b border-stone-200 bg-white/90 backdrop-blur-sm">
+        <div className="flex w-full items-center justify-between gap-4 px-5 py-3 sm:px-7 lg:px-8">
+          <Logo showText />
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={onBack} className="practice-sets-page__nav-button practice-sets-page__nav-button--back" aria-label="Înapoi la capitole">
+              <ChevronLeft size={20} aria-hidden="true" /><span>Înapoi</span>
+            </button>
+            <button type="button" onClick={onHome} className="practice-sets-page__nav-button practice-sets-page__nav-button--home" aria-label="Acasă">
               <img src="/Home.png" alt="" width={22} height={22} /><span>Acasă</span>
             </button>
           </div>
-        </header>
-        <main className="simulation-intro__main">
-          <section className="simulation-intro__editorial" aria-labelledby="practice-intro-title">
-            <p className="simulation-intro__eyebrow">ANTRENAMENT PE CAPITOLE</p>
-            <h1 id="practice-intro-title">Înainte să începi</h1>
-            <p className="simulation-intro__lead">Rezervă-ți timpul și intră în ritmul de examen.</p>
-            <div className="simulation-intro__rule" />
-            <h2>De știut înainte de start</h2>
-            <ol className="simulation-intro__steps">
-              <li><span className="simulation-intro__step-number">1</span><span>Poți introduce timpul-limită pentru acest set.<strong className="simulation-intro__step-note">( Câmp gol = Fără limită )</strong></span></li>
-              <li><span className="simulation-intro__step-number">2</span><span><strong>Revino la set când dorești.</strong> Cronometrul pornește din nou doar când reiei rezolvarea.</span></li>
-              <li><span className="simulation-intro__step-number">3</span><span>La expirare, răspunsurile <strong>se trimit automat.</strong></span></li>
-            </ol>
-          </section>
-
-          <div className="simulation-intro__right">
-            <p className="simulation-intro__wish">
-              <span className="simulation-intro__wish-mult">Mult</span>
-              <span className="simulation-intro__wish-succes">succes!</span>
-            </p>
-            <section className="simulation-intro__card" aria-labelledby="practice-intro-summary">
-              <h2 id="practice-intro-summary">{displayName}</h2>
-              {displayName !== `${introMeta.lessonTitle} ${String(introMeta.position).padStart(2, '0')}` && (
-                <p className="simulation-intro__description">{introMeta.lessonTitle}</p>
-              )}
-              <div className="simulation-intro__stats">
-                <p><strong>{introMeta.questionCount}</strong> {introMeta.questionCount === 1 ? 'grilă' : 'grile'}</p>
-                <label className="simulation-intro__time-field">
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    autoComplete="off"
-                    maxLength={4}
-                    value={minutesInput}
-                    onChange={(event) => {
-                      if (/^\d{0,4}$/.test(event.target.value)) {
-                        setMinutesInput(event.target.value);
-                        setMinutesError(null);
-                      }
-                    }}
-                    aria-label="Timp-limită în minute; lasă gol pentru a lucra fără cronometru"
-                    aria-invalid={!!minutesError}
-                    aria-describedby={minutesError ? 'practice-time-error' : undefined}
-                  />
-                  <span>minute</span>
-                </label>
-              </div>
-              {minutesError && <p id="practice-time-error" className="simulation-intro__time-error" role="alert">{minutesError}</p>}
-              <div className="simulation-intro__actions">
-                <button onClick={startAttempt} className="simulation-intro__start" type="button" disabled={startingRef.current}>Începe setul</button>
-                <button onClick={() => void leaveAttempt(onExit)} className="simulation-intro__later" type="button">Nu acum</button>
-              </div>
-            </section>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
-  const answeredCount = Object.keys(answers).length;
-  const activeQuestionId = questions[activeQuestion]?.out_id;
-  const ringSeconds = timeLeft === null ? 0 : timeLeft >= 3600 || !showSeconds ? Math.ceil(timeLeft / 60) * 60 : timeLeft;
-  const ringProgress = Math.min(100, Math.max(0, 100 * ringSeconds / (timerDuration || 1)));
-
-  return (
-    <div className={`practice-exam${comfortTheme === 'light' ? '' : ` practice-exam--${comfortTheme}`}`}>
-      <header className="practice-exam__header">
-        <div className="practice-exam__header-inner">
-          <div className="practice-exam__brand">
-            <Logo showText linked={false} />
-          </div>
-          <nav className="practice-exam__breadcrumb" aria-label="Locația curentă">
-            <button type="button" onClick={() => void leaveAttempt(onExit)}>Antrenament pe capitole</button>
-            <span aria-hidden="true">/</span>
-            <strong>{introMeta ? practiceSetName(introMeta.lessonTitle, introMeta.position) : 'Set de grile'}</strong>
-          </nav>
-          <ExamHeaderTools comfortTheme={comfortTheme} onComfortChange={setComfortTheme} onHome={() => void leaveAttempt(onHome)} homeVariant="practice" />
         </div>
-      </header>
+      </header>}
 
-      <div className="practice-exam__layout">
-        <QuestionRail questionIds={questions.map((question) => question.out_id)} answers={answers} markedIds={markedIds} activeIndex={activeQuestion} questionIdPrefix="practice-question-" />
-
-        <main className="practice-exam__questions" aria-label="Grilele setului">
-          {questions.map((q, idx) => (
-            <QuestionCard
-              key={q.out_id}
-              question={q}
-              index={idx}
-              selectedAnswer={answers[q.out_id]}
-              onSelect={(letter) => handleAnswer(q.out_id, letter)}
-            />
-          ))}
-
-          {questions.length === 0 && <p className="practice-exam__empty">Nu există întrebări în acest set.</p>}
-
-          {questions.length > 0 && (
-            <footer className="practice-exam__footer">
-              <span>Ai ajuns la finalul setului.</span>
-              <button type="button" onClick={() => void submitAttempt()} disabled={submitting}>
-                {submitting ? 'Se trimite…' : 'Trimite răspunsurile'}
-              </button>
-            </footer>
-          )}
-        </main>
-
-        <aside className={`practice-exam__progress${timeLeft === null ? ' practice-exam__progress--untimed' : ''}`} aria-label="Progresul setului">
-          <div className="practice-exam__sticky">
-            <span className="practice-exam__section-label">Parcurs</span>
-            <p><strong>{answeredCount}</strong> din {questions.length} completate</p>
-            {saveState !== 'idle' && (
-              <p className="practice-exam__save" role="status">
-                {saveState === 'saving' && 'Se salvează…'}
-                {saveState === 'saved' && 'Progres salvat'}
-                {saveState === 'error' && 'Salvarea a eșuat'}
-              </p>
-            )}
-            <div className="practice-exam__progress-track" role="progressbar" aria-valuenow={answeredCount} aria-valuemin={0} aria-valuemax={questions.length} aria-label="Grile completate">
-              <span style={{ width: `${questions.length ? (answeredCount / questions.length) * 100 : 0}%` }} />
-            </div>
-            {timeLeft !== null && (
-              <div className={`practice-exam__timer-ring${timeLeft < 300 ? ' practice-exam__timer-ring--urgent' : ''}`}>
-                <svg viewBox="0 0 240 240" aria-hidden="true" focusable="false">
-                  <circle className="practice-exam__timer-ring-track" cx="120" cy="120" r="86" />
-                  <circle className="practice-exam__timer-ring-accent" cx="120" cy="120" r="86" pathLength="100" strokeDasharray={`${ringProgress} 100`} />
-                </svg>
-                <button
-                  type="button"
-                  className="practice-exam__timer-value"
-                  disabled={timeLeft >= 3600}
-                  aria-pressed={timeLeft < 3600 ? !showSeconds : undefined}
-                  aria-label={`Timp rămas: ${formatPracticeTime(timeLeft, showSeconds)}${timeLeft < 3600 ? `. ${showSeconds ? 'Ascunde secundele' : 'Afișează secundele'}` : ''}`}
-                  onClick={() => setShowSeconds((current) => !current)}
-                >{formatPracticeTime(timeLeft, showSeconds)}</button>
-              </div>
-            )}
-            <div className="practice-exam__side-actions">
-              <button className="practice-exam__side-action" type="button" disabled={!activeQuestionId} aria-pressed={activeQuestionId ? markedIds.has(activeQuestionId) : false} onClick={() => { if (activeQuestionId) toggleMark(activeQuestionId); }}>
-                <Bookmark size={18} strokeWidth={1.8} aria-hidden="true" />
-                <span>{activeQuestionId && markedIds.has(activeQuestionId) ? 'Demarchează grila' : 'Marchează grila'}</span>
-              </button>
-            </div>
-            <button className="practice-exam__submit" type="button" onClick={() => void submitAttempt()} disabled={submitting || questions.length === 0}>
-              <span>{submitting ? 'Se trimite…' : 'Trimite răspunsurile'}</span>
-              <Send size={17} strokeWidth={1.8} aria-hidden="true" />
-            </button>
+      <main className={`practice-sets-page__content w-full ${embedded ? '' : 'px-3 py-5 sm:px-4 lg:px-5'}`}>
+        <section className="practice-sets-page__hero" aria-labelledby="practice-lesson-title">
+          <img className="practice-sets-page__hero-photo" src={practiceChapterImageFor(lessonTitle, true)} alt="" />
+          <div className="practice-sets-page__hero-veil" />
+          <div className="practice-sets-page__hero-copy">
+            {!embedded && <p>Antrenament pe capitole</p>}
+            <h1 id="practice-lesson-title">{lessonTitle}</h1>
+            {embedded && <button type="button" onClick={onBack} className="practice-sets-page__inline-back"><ChevronLeft size={17} aria-hidden="true" /> Toate capitolele</button>}
           </div>
-        </aside>
-      </div>
+        </section>
+
+        <div className="practice-sets-page__section-heading">
+          <h2>{embedded ? 'Materiale relevante, riguros selecționate.' : 'Seturi disponibile'}</h2>
+          {!loading && (embedded ? (
+            <div className="practice-sets-page__progress" aria-label={`${completedSetCount} din ${sets.length} seturi rezolvate`}>
+              <span>{completedSetCount} din {sets.length} rezolvate</span>
+              <div className="practice-sets-page__progress-track" role="progressbar" aria-valuenow={completedSetCount} aria-valuemin={0} aria-valuemax={sets.length || 1}>
+                <div style={{ width: `${sets.length ? (completedSetCount / sets.length) * 100 : 0}%` }} />
+              </div>
+            </div>
+          ) : <span>{sets.length} {sets.length === 1 ? 'set' : 'seturi'} · {totalQuestions} {totalQuestions === 1 ? 'grilă' : 'grile'}</span>)}
+        </div>
+
+        {loading ? (
+          <Loading message="Se încarcă seturile..." />
+        ) : sets.length === 0 ? (
+          <div className="card p-12 text-center text-stone-500">
+            <p className="text-lg font-medium">Nu există seturi publicate în această lecție.</p>
+          </div>
+        ) : (
+          <div className="practice-sets-page__grid">
+            {sets.map((set) => (
+              <PracticeSetCard
+                key={set.out_id}
+                set={set}
+                lessonTitle={lessonTitle}
+                attempts={attempts.filter((attempt) => attempt.set_id === set.out_id)}
+                initialHistoryOpen={openHistories.current[set.out_id] ?? false}
+                onHistoryOpenChange={(open) => { openHistories.current[set.out_id] = open; }}
+                focused={set.out_id === focusSetId}
+                hasActiveSub={hasActiveSub}
+                onStart={() => onStartSet(set.out_id, attempts.some((attempt) => attempt.set_id === set.out_id && !attempt.submitted_at))}
+                onViewResults={(attemptId) => onViewResults(set.out_id, attemptId)}
+                onBuySubscription={onBuySubscription}
+                buyingSub={buyingSub}
+                onReleaseReached={() => void load()}
+              />
+            ))}
+          </div>
+        )}
+      </main>
     </div>
   );
 }
 
-function QuestionCard({
-  question, index, selectedAnswer, onSelect,
+function PracticeSetCard({
+  set, lessonTitle, attempts, initialHistoryOpen, onHistoryOpenChange, focused, hasActiveSub, onStart, onViewResults, onBuySubscription, buyingSub, onReleaseReached,
 }: {
-  question: PracticeQuestionRPC;
-  index: number;
-  selectedAnswer: string | undefined;
-  onSelect: (letter: string) => void;
+  set: PracticeSetRPC;
+  lessonTitle: string;
+  attempts: PracticeAttempt[];
+  initialHistoryOpen: boolean;
+  onHistoryOpenChange: (open: boolean) => void;
+  focused: boolean;
+  hasActiveSub: boolean;
+  onStart: () => void;
+  onViewResults: (attemptId?: string) => void;
+  onBuySubscription: () => void;
+  buyingSub: boolean;
+  onReleaseReached: () => void;
 }) {
-  const isCG = question.out_type === 'CG';
+  const isPremium = set.out_requires_subscription;
+  const isLocked = isPremium && !hasActiveSub;
+  const completedAttempts = attempts
+    .filter((attempt) => !!attempt.submitted_at)
+    .sort((first, second) => new Date(first.submitted_at!).getTime() - new Date(second.submitted_at!).getTime());
+  const hasAttempts = completedAttempts.length > 0;
+  const hasInProgress = attempts.some((attempt) => !attempt.submitted_at);
+  const limitReached = isPremium && set.out_attempt_count >= PREMIUM_ATTEMPT_LIMIT && !hasInProgress;
+  const isScheduled = !!set.out_available_at && new Date(set.out_available_at).getTime() > Date.now();
+  const latestAttempt = completedAttempts[completedAttempts.length - 1];
+  const historySlotCount = isPremium
+    ? Math.max(PREMIUM_ATTEMPT_LIMIT, completedAttempts.length)
+    : Math.max(3, completedAttempts.length + 1);
+  const [historyOpen, setHistoryOpen] = useState(initialHistoryOpen);
+  const historyRef = useRef<HTMLOListElement>(null);
+  const shortTitle = shortPracticeChapterTitle(lessonTitle);
+
+  useEffect(() => {
+    const history = historyRef.current;
+    if (!historyOpen || !history || historySlotCount <= 3) return;
+    const frame = requestAnimationFrame(() => {
+      history.scrollLeft = history.scrollWidth - history.clientWidth;
+    });
+    const handleWheel = (event: WheelEvent) => {
+      if (event.ctrlKey || history.scrollWidth <= history.clientWidth) return;
+      const movement = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
+      const next = Math.max(0, Math.min(history.scrollWidth - history.clientWidth, history.scrollLeft + movement));
+      if (next === history.scrollLeft) return;
+      event.preventDefault();
+      history.scrollLeft = next;
+    };
+    history.addEventListener('wheel', handleWheel, { passive: false });
+    return () => {
+      cancelAnimationFrame(frame);
+      history.removeEventListener('wheel', handleWheel);
+    };
+  }, [historyOpen, historySlotCount]);
+
+  const toggleHistory = () => {
+    const nextOpen = !historyOpen;
+    onHistoryOpenChange(nextOpen);
+    setHistoryOpen(nextOpen);
+  };
 
   return (
-    <section className="practice-exam__question" id={`practice-question-${question.out_id}`} aria-labelledby={`practice-question-title-${question.out_id}`}>
-      <p className="practice-exam__eyebrow">Întrebarea {index + 1} <span aria-hidden="true">/</span> {isCG ? 'Complement grupat' : 'Complement simplu'}</p>
-      <h2 id={`practice-question-title-${question.out_id}`}>{question.out_question_text}</h2>
-
-      {isCG && (
-        <div className="practice-exam__statements">
-          {[1, 2, 3, 4].map((n) => {
-            const text = question[`out_statement_${n}` as keyof PracticeQuestionRPC] as string;
-            if (!text) return null;
-            return (
-              <div key={n} className="practice-exam__statement">
-                <span>{n}.</span>
-                <span>{text}</span>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      <div className="practice-exam__options" role="group" aria-label={`Răspunsuri pentru întrebarea ${index + 1}`}>
-        {LETTERS.map((letter) => {
-          const optionText = isCG
-            ? getCGLabel(letter)
-            : (question[`out_option_${letter.toLowerCase()}` as keyof PracticeQuestionRPC] as string);
-
-          if (!optionText && !isCG) return null;
-
-          const isSelected = selectedAnswer === letter;
-
-          return (
-            <button
-              key={letter}
-              type="button"
-              onClick={() => onSelect(letter)}
-              className={`practice-exam__option${isSelected ? ' practice-exam__option--selected' : ''}`}
-              aria-pressed={isSelected}
-            >
-              <span className="practice-exam__option-letter">{letter}</span>
-              <span className="practice-exam__option-text">{optionText}</span>
-            </button>
-          );
-        })}
+    <article id={`practice-set-${set.out_id}`}
+      className={`simulation-library__card simulation-library__card--biology practice-set-card ${isScheduled ? 'practice-set-card--scheduled' : ''} ${shortTitle.length > 20 ? 'practice-set-card--long-title' : ''} ${focused ? 'ring-2 ring-rose-700 ring-offset-2' : ''}`}
+      aria-label={`${practiceSetName(lessonTitle, set.out_position + 1)}, ${set.out_question_count} grile`}>
+      <div className="simulation-library__biology-heading">
+        <h3 title={practiceSetName(lessonTitle, set.out_position + 1)} aria-label={practiceSetName(lessonTitle, set.out_position + 1)}>{shortTitle}</h3>
+        <span className="simulation-library__biology-number" aria-hidden="true">{twoDigitNumber(set.out_position + 1)}</span>
       </div>
-    </section>
+      <div className="simulation-library__biology-meta">
+        <span><strong>{set.out_question_count}</strong> {set.out_question_count === 1 ? 'grilă' : 'grile'}</span>
+        <span aria-hidden="true">·</span>
+        <span className="font-bold">Timer opțional</span>
+        <span aria-hidden="true">·</span>
+        <span className={isPremium ? 'simulation-library__biology-access--premium' : 'simulation-library__biology-access--free'}>
+          {isPremium ? 'Necesită abonament' : 'Fără abonament'}
+        </span>
+      </div>
+
+      {!isScheduled && <div className="simulation-library__biology-history">
+        <h4>
+          <button type="button" className="simulation-library__biology-history-toggle"
+            onClick={toggleHistory} aria-expanded={historyOpen} aria-controls={`practice-history-${set.out_id}`}>
+            <span>Istoric rezolvări</span><ChevronDown size={21} aria-hidden="true" />
+          </button>
+        </h4>
+        <div id={`practice-history-${set.out_id}`}
+          className={`simulation-library__biology-history-panel ${historyOpen ? 'simulation-library__biology-history-panel--open' : ''}`}
+          aria-hidden={!historyOpen}>
+          <div className="simulation-library__biology-history-slider">
+            <ol ref={historyRef} tabIndex={historyOpen && historySlotCount > 3 ? 0 : undefined}
+              aria-label={historySlotCount > 3 ? 'Istoricul rezolvărilor; derulează orizontal pentru a le vedea pe toate' : 'Istoricul rezolvărilor'}>
+              {Array.from({ length: historySlotCount }, (_, attemptIndex) => {
+                const attempt = completedAttempts[attemptIndex];
+                const nextIsComplete = !!completedAttempts[attemptIndex + 1];
+                return (
+                  <li key={attempt?.id ?? `pending-${attemptIndex}`}>
+                    {attemptIndex < historySlotCount - 1 && (
+                      <span aria-hidden="true" className={`simulation-library__biology-history-link ${attempt && nextIsComplete ? 'simulation-library__biology-history-link--complete' : ''}`} />
+                    )}
+                    <span aria-hidden="true" className={`simulation-library__biology-history-node ${attempt ? 'simulation-library__biology-history-node--complete' : ''}`} />
+                    <span className="simulation-library__biology-history-label">Rezolvarea {attemptIndex + 1}</span>
+                    <strong>{attempt ? `${attempt.score}/${attempt.max_score}` : '-'}</strong>
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
+        </div>
+      </div>}
+
+      <div className="simulation-library__biology-actions">
+        {isScheduled && set.out_available_at ? (
+          <div className="simulation-library__biology-countdown">
+            <span className="practice-set-card__release-label">Material accesibil în:</span>
+            <ReleaseCountdown target={set.out_available_at} onComplete={onReleaseReached} />
+          </div>
+        ) : (
+          <>
+            {hasAttempts && (
+              <button type="button" onClick={() => onViewResults(latestAttempt?.id)}
+                className="simulation-library__biology-secondary">Vezi detalii</button>
+            )}
+            {limitReached ? null : isLocked ? (
+              <button type="button" onClick={onBuySubscription} disabled={buyingSub}
+                className="simulation-library__biology-primary">
+                {buyingSub ? 'Se activează…' : 'Activează abonamentul'}
+              </button>
+            ) : (
+              <button type="button" onClick={onStart} className={`simulation-library__biology-primary${hasInProgress ? ' simulation-library__continue-button' : ''}`}>
+                {hasInProgress ? 'Continuă rezolvarea' : hasAttempts ? 'Rezolvă din nou' : 'Rezolvă setul'}
+              </button>
+            )}
+          </>
+        )}
+      </div>
+    </article>
   );
 }
 
-function getCGLabel(letter: string): string {
-  const labels: Record<string, string> = {
-    A: 'Afirmațiile 1, 2, 3 sunt corecte',
-    B: 'Afirmațiile 1, 3 sunt corecte',
-    C: 'Afirmațiile 2, 4 sunt corecte',
-    D: 'Doar afirmația 4 este corectă',
-    E: 'Toate cele 4 corecte sau altă combinație',
-  };
-  return labels[letter] || '';
+function ReleaseCountdown({ target, onComplete }: { target: string; onComplete: () => void }) {
+  const [remaining, setRemaining] = useState(() => Math.max(0, new Date(target).getTime() - Date.now()));
+
+  useEffect(() => {
+    let completed = false;
+    const tick = () => {
+      const next = Math.max(0, new Date(target).getTime() - Date.now());
+      setRemaining(next);
+      if (next === 0 && !completed) {
+        completed = true;
+        onComplete();
+      }
+    };
+    tick();
+    const interval = window.setInterval(tick, 1000);
+    return () => window.clearInterval(interval);
+  }, [target, onComplete]);
+
+  const totalMinutes = Math.ceil(remaining / 60_000);
+  const days = Math.floor(totalMinutes / 1_440);
+  const hours = Math.floor((totalMinutes % 1_440) / 60);
+  const minutes = totalMinutes % 60;
+  const units = [
+    ...(days > 0 ? [{ value: days, label: days === 1 ? 'zi' : 'zile' }] : []),
+    ...(days > 0 || hours > 0 ? [{ value: hours, label: hours === 1 ? 'oră' : 'ore' }] : []),
+    { value: minutes, label: minutes === 1 ? 'minut' : 'minute' },
+  ];
+  return (
+    <span className="practice-set-card__time" aria-label={units.map(({ value, label }) => `${value} ${label}`).join(', ')}>
+      {units.map(({ value, label }) => (
+        <span className="practice-set-card__time-unit" key={label}>
+          <strong>{value}</strong><small>{label}</small>
+        </span>
+      ))}
+    </span>
+  );
 }
