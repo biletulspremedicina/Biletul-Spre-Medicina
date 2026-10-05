@@ -79,7 +79,6 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
   const startingRef = useRef(false);
-  const autoResumeRef = useRef(false);
   const [starting, setStarting] = useState(false);
 
   useEffect(() => {
@@ -206,12 +205,6 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
       if (mountedRef.current) setStarting(false);
     }
   }, [profile, simulationId]);
-
-  useEffect(() => {
-    if (!resume || !profile || !simulation || loading || started || error || autoResumeRef.current) return;
-    autoResumeRef.current = true;
-    void startAttempt();
-  }, [resume, profile, simulation, loading, started, error, startAttempt]);
 
   // The server stores remaining time; the view consumes it only while visible.
   useEffect(() => {
@@ -577,7 +570,7 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
               </div>
               <div className="simulation-intro__actions">
                 <button onClick={startAttempt} className="simulation-intro__start" type="button" disabled={starting}>
-                  {starting ? 'Se pornește…' : 'Începe simularea'}
+                  {starting ? 'Se pornește…' : resume ? 'Continuă rezolvarea' : 'Începe simularea'}
                 </button>
                 <button onClick={handleExit} className="simulation-intro__later" type="button">
                   Nu acum
