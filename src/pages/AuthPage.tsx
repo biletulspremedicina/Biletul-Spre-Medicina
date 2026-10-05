@@ -53,8 +53,10 @@ function SocialIcon({ provider }: { provider: SocialProvider }) {
 export default function AuthPage({ mode, onSuccess, onSwitchMode, onBack }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -63,6 +65,10 @@ export default function AuthPage({ mode, onSuccess, onSwitchMode, onBack }: Prop
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (isSignup && password !== confirmPassword) {
+      setError('Parolele nu coincid. Verifică-le și încearcă din nou.');
+      return;
+    }
     setLoading(true);
 
     try {
@@ -98,7 +104,7 @@ export default function AuthPage({ mode, onSuccess, onSwitchMode, onBack }: Prop
   };
 
   return (
-    <main className="auth-page">
+    <main className={`auth-page${isSignup ? ' auth-page--signup' : ''}`}>
       <button type="button" className="auth-page__back" onClick={onBack}>
         <ArrowLeft size={18} aria-hidden="true" />
         <span>Înapoi la pagina principală</span>
@@ -149,7 +155,7 @@ export default function AuthPage({ mode, onSuccess, onSwitchMode, onBack }: Prop
                 type={showPassword ? 'text' : 'password'}
                 autoComplete={isSignup ? 'new-password' : 'current-password'}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => { setPassword(e.target.value); setError(null); }}
                 placeholder={isSignup ? 'Minimum 6 caractere' : 'Introdu parola'}
                 required
                 minLength={6}
@@ -165,6 +171,33 @@ export default function AuthPage({ mode, onSuccess, onSwitchMode, onBack }: Prop
               </button>
             </div>
           </div>
+
+          {isSignup && (
+            <div className="auth-form__field">
+              <label htmlFor="auth-confirm-password">Confirmă parola</label>
+              <div className="auth-form__password">
+                <input
+                  id="auth-confirm-password"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  autoComplete="new-password"
+                  value={confirmPassword}
+                  onChange={(e) => { setConfirmPassword(e.target.value); setError(null); }}
+                  placeholder="Introdu parola din nou"
+                  required
+                  minLength={6}
+                />
+                <button
+                  type="button"
+                  className="auth-form__reveal"
+                  onClick={() => setShowConfirmPassword((visible) => !visible)}
+                  aria-label={showConfirmPassword ? 'Ascunde parola confirmată' : 'Afișează parola confirmată'}
+                  aria-pressed={showConfirmPassword}
+                >
+                  {showConfirmPassword ? <EyeOff size={19} /> : <Eye size={19} />}
+                </button>
+              </div>
+            </div>
+          )}
 
           {error && <p className="auth-form__error" role="alert">{error}</p>}
 
