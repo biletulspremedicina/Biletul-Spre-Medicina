@@ -18,7 +18,7 @@
   display: block;
   width: 112%;
   height: 112%;
-  opacity: 0.85; 
+  opacity: 1; 
   pointer-events: none;
   transform: rotate(3deg);
   transform-origin: 50% 50%;
