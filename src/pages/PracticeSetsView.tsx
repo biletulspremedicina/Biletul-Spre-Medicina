@@ -283,7 +283,7 @@ function PracticeSetCard({
               </button>
             ) : (
               <button type="button" onClick={onStart} className={`simulation-library__biology-primary${hasInProgress ? ' simulation-library__continue-button' : ''}`}>
-                {hasInProgress ? 'Continuă rezolvarea' : hasAttempts ? 'Rezolvă din nou' : 'Rezolvă setul'}
+                {hasInProgress ? 'Continuă rezolvarea' : 'Rezolvă setul'}
               </button>
             )}
           </>
