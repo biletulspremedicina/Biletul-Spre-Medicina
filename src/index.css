@@ -1107,29 +1107,6 @@
     .practice-library__slide-track { transition: none; }
   }
 
-  .practice-sets-page__topbar { color: #182f28; }
-  .practice-sets-page__brand-word { color: #2a6b4e; }
-  .practice-sets-page__nav-button {
-    display: inline-flex;
-    min-height: 42px;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    padding: 8px 13px;
-    border: 1px solid #c7909d;
-    border-radius: 11px;
-    background: #fff3f5;
-    color: #70263a;
-    font-size: 13px;
-    font-weight: 650;
-    transition: border-color .2s ease, background-color .2s ease;
-  }
-  .practice-sets-page__nav-button:hover { border-color: #8c3045; background: #fbe5e9; }
-  .practice-sets-page__nav-button:focus-visible { outline: 2px solid #842d42; outline-offset: 2px; }
-  .practice-sets-page__nav-button--home { border-color: #842d42; background: #842d42; color: #fff; }
-  .practice-sets-page__nav-button--home:hover { border-color: #6f2438; background: #6f2438; }
-  .practice-sets-page__nav-button img { display: block; width: 22px; height: 22px; object-fit: contain; }
-
   .practice-sets-page__hero {
     position: relative;
     display: flex;
@@ -1272,8 +1249,6 @@
     .practice-sets-page__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
   @media (max-width: 700px) {
-    .practice-sets-page__nav-button { width: 42px; padding: 8px; }
-    .practice-sets-page__nav-button span { display: none; }
     .practice-sets-page__hero { min-height: 150px; }
     .practice-sets-page__hero-photo { width: 100%; }
     .practice-sets-page__hero-veil { background: linear-gradient(90deg, #692537 0%, rgba(105,37,55,.96) 60%, rgba(105,37,55,.62) 100%); }
@@ -1282,12 +1257,6 @@
     .practice-sets-page__section-heading { align-items: start; flex-direction: column; }
   }
 
-  html.student-dark .practice-sets-page__topbar { color: #e8f2eb; background: #172923; border-color: #35554a; }
-  html.student-dark .practice-sets-page__brand-word { color: #8bd6ad; }
-  html.student-dark .practice-sets-page__nav-button { background: #3d2730; border-color: #805263; color: #f5dce2; }
-  html.student-dark .practice-sets-page__nav-button:hover { background: #52313e; }
-  html.student-dark .practice-sets-page__nav-button--home { background: #842d42; border-color: #a95569; color: #fff; }
-  html.student-dark .practice-sets-page__nav-button--home:hover { background: #9c3d54; }
   html.student-dark .practice-sets-page__hero { border-color: #5d3943; }
   html.student-dark .practice-sets-page__section-heading { color: #f5dce2; }
   html.student-dark .practice-sets-page__section-heading span { color: #c7aab3; }
