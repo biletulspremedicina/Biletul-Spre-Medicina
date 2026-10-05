@@ -19,6 +19,7 @@
   width: 112%;
   height: 112%;
   pointer-events: none;
+  opacity: 0.85;
   transform: rotate(8.5deg);
   transform-origin: 50% 50%;
   clip-path: inset(0 100% 0 0);
