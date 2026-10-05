@@ -1,609 +1,609 @@
-import { ArrowRight, Stethoscope } from 'lucide-react';
-import Logo from '@/components/Logo';
-import Reveal from '@/components/Reveal';
-import WhyChooseUs from '@/components/WhyChooseUs';
-import { CountdownTimer } from '@/components/CountdownTimer';
-import SupportChat from '@/components/SupportChat';
-import './LandingPage.css';
-
-type Props = {
-  onGetStarted: () => void;
-  onSignIn: () => void;
-};
-
-export default function LandingPage({ onGetStarted, onSignIn }: Props) {
-  return (
-    <div className="min-h-screen bg-stone-50">
-      {/* Navbar */}
-      <header className="sticky top-0 z-30 border-b border-stone-200/70 bg-white/85 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 sm:py-4 lg:px-8">
-          <Logo showText />
-
-          <div className="flex items-center gap-2 sm:gap-3">
-            <button onClick={onSignIn} className="btn-ghost max-sm:!rounded-lg max-sm:!bg-stone-100/80 max-sm:!px-2.5 max-sm:!py-1.5 max-sm:!text-[11px] max-sm:!leading-tight max-sm:!ring-1 max-sm:!ring-stone-200/70 max-sm:hover:!bg-stone-200/70">
-              Loghează-te
-            </button>
-            <button onClick={onGetStarted} className="btn-primary max-sm:!rounded-lg max-sm:!px-2.5 max-sm:!py-1.5 max-sm:!text-[11px] max-sm:!leading-tight">
-              Creează cont
-            </button>
+  import { ArrowRight, Stethoscope } from 'lucide-react';
+  import Logo from '@/components/Logo';
+  import Reveal from '@/components/Reveal';
+  import WhyChooseUs from '@/components/WhyChooseUs';
+  import { CountdownTimer } from '@/components/CountdownTimer';
+  import SupportChat from '@/components/SupportChat';
+  import './LandingPage.css';
+  
+  type Props = {
+    onGetStarted: () => void;
+    onSignIn: () => void;
+  };
+  
+  export default function LandingPage({ onGetStarted, onSignIn }: Props) {
+    return (
+      <div className="min-h-screen bg-stone-50">
+        {/* Navbar */}
+        <header className="sticky top-0 z-30 border-b border-stone-200/70 bg-white/85 backdrop-blur-xl">
+          <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 sm:py-4 lg:px-8">
+            <Logo showText />
+  
+            <div className="flex items-center gap-2 sm:gap-3">
+              <button onClick={onSignIn} className="btn-ghost max-sm:!rounded-lg max-sm:!bg-stone-100/80 max-sm:!px-2.5 max-sm:!py-1.5 max-sm:!text-[11px] max-sm:!leading-tight max-sm:!ring-1 max-sm:!ring-stone-200/70 max-sm:hover:!bg-stone-200/70">
+                Loghează-te
+              </button>
+              <button onClick={onGetStarted} className="btn-primary max-sm:!rounded-lg max-sm:!px-2.5 max-sm:!py-1.5 max-sm:!text-[11px] max-sm:!leading-tight">
+                Creează cont
+              </button>
+            </div>
           </div>
-        </div>
-      </header>
-
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 grid-bg" />
-        <div className="absolute inset-0 bg-gradient-to-b from-brand-50/80 via-stone-50/40 to-stone-50" />
-        <div className="absolute -top-24 left-1/2 h-72 w-[36rem] -translate-x-1/2 rounded-full bg-brand-200/30 blur-3xl" />
-
-        <div className="relative mx-auto max-w-7xl px-4 pb-16 pt-12 sm:px-6 sm:pb-20 sm:pt-16 lg:px-8">
-          <h1 className="text-balance text-center font-display text-4xl font-extrabold leading-[1.1] tracking-tight text-stone-900 sm:text-5xl md:text-6xl">
-            Standardul{' '}
-            <span className="landing-modern">
-              <span className="landing-modern__paint" aria-hidden="true">
-                <svg viewBox="75 10 590 215" preserveAspectRatio="none" focusable="false">
-                  <defs>
-                    <filter id="landing-brush-alpha" colorInterpolationFilters="sRGB">
-                      <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  -.2126 -.7152 -.0722 0 1" />
-                      <feComponentTransfer>
-                        <feFuncA type="gamma" amplitude="1" exponent="1.65" offset="0" />
-                      </feComponentTransfer>
-                    </filter>
-                    <mask id="landing-brush-photo-mask" x="0" y="0" width="721" height="237" maskUnits="userSpaceOnUse">
-                      <image href="/modern-brush-reference.png" x="0" y="0" width="721" height="237" filter="url(#landing-brush-alpha)" />
-                    </mask>
-                  </defs>
-                  <rect x="0" y="0" width="721" height="237" fill="#2a6b4e" mask="url(#landing-brush-photo-mask)" />
-                </svg>
+        </header>
+  
+        {/* Hero */}
+        <section className="relative overflow-hidden">
+          <div className="absolute inset-0 grid-bg" />
+          <div className="absolute inset-0 bg-gradient-to-b from-brand-50/80 via-stone-50/40 to-stone-50" />
+          <div className="absolute -top-24 left-1/2 h-72 w-[36rem] -translate-x-1/2 rounded-full bg-brand-200/30 blur-3xl" />
+  
+          <div className="relative mx-auto max-w-7xl px-4 pb-16 pt-12 sm:px-6 sm:pb-20 sm:pt-16 lg:px-8">
+            <h1 className="text-balance text-center font-display text-4xl font-extrabold leading-[1.1] tracking-tight text-stone-900 sm:text-5xl md:text-6xl">
+              Standardul{' '}
+              <span className="landing-modern">
+                <span className="landing-modern__paint" aria-hidden="true">
+                  <svg viewBox="75 10 590 215" preserveAspectRatio="none" focusable="false">
+                    <defs>
+                      <filter id="landing-brush-alpha" colorInterpolationFilters="sRGB">
+                        <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  -.2126 -.7152 -.0722 0 1" />
+                        <feComponentTransfer>
+                          <feFuncA type="gamma" amplitude="1" exponent="1.65" offset="0" />
+                        </feComponentTransfer>
+                      </filter>
+                      <mask id="landing-brush-photo-mask" x="0" y="0" width="721" height="237" maskUnits="userSpaceOnUse">
+                        <image href="/modern-brush-reference.png" x="0" y="0" width="721" height="237" filter="url(#landing-brush-alpha)" />
+                      </mask>
+                    </defs>
+                    <rect x="0" y="0" width="721" height="237" fill="#2a6b4e" mask="url(#landing-brush-photo-mask)" />
+                  </svg>
+                </span>
+                <span className="landing-modern__text">modern</span>
+              </span>{' '}în pregătirea pentru{' '}
+              <span className="bg-gradient-to-r from-brand-600 to-brand-500 bg-clip-text text-transparent">
+                Medicină
               </span>
-              <span className="landing-modern__text">modern</span>
-            </span>{' '}în pregătirea pentru{' '}
-            <span className="bg-gradient-to-r from-brand-600 to-brand-500 bg-clip-text text-transparent">
-              Medicină
-            </span>
-            .
-          </h1>
-
-          <div
-            className="mx-auto mt-8 max-w-2xl text-center"
-            style={{ animation: 'fadeIn 0.8s ease-out 0.3s both' }}
-          >
-            <p className="text-xl font-light italic leading-relaxed text-stone-600 sm:text-2xl">
-              Înțelegem presiunea.
-              <br />
-              <span className="font-medium text-brand-700">
-                Suntem aici să-ți facem drumul mai ușor.
-              </span>
+              .
+            </h1>
+  
+            <div
+              className="mx-auto mt-8 max-w-2xl text-center"
+              style={{ animation: 'fadeIn 0.8s ease-out 0.3s both' }}
+            >
+              <p className="text-xl font-light italic leading-relaxed text-stone-600 sm:text-2xl">
+                Înțelegem presiunea.
+                <br />
+                <span className="font-medium text-brand-700">
+                  Suntem aici să-ți facem drumul mai ușor.
+                </span>
+              </p>
+            </div>
+  
+            <div
+              className="mt-12"
+              style={{
+                animation: 'fadeInUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both',
+              }}
+            >
+              <TicketCard onGetStarted={onGetStarted} />
+            </div>
+          </div>
+        </section>
+  
+        {/* De ce să ne alegi */}
+        <WhyChooseUs />
+  
+        {/* Recenzii */}
+        <ReviewsSection />
+  
+        {/* Timer materiale noi */}
+        <section className="relative overflow-hidden border-y border-stone-800/80 bg-stone-950 py-20 sm:py-24">
+          <div className="absolute inset-0 grid-bg opacity-[0.05]" />
+          <div className="absolute -right-20 -top-20 h-80 w-80 rounded-full bg-brand-500/20 blur-3xl" />
+          <div className="absolute -bottom-20 -left-20 h-80 w-80 rounded-full bg-emerald-500/15 blur-3xl" />
+  
+          <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <Reveal delay={80}>
+              <CountdownTimer onSignIn={onSignIn} />
+            </Reveal>
+          </div>
+        </section>
+  
+        {/* Cum funcționează */}
+        <section className="mx-auto max-w-7xl px-4 pb-20 pt-10 sm:px-6 sm:pb-24 lg:px-8">
+          <Reveal className="mb-12 text-center">
+            <h2 className="font-display text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
+              Cum funcționează
+            </h2>
+            <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-brand-500" />
+          </Reveal>
+  
+          <div className="relative grid gap-8 md:grid-cols-3">
+            <div className="absolute left-0 right-0 top-6 hidden h-px bg-gradient-to-r from-transparent via-brand-200 to-transparent md:block" />
+  
+            {STEPS.map((step, index) => (
+              <Reveal key={step.title} delay={index * 120}>
+                <Step
+                  number={step.number}
+                  title={step.title}
+                  desc={step.desc}
+                />
+              </Reveal>
+            ))}
+          </div>
+        </section>
+  
+        {/* Îndemn final */}
+        <section className="mx-auto max-w-7xl px-4 pb-24 sm:px-6 lg:px-8">
+          <Reveal>
+            <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand-700 via-brand-700 to-brand-800 px-8 py-16 text-center sm:px-16 sm:py-20">
+              <div className="absolute inset-0 grid-bg opacity-[0.05]" />
+              <div className="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-brand-500/20 blur-3xl" />
+              <div className="absolute -bottom-16 -left-16 h-64 w-64 rounded-full bg-accent-500/10 blur-3xl" />
+  
+              <div className="relative">
+                <h2 className="font-display text-3xl font-bold text-white sm:text-4xl">
+                  Pregătește-te pentru admitere
+                </h2>
+                <p className="mx-auto mt-4 max-w-xl text-brand-100">
+                  Începe astăzi cu prima ta simulare. Fiecare grilă te aduce mai
+                  aproape de locul la Medicină.
+                </p>
+  
+                <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+                  <button
+                    onClick={onGetStarted}
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-8 py-4 text-base font-bold text-brand-700 shadow-lg transition-all duration-200 hover:bg-brand-50 hover:shadow-xl active:scale-[0.98]"
+                  >
+                    Creează cont
+                    <ArrowRight size={18} />
+                  </button>
+  
+                  <button
+                    onClick={onSignIn}
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-brand-400/40 px-8 py-4 text-base font-semibold text-brand-50 transition-all duration-200 hover:bg-brand-600/40 active:scale-[0.98]"
+                  >
+                    Am deja cont
+                  </button>
+                </div>
+              </div>
+            </div>
+          </Reveal>
+        </section>
+  
+        {/* Footer */}
+        <footer className="border-t border-stone-200 py-10">
+          <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 sm:flex-row sm:px-6 lg:px-8">
+            <Logo size="sm" />
+            <p className="text-sm text-stone-400">
+              © {new Date().getFullYear()} Biletul spre Medicină. Toate drepturile rezervate.
             </p>
           </div>
-
-          <div
-            className="mt-12"
-            style={{
-              animation: 'fadeInUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both',
-            }}
-          >
-            <TicketCard onGetStarted={onGetStarted} />
-          </div>
-        </div>
-      </section>
-
-      {/* De ce să ne alegi */}
-      <WhyChooseUs />
-
-      {/* Recenzii */}
-      <ReviewsSection />
-
-      {/* Timer materiale noi */}
-      <section className="relative overflow-hidden border-y border-stone-800/80 bg-stone-950 py-20 sm:py-24">
-        <div className="absolute inset-0 grid-bg opacity-[0.05]" />
-        <div className="absolute -right-20 -top-20 h-80 w-80 rounded-full bg-brand-500/20 blur-3xl" />
-        <div className="absolute -bottom-20 -left-20 h-80 w-80 rounded-full bg-emerald-500/15 blur-3xl" />
-
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Reveal delay={80}>
-            <CountdownTimer onSignIn={onSignIn} />
-          </Reveal>
-        </div>
-      </section>
-
-      {/* Cum funcționează */}
-      <section className="mx-auto max-w-7xl px-4 pb-20 pt-10 sm:px-6 sm:pb-24 lg:px-8">
-        <Reveal className="mb-12 text-center">
-          <h2 className="font-display text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl">
-            Cum funcționează
-          </h2>
-          <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-brand-500" />
-        </Reveal>
-
-        <div className="relative grid gap-8 md:grid-cols-3">
-          <div className="absolute left-0 right-0 top-6 hidden h-px bg-gradient-to-r from-transparent via-brand-200 to-transparent md:block" />
-
-          {STEPS.map((step, index) => (
-            <Reveal key={step.title} delay={index * 120}>
-              <Step
-                number={step.number}
-                title={step.title}
-                desc={step.desc}
-              />
-            </Reveal>
-          ))}
-        </div>
-      </section>
-
-      {/* Îndemn final */}
-      <section className="mx-auto max-w-7xl px-4 pb-24 sm:px-6 lg:px-8">
-        <Reveal>
-          <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand-700 via-brand-700 to-brand-800 px-8 py-16 text-center sm:px-16 sm:py-20">
-            <div className="absolute inset-0 grid-bg opacity-[0.05]" />
-            <div className="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-brand-500/20 blur-3xl" />
-            <div className="absolute -bottom-16 -left-16 h-64 w-64 rounded-full bg-accent-500/10 blur-3xl" />
-
-            <div className="relative">
-              <h2 className="font-display text-3xl font-bold text-white sm:text-4xl">
-                Pregătește-te pentru admitere
-              </h2>
-              <p className="mx-auto mt-4 max-w-xl text-brand-100">
-                Începe astăzi cu prima ta simulare. Fiecare grilă te aduce mai
-                aproape de locul la Medicină.
-              </p>
-
-              <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-                <button
-                  onClick={onGetStarted}
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-8 py-4 text-base font-bold text-brand-700 shadow-lg transition-all duration-200 hover:bg-brand-50 hover:shadow-xl active:scale-[0.98]"
-                >
-                  Creează cont
-                  <ArrowRight size={18} />
-                </button>
-
-                <button
-                  onClick={onSignIn}
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-brand-400/40 px-8 py-4 text-base font-semibold text-brand-50 transition-all duration-200 hover:bg-brand-600/40 active:scale-[0.98]"
-                >
-                  Am deja cont
-                </button>
-              </div>
-            </div>
-          </div>
-        </Reveal>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-stone-200 py-10">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 sm:flex-row sm:px-6 lg:px-8">
-          <Logo size="sm" />
-          <p className="text-sm text-stone-400">
-            © {new Date().getFullYear()} Biletul spre Medicină. Toate drepturile rezervate.
-          </p>
-        </div>
-      </footer>
-
-      <SupportChat />
-    </div>
-  );
-}
-
-const STEPS = [
-  {
-    number: 1,
-    title: 'Creează cont',
-    desc: 'Înregistrează-te cu email și parolă. Contul tău îți oferă acces la toate simulările.',
-  },
-  {
-    number: 2,
-    title: 'Abonează-te',
-    desc: 'Un singur abonament, acces nelimitat la toate simulările de pe platformă.',
-  },
-  {
-    number: 3,
-    title: 'Susține simularea',
-    desc: 'Pornește cronometrul, rezolvă grilele, iar la final primește nota și explicațiile.',
-  },
-] as const;
-
-function TicketCard({ onGetStarted }: { onGetStarted: () => void }) {
-  return (
-    <div className="mx-auto max-w-3xl">
-      <div
-        className="relative overflow-hidden rounded-2xl border border-stone-300/60 bg-gradient-to-br from-white to-stone-50 shadow-2xl shadow-stone-400/30"
-        style={{ background: 'linear-gradient(135deg, #ffffff 0%, #faf9f7 100%)' }}
-      >
+        </footer>
+  
+        <SupportChat />
+      </div>
+    );
+  }
+  
+  const STEPS = [
+    {
+      number: 1,
+      title: 'Creează cont',
+      desc: 'Înregistrează-te cu email și parolă. Contul tău îți oferă acces la toate simulările.',
+    },
+    {
+      number: 2,
+      title: 'Abonează-te',
+      desc: 'Un singur abonament, acces nelimitat la toate simulările de pe platformă.',
+    },
+    {
+      number: 3,
+      title: 'Susține simularea',
+      desc: 'Pornește cronometrul, rezolvă grilele, iar la final primește nota și explicațiile.',
+    },
+  ] as const;
+  
+  function TicketCard({ onGetStarted }: { onGetStarted: () => void }) {
+    return (
+      <div className="mx-auto max-w-3xl">
         <div
-          className="pointer-events-none absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage:
-              "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
-          }}
-        />
-
-        <div className="relative flex items-center justify-between bg-gradient-to-r from-brand-700 to-brand-600 px-6 py-3 text-white">
-          <div className="flex items-center gap-2">
-            <Stethoscope size={18} />
-            <span className="font-display text-sm font-bold tracking-wide">
-              BILETUL SPRE MEDICINĂ
-            </span>
-          </div>
-          <span className="text-xs font-medium text-brand-100">ADMITERE 2027</span>
-        </div>
-
-        <div className="relative flex flex-col gap-4 px-6 py-6 sm:flex-row sm:items-stretch sm:justify-between sm:px-10 sm:py-7">
-          <div className="absolute bottom-0 left-0 top-0 hidden flex-col justify-around sm:flex">
-            {[0, 1, 2, 3].map((index) => (
-              <div
-                key={`left-${index}`}
-                className="h-5 w-5 -translate-x-1/2 rounded-full bg-stone-50 ring-1 ring-stone-300/80"
-                style={{
-                  boxShadow:
-                    'inset 0 1px 2px rgba(0,0,0,0.18), 0 0 0 1px rgba(255,255,255,0.6)',
-                }}
-              />
-            ))}
-          </div>
-
-          <div className="absolute bottom-0 right-0 top-0 hidden flex-col justify-around sm:flex">
-            {[0, 1, 2, 3].map((index) => (
-              <div
-                key={`right-${index}`}
-                className="h-5 w-5 translate-x-1/2 rounded-full bg-stone-50 ring-1 ring-stone-300/80"
-                style={{
-                  boxShadow:
-                    'inset 0 1px 2px rgba(0,0,0,0.18), 0 0 0 1px rgba(255,255,255,0.6)',
-                }}
-              />
-            ))}
-          </div>
-
-          <div className="flex flex-1 flex-col justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-stone-400">
-                De la
-              </p>
-              <p className="font-display text-xl font-bold text-stone-900">
-                Elev candidat
-              </p>
-
-              <div className="my-3 flex items-center gap-2">
-                <div className="h-px flex-1 bg-gradient-to-r from-brand-400 to-brand-200" />
-                <ArrowRight size={16} className="text-brand-500" />
-                <div className="h-px flex-1 bg-gradient-to-r from-brand-200 to-brand-400" />
-              </div>
-
-              <p className="text-xs font-semibold uppercase tracking-wider text-stone-400">
-                La
-              </p>
-              <p className="font-display text-xl font-bold text-brand-700">
-                Student la Medicină
-              </p>
+          className="relative overflow-hidden rounded-2xl border border-stone-300/60 bg-gradient-to-br from-white to-stone-50 shadow-2xl shadow-stone-400/30"
+          style={{ background: 'linear-gradient(135deg, #ffffff 0%, #faf9f7 100%)' }}
+        >
+          <div
+            className="pointer-events-none absolute inset-0 opacity-[0.03]"
+            style={{
+              backgroundImage:
+                "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
+            }}
+          />
+  
+          <div className="relative flex items-center justify-between bg-gradient-to-r from-brand-700 to-brand-600 px-6 py-3 text-white">
+            <div className="flex items-center gap-2">
+              <Stethoscope size={18} />
+              <span className="font-display text-sm font-bold tracking-wide">
+                BILETUL SPRE MEDICINĂ
+              </span>
             </div>
-
-            <svg viewBox="0 0 300 50" className="h-auto w-full overflow-visible">
-              <defs>
-                <style>{`
-                  @keyframes ecgSweep {
-                    0% { stroke-dashoffset: 300; }
-                    100% { stroke-dashoffset: -300; }
-                  }
-
-                  .animate-ecg-pulse {
-                    stroke-dasharray: 80 220;
-                    stroke-dashoffset: 300;
-                    animation: ecgSweep 5s linear infinite;
-                  }
-                `}</style>
-              </defs>
-
-              <path
-                d="M 0 25 L 20 25 Q 25 18 30 25 L 40 25 L 43 29 L 48 3 L 53 38 L 57 25 L 62 25 Q 72 12 82 25 L 140 25 Q 145 18 150 25 L 160 25 L 163 29 L 168 3 L 173 38 L 177 25 L 182 25 Q 192 12 202 25 L 260 25 Q 265 18 270 25 L 280 25 L 283 29 L 288 3 L 293 38 L 297 25 L 300 25"
-                fill="none"
-                stroke="currentColor"
-                strokeOpacity={0.15}
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-
-              <path
-                className="animate-ecg-pulse"
-                d="M 0 25 L 20 25 Q 25 18 30 25 L 40 25 L 43 29 L 48 3 L 53 38 L 57 25 L 62 25 Q 72 12 82 25 L 140 25 Q 145 18 150 25 L 160 25 L 163 29 L 168 3 L 173 38 L 177 25 L 182 25 Q 192 12 202 25 L 260 25 Q 265 18 270 25 L 280 25 L 283 29 L 288 3 L 293 38 L 297 25 L 300 25"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                style={{
-                  filter: 'drop-shadow(0px 0px 5px rgba(134, 239, 172, 0.85))',
-                }}
-              />
-            </svg>
+            <span className="text-xs font-medium text-brand-100">ADMITERE 2027</span>
           </div>
-
-          <div className="relative flex flex-col justify-between border-y-2 border-dashed border-stone-200 px-0 py-4 sm:border-y-0 sm:border-l-2 sm:px-8 sm:py-0">
-            <div className="text-center">
-              <p className="text-xs font-semibold uppercase tracking-wider text-stone-400">
-                UMFCD | Medicină Generală &amp; Dentară
-              </p>
-              <p className="font-display text-lg font-bold text-stone-900">
-                Zeci de simulări cronometrate
-              </p>
-              <p className="text-sm text-stone-500">CS · CG · Explicații</p>
-            </div>
-
-            <div className="mt-5 flex w-full flex-col items-center gap-1.5 text-center">
-              <button
-                onClick={onGetStarted}
-                className="group inline-flex items-center justify-center gap-2.5 rounded-xl bg-brand-600 px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-brand-600/25 transition-all duration-300 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-xl hover:shadow-brand-600/30 active:translate-y-0 active:scale-[0.98]"
-              >
-                Ia-ți biletul spre Medicină
-                <ArrowRight
-                  size={18}
-                  className="transition-transform duration-300 group-hover:translate-x-1"
-                />
-              </button>
-              <p className="text-[11px] text-stone-400">
-                Fă-ți cont. Începe gratuit cu simulările de probă.
-              </p>
-            </div>
-          </div>
-        </div>
-
-       <div className="flex items-center justify-between border-t border-stone-200/70 bg-stone-50/80 px-6 py-2.5 sm:px-10">
-  <span className="text-xs text-stone-400">
-    Asistență dedicată · Corectare automată
-  </span>
-  <span className="font-sans text-right text-xs font-bold uppercase tracking-wider text-brand-600 sm:text-left">
-    {Math.max(
-      0,
-      Math.ceil(
-        (new Date('2027-07-15').getTime() -
-          new Date().setHours(0, 0, 0, 0)) /
-          86400000
-      )
-    )}{' '}
-    zile rămase
-  </span>
-</div>
-      </div>
-    </div>
-  );
-}
-
-function Step({
-  number,
-  title,
-  desc,
-}: {
-  number: number;
-  title: string;
-  desc: string;
-}) {
-  return (
-    <div className="relative text-center">
-      <div className="relative mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-lg font-extrabold text-brand-600 shadow-md ring-1 ring-brand-100 transition-transform duration-300 hover:scale-110">
-        {number}
-      </div>
-      <h3 className="mb-2 font-display text-lg font-semibold text-stone-900">
-        {title}
-      </h3>
-      <p className="text-sm leading-relaxed text-stone-600">{desc}</p>
-    </div>
-  );
-}
-
-/*
-  Completează aici adresele celor 20 de imagini.
-  Primele 10 sunt pe rândul de sus, următoarele 10 pe rândul de jos.
-*/
-const REVIEW_IMAGES = [
-  '', // 01
-  '', // 02
-  '', // 03
-  '', // 04
-  '', // 05
-  '', // 06
-  '', // 07
-  '', // 08
-  '', // 09
-  '', // 10
-  '', // 11
-  '', // 12
-  '', // 13
-  '', // 14
-  '', // 15
-  '', // 16
-  '', // 17
-  '', // 18
-  '', // 19
-  '', // 20
-];
-
-/* Toate cardurile au aceeași înălțime; numai lățimea diferă. */
-const REVIEW_CARD_WIDTHS = [
-  300, 370, 270, 400, 320,
-  360, 290, 390, 310, 350,
-];
-
-function ReviewsSection() {
-  const rows = [
-    REVIEW_IMAGES.slice(0, 10),
-    REVIEW_IMAGES.slice(10, 20),
-  ];
-
-  return (
-    <section
-  aria-labelledby="reviews-title"
- className="overflow-hidden border-t border-amber-100/70 pb-8 pt-16 sm:pb-10 sm:pt-20"
-  style={{
-    background:
-      'linear-gradient(180deg, #fffefa 0%, #fff8e3 45%, #fffaf0 72%, #ffffff 100%)',
-  }}
->
-      <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
-       <h2
-  id="reviews-title"
-  className="font-display text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl"
->
-  Ce spun elevii noștri?
-</h2>
-
-        <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-brand-500" />
-
-        <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-stone-600 sm:text-base">
-          Câteva dintre mesajele primite de la cei care se pregătesc alături de noi.
-        </p>
-      </div>
-
-      <div
-        className="mt-10 space-y-5 sm:mt-12 sm:space-y-6"
-        style={{
-          maskImage:
-            'linear-gradient(to right, transparent, black 6%, black 94%, transparent)',
-          WebkitMaskImage:
-            'linear-gradient(to right, transparent, black 6%, black 94%, transparent)',
-        }}
-      >
-        {rows.map((images, rowIndex) => (
-          <div key={rowIndex} className="reviews-row overflow-hidden">
-            <div
-              className={`reviews-track flex w-max ${
-                rowIndex === 0
-                  ? 'reviews-track-left'
-                  : 'reviews-track-right'
-              }`}
-            >
-              {[0, 1].map((copy) => (
+  
+          <div className="relative flex flex-col gap-4 px-6 py-6 sm:flex-row sm:items-stretch sm:justify-between sm:px-10 sm:py-7">
+            <div className="absolute bottom-0 left-0 top-0 hidden flex-col justify-around sm:flex">
+              {[0, 1, 2, 3].map((index) => (
                 <div
-                  key={copy}
-                  className="flex shrink-0 items-center gap-5 pr-5 sm:gap-6 sm:pr-6"
-                  aria-hidden={copy === 1}
-                >
-                  {images.map((src, imageIndex) => {
-                    const reviewNumber = rowIndex * 10 + imageIndex + 1;
-
-                    return (
-                      <figure
-                        key={`${copy}-${reviewNumber}`}
-                        className="flex h-[170px] shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-amber-100 bg-white p-2.5 shadow-[0_10px_30px_rgba(110,83,33,0.10)] sm:h-[220px] sm:p-3"
-                        style={{
-                          width: REVIEW_CARD_WIDTHS[imageIndex],
-                        }}
-                      >
-                        {src ? (
-                          <img
-                            src={src}
-                            alt={
-                              copy === 0
-                                ? `Recenzie de la un elev ${reviewNumber}`
-                                : ''
-                            }
-                            className="block h-full w-full rounded-xl object-contain"
-                            loading={copy === 0 && imageIndex < 4 ? 'eager' : 'lazy'}
-                            draggable={false}
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center rounded-xl bg-white">
-                            <span className="text-sm font-medium text-stone-400">
-                              Recenzia {String(reviewNumber).padStart(2, '0')}
-                            </span>
-                          </div>
-                        )}
-                      </figure>
-                    );
-                  })}
-                </div>
+                  key={`left-${index}`}
+                  className="h-5 w-5 -translate-x-1/2 rounded-full bg-stone-50 ring-1 ring-stone-300/80"
+                  style={{
+                    boxShadow:
+                      'inset 0 1px 2px rgba(0,0,0,0.18), 0 0 0 1px rgba(255,255,255,0.6)',
+                  }}
+                />
               ))}
             </div>
-          </div>
-        ))}
+  
+            <div className="absolute bottom-0 right-0 top-0 hidden flex-col justify-around sm:flex">
+              {[0, 1, 2, 3].map((index) => (
+                <div
+                  key={`right-${index}`}
+                  className="h-5 w-5 translate-x-1/2 rounded-full bg-stone-50 ring-1 ring-stone-300/80"
+                  style={{
+                    boxShadow:
+                      'inset 0 1px 2px rgba(0,0,0,0.18), 0 0 0 1px rgba(255,255,255,0.6)',
+                  }}
+                />
+              ))}
             </div>
-
-      <div className="relative mx-auto mt-7 flex max-w-7xl flex-col items-center justify-center gap-4 px-4 sm:mt-8 sm:px-6 lg:min-h-12 lg:flex-row lg:justify-end lg:px-8">
-  <p className="text-center font-display text-xl font-semibold text-stone-800 sm:text-2xl lg:absolute lg:left-1/2 lg:w-max lg:-translate-x-1/2">
-  Așteptăm și părerea ta.
-</p>
-
-        <div className="flex items-center gap-2.5" aria-label="Rețele sociale">
-          {[
-            {
-              name: 'Instagram',
-              href: '',
-              icon: 'https://cdn.simpleicons.org/instagram/44403C',
-            },
-            {
-              name: 'Facebook',
-              href: '',
-              icon: 'https://cdn.simpleicons.org/facebook/44403C',
-            },
-            {
-              name: 'WhatsApp',
-              href: '',
-              icon: 'https://cdn.simpleicons.org/whatsapp/44403C',
-            },
-            {
-              name: 'TikTok',
-              href: '',
-              icon: 'https://cdn.simpleicons.org/tiktok/44403C',
-            },
-          ].map(({ name, href, icon }) => (
-            <a
-              key={name}
-              href={href || undefined}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={name}
-              aria-disabled={!href}
-              tabIndex={href ? 0 : -1}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-amber-200/80 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-brand-300 hover:bg-brand-50 hover:shadow-md"
-            >
-              <img
-                src={icon}
-                alt=""
-                aria-hidden="true"
-                width={18}
-                height={18}
-              />
-            </a>
-          ))}
+  
+            <div className="flex flex-1 flex-col justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-stone-400">
+                  De la
+                </p>
+                <p className="font-display text-xl font-bold text-stone-900">
+                  Elev candidat
+                </p>
+  
+                <div className="my-3 flex items-center gap-2">
+                  <div className="h-px flex-1 bg-gradient-to-r from-brand-400 to-brand-200" />
+                  <ArrowRight size={16} className="text-brand-500" />
+                  <div className="h-px flex-1 bg-gradient-to-r from-brand-200 to-brand-400" />
+                </div>
+  
+                <p className="text-xs font-semibold uppercase tracking-wider text-stone-400">
+                  La
+                </p>
+                <p className="font-display text-xl font-bold text-brand-700">
+                  Student la Medicină
+                </p>
+              </div>
+  
+              <svg viewBox="0 0 300 50" className="h-auto w-full overflow-visible">
+                <defs>
+                  <style>{`
+                    @keyframes ecgSweep {
+                      0% { stroke-dashoffset: 300; }
+                      100% { stroke-dashoffset: -300; }
+                    }
+  
+                    .animate-ecg-pulse {
+                      stroke-dasharray: 80 220;
+                      stroke-dashoffset: 300;
+                      animation: ecgSweep 5s linear infinite;
+                    }
+                  `}</style>
+                </defs>
+  
+                <path
+                  d="M 0 25 L 20 25 Q 25 18 30 25 L 40 25 L 43 29 L 48 3 L 53 38 L 57 25 L 62 25 Q 72 12 82 25 L 140 25 Q 145 18 150 25 L 160 25 L 163 29 L 168 3 L 173 38 L 177 25 L 182 25 Q 192 12 202 25 L 260 25 Q 265 18 270 25 L 280 25 L 283 29 L 288 3 L 293 38 L 297 25 L 300 25"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeOpacity={0.15}
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+  
+                <path
+                  className="animate-ecg-pulse"
+                  d="M 0 25 L 20 25 Q 25 18 30 25 L 40 25 L 43 29 L 48 3 L 53 38 L 57 25 L 62 25 Q 72 12 82 25 L 140 25 Q 145 18 150 25 L 160 25 L 163 29 L 168 3 L 173 38 L 177 25 L 182 25 Q 192 12 202 25 L 260 25 Q 265 18 270 25 L 280 25 L 283 29 L 288 3 L 293 38 L 297 25 L 300 25"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={{
+                    filter: 'drop-shadow(0px 0px 5px rgba(134, 239, 172, 0.85))',
+                  }}
+                />
+              </svg>
+            </div>
+  
+            <div className="relative flex flex-col justify-between border-y-2 border-dashed border-stone-200 px-0 py-4 sm:border-y-0 sm:border-l-2 sm:px-8 sm:py-0">
+              <div className="text-center">
+                <p className="text-xs font-semibold uppercase tracking-wider text-stone-400">
+                  UMFCD | Medicină Generală &amp; Dentară
+                </p>
+                <p className="font-display text-lg font-bold text-stone-900">
+                  Zeci de simulări cronometrate
+                </p>
+                <p className="text-sm text-stone-500">CS · CG · Explicații</p>
+              </div>
+  
+              <div className="mt-5 flex w-full flex-col items-center gap-1.5 text-center">
+                <button
+                  onClick={onGetStarted}
+                  className="group inline-flex items-center justify-center gap-2.5 rounded-xl bg-brand-600 px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-brand-600/25 transition-all duration-300 hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-xl hover:shadow-brand-600/30 active:translate-y-0 active:scale-[0.98]"
+                >
+                  Ia-ți biletul spre Medicină
+                  <ArrowRight
+                    size={18}
+                    className="transition-transform duration-300 group-hover:translate-x-1"
+                  />
+                </button>
+                <p className="text-[11px] text-stone-400">
+                  Fă-ți cont. Începe gratuit cu simulările de probă.
+                </p>
+              </div>
+            </div>
+          </div>
+  
+         <div className="flex items-center justify-between border-t border-stone-200/70 bg-stone-50/80 px-6 py-2.5 sm:px-10">
+    <span className="text-xs text-stone-400">
+      Asistență dedicată · Corectare automată
+    </span>
+    <span className="font-sans text-right text-xs font-bold uppercase tracking-wider text-brand-600 sm:text-left">
+      {Math.max(
+        0,
+        Math.ceil(
+          (new Date('2027-07-15').getTime() -
+            new Date().setHours(0, 0, 0, 0)) /
+            86400000
+        )
+      )}{' '}
+      zile rămase
+    </span>
+  </div>
         </div>
       </div>
-
-      <style>{`
-        @keyframes reviewsMoveLeft {
-          from { transform: translateX(0); }
-          to { transform: translateX(-50%); }
-        }
-
-        @keyframes reviewsMoveRight {
-          from { transform: translateX(-50%); }
-          to { transform: translateX(0); }
-        }
-
-        .reviews-track {
-          will-change: transform;
-        }
-
-        .reviews-track-left {
-          animation: reviewsMoveLeft 65s linear infinite;
-        }
-
-        .reviews-track-right {
-          animation: reviewsMoveRight 68s linear infinite;
-        }
-
-        .reviews-row:hover .reviews-track {
-          animation-play-state: paused;
-        }
-
-        @media (prefers-reduced-motion: reduce) {
+    );
+  }
+  
+  function Step({
+    number,
+    title,
+    desc,
+  }: {
+    number: number;
+    title: string;
+    desc: string;
+  }) {
+    return (
+      <div className="relative text-center">
+        <div className="relative mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-lg font-extrabold text-brand-600 shadow-md ring-1 ring-brand-100 transition-transform duration-300 hover:scale-110">
+          {number}
+        </div>
+        <h3 className="mb-2 font-display text-lg font-semibold text-stone-900">
+          {title}
+        </h3>
+        <p className="text-sm leading-relaxed text-stone-600">{desc}</p>
+      </div>
+    );
+  }
+  
+  /*
+    Completează aici adresele celor 20 de imagini.
+    Primele 10 sunt pe rândul de sus, următoarele 10 pe rândul de jos.
+  */
+  const REVIEW_IMAGES = [
+    '', // 01
+    '', // 02
+    '', // 03
+    '', // 04
+    '', // 05
+    '', // 06
+    '', // 07
+    '', // 08
+    '', // 09
+    '', // 10
+    '', // 11
+    '', // 12
+    '', // 13
+    '', // 14
+    '', // 15
+    '', // 16
+    '', // 17
+    '', // 18
+    '', // 19
+    '', // 20
+  ];
+  
+  /* Toate cardurile au aceeași înălțime; numai lățimea diferă. */
+  const REVIEW_CARD_WIDTHS = [
+    300, 370, 270, 400, 320,
+    360, 290, 390, 310, 350,
+  ];
+  
+  function ReviewsSection() {
+    const rows = [
+      REVIEW_IMAGES.slice(0, 10),
+      REVIEW_IMAGES.slice(10, 20),
+    ];
+  
+    return (
+      <section
+    aria-labelledby="reviews-title"
+   className="overflow-hidden border-t border-amber-100/70 pb-8 pt-16 sm:pb-10 sm:pt-20"
+    style={{
+      background:
+        'linear-gradient(180deg, #fffefa 0%, #fff8e3 45%, #fffaf0 72%, #ffffff 100%)',
+    }}
+  >
+        <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
+         <h2
+    id="reviews-title"
+    className="font-display text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl"
+  >
+    Ce spun elevii noștri?
+  </h2>
+  
+          <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-brand-500" />
+  
+          <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-stone-600 sm:text-base">
+            Câteva dintre mesajele primite de la cei care se pregătesc alături de noi.
+          </p>
+        </div>
+  
+        <div
+          className="mt-10 space-y-5 sm:mt-12 sm:space-y-6"
+          style={{
+            maskImage:
+              'linear-gradient(to right, transparent, black 6%, black 94%, transparent)',
+            WebkitMaskImage:
+              'linear-gradient(to right, transparent, black 6%, black 94%, transparent)',
+          }}
+        >
+          {rows.map((images, rowIndex) => (
+            <div key={rowIndex} className="reviews-row overflow-hidden">
+              <div
+                className={`reviews-track flex w-max ${
+                  rowIndex === 0
+                    ? 'reviews-track-left'
+                    : 'reviews-track-right'
+                }`}
+              >
+                {[0, 1].map((copy) => (
+                  <div
+                    key={copy}
+                    className="flex shrink-0 items-center gap-5 pr-5 sm:gap-6 sm:pr-6"
+                    aria-hidden={copy === 1}
+                  >
+                    {images.map((src, imageIndex) => {
+                      const reviewNumber = rowIndex * 10 + imageIndex + 1;
+  
+                      return (
+                        <figure
+                          key={`${copy}-${reviewNumber}`}
+                          className="flex h-[170px] shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-amber-100 bg-white p-2.5 shadow-[0_10px_30px_rgba(110,83,33,0.10)] sm:h-[220px] sm:p-3"
+                          style={{
+                            width: REVIEW_CARD_WIDTHS[imageIndex],
+                          }}
+                        >
+                          {src ? (
+                            <img
+                              src={src}
+                              alt={
+                                copy === 0
+                                  ? `Recenzie de la un elev ${reviewNumber}`
+                                  : ''
+                              }
+                              className="block h-full w-full rounded-xl object-contain"
+                              loading={copy === 0 && imageIndex < 4 ? 'eager' : 'lazy'}
+                              draggable={false}
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center rounded-xl bg-white">
+                              <span className="text-sm font-medium text-stone-400">
+                                Recenzia {String(reviewNumber).padStart(2, '0')}
+                              </span>
+                            </div>
+                          )}
+                        </figure>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+              </div>
+  
+        <div className="relative mx-auto mt-7 flex max-w-7xl flex-col items-center justify-center gap-4 px-4 sm:mt-8 sm:px-6 lg:min-h-12 lg:flex-row lg:justify-end lg:px-8">
+    <p className="text-center font-display text-xl font-semibold text-stone-800 sm:text-2xl lg:absolute lg:left-1/2 lg:w-max lg:-translate-x-1/2">
+    Așteptăm și părerea ta.
+  </p>
+  
+          <div className="flex items-center gap-2.5" aria-label="Rețele sociale">
+            {[
+              {
+                name: 'Instagram',
+                href: '',
+                icon: 'https://cdn.simpleicons.org/instagram/44403C',
+              },
+              {
+                name: 'Facebook',
+                href: '',
+                icon: 'https://cdn.simpleicons.org/facebook/44403C',
+              },
+              {
+                name: 'WhatsApp',
+                href: '',
+                icon: 'https://cdn.simpleicons.org/whatsapp/44403C',
+              },
+              {
+                name: 'TikTok',
+                href: '',
+                icon: 'https://cdn.simpleicons.org/tiktok/44403C',
+              },
+            ].map(({ name, href, icon }) => (
+              <a
+                key={name}
+                href={href || undefined}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={name}
+                aria-disabled={!href}
+                tabIndex={href ? 0 : -1}
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-amber-200/80 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-brand-300 hover:bg-brand-50 hover:shadow-md"
+              >
+                <img
+                  src={icon}
+                  alt=""
+                  aria-hidden="true"
+                  width={18}
+                  height={18}
+                />
+              </a>
+            ))}
+          </div>
+        </div>
+  
+        <style>{`
+          @keyframes reviewsMoveLeft {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+          }
+  
+          @keyframes reviewsMoveRight {
+            from { transform: translateX(-50%); }
+            to { transform: translateX(0); }
+          }
+  
           .reviews-track {
-            animation: none;
+            will-change: transform;
           }
-
-          .reviews-row {
-            overflow-x: auto;
+  
+          .reviews-track-left {
+            animation: reviewsMoveLeft 65s linear infinite;
           }
-        }
-      `}</style>
-    </section>
-  );
-}
+  
+          .reviews-track-right {
+            animation: reviewsMoveRight 68s linear infinite;
+          }
+  
+          .reviews-row:hover .reviews-track {
+            animation-play-state: paused;
+          }
+  
+          @media (prefers-reduced-motion: reduce) {
+            .reviews-track {
+              animation: none;
+            }
+  
+            .reviews-row {
+              overflow-x: auto;
+            }
+          }
+        `}</style>
+      </section>
+    );
+  }
