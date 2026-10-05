@@ -70,6 +70,14 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
   const answersRef = useRef<Record<string, string>>({});
   const attemptIdRef = useRef<string | null>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mountedRef = useRef(true);
+  const startingRef = useRef(false);
+  const [starting, setStarting] = useState(false);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
 
   // Load simulation + question count
   useEffect(() => {
@@ -96,47 +104,73 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
   }, [simulationId]);
 
   const startAttempt = useCallback(async () => {
-    if (!profile) return;
+    if (!profile || startingRef.current) return;
+    startingRef.current = true;
+    setStarting(true);
     setError(null);
+    try {
+      for (let pass = 0; pass < 2; pass += 1) {
+        const { data: att, error: startError } = await supabase
+          .rpc('start_exam_attempt', { p_simulation_id: simulationId });
+        if (!mountedRef.current) return;
+        if (startError) {
+          console.error('start_exam_attempt error:', startError);
+          const msg = startError.message || '';
+          if (msg.includes('Abonament necesar')) {
+            setError('Ai nevoie de un abonament activ pentru a accesa această simulare.');
+          } else if (msg.includes('Limita de 3 încercări')) {
+            setError('Ai folosit toate cele 3 încercări pentru această simulare.');
+          } else if (msg.includes('nu este disponibil')) {
+            setError('Simularea nu este disponibilă momentan.');
+          } else {
+            setError('Nu s-a putut porni simularea. Încearcă din nou.');
+          }
+          return;
+        }
+        if (!att || att.length === 0) {
+          setError('Nu s-a putut crea încercarea.');
+          return;
+        }
 
-    const { data: att, error: startError } = await supabase
-      .rpc('start_exam_attempt', { p_simulation_id: simulationId });
+        const nextAttempt = mapRpcAttempt(att[0] as unknown as RpcAttemptRow);
+        if (nextAttempt.submitted_at) {
+          setError('S-a primit o încercare deja încheiată. Reîncarcă pagina și încearcă din nou.');
+          return;
+        }
 
-    if (startError) {
-      console.error('start_exam_attempt error:', startError);
-      const msg = startError.message || '';
-      if (msg.includes('Abonament necesar')) {
-        setError('Ai nevoie de un abonament activ pentru a accesa această simulare.');
-      } else if (msg.includes('Limita de 3 încercări')) {
-        setError('Această simulare a fost deja lucrată. Ai folosit toate cele 3 încercări.');
-      } else if (msg.includes('nu este disponibil')) {
-        setError('Simularea nu este disponibilă momentan.');
-      } else {
-        setError('Nu s-a putut porni simularea. Încearcă din nou.');
+        const expiresAt = nextAttempt.expires_at ? Date.parse(nextAttempt.expires_at) : NaN;
+        if (Number.isFinite(expiresAt) && expiresAt <= Date.now()) {
+          const { error: expireError } = await supabase.rpc('submit_exam_attempt', {
+            p_simulation_id: simulationId,
+            p_answers: nextAttempt.answers || {},
+            p_expired: true,
+          });
+          if (!mountedRef.current) return;
+          if (expireError) {
+            console.error('Expired exam attempt could not be finalized:', expireError);
+            setError('Încercarea anterioară a expirat, dar nu a putut fi încheiată. Încearcă din nou.');
+            return;
+          }
+          continue;
+        }
+
+        setAttempt(nextAttempt);
+        attemptIdRef.current = nextAttempt.id;
+        answersRef.current = nextAttempt.answers || {};
+        setAnswers(answersRef.current);
+        submittedRef.current = false;
+        setStarted(true);
+        return;
       }
-      return;
+      setError('Încercarea anterioară a expirat. Reîncearcă pornirea simulării.');
+    } catch (err) {
+      console.error('Unexpected simulation start error:', err);
+      if (mountedRef.current) setError('Nu s-a putut porni simularea. Încearcă din nou.');
+    } finally {
+      startingRef.current = false;
+      if (mountedRef.current) setStarting(false);
     }
-
-    if (!att || att.length === 0) {
-      setError('Nu s-a putut crea încercarea.');
-      return;
-    }
-
-    const newAttempt = mapRpcAttempt(att[0] as unknown as RpcAttemptRow);
-    setAttempt(newAttempt);
-    attemptIdRef.current = newAttempt.id;
-
-    if (newAttempt.submitted_at) {
-      onComplete(newAttempt.id);
-      return;
-    }
-
-    if (newAttempt.answers && Object.keys(newAttempt.answers).length > 0) {
-      setAnswers(newAttempt.answers as Record<string, string>);
-      answersRef.current = newAttempt.answers as Record<string, string>;
-    }
-    setStarted(true);
-  }, [profile, simulationId, onComplete]);
+  }, [profile, simulationId]);
 
   // Timer: calculate from expires_at — never from Date.now() as start
   useEffect(() => {
