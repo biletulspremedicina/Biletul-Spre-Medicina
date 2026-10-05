@@ -76,7 +76,7 @@ export default function AuthPage({ mode, onSuccess, onSwitchMode, onBack }: Prop
         <div className="auth-card__brand"><Logo showText linked={false} /></div>
 
         <div className="auth-card__intro">
-          <h1 id="auth-title">{isSignup ? 'Creează-ți contul' : 'Continuă pregătirea de unde ai rămas.'}</h1>
+          <h1 id="auth-title">{isSignup ? 'Creează-ți contul' : 'Bine ai revenit'}</h1>
           <p>{isSignup ? 'Începe pregătirea pentru admitere.' : 'Continuă pregătirea de unde ai rămas.'}</p>
         </div>
 
