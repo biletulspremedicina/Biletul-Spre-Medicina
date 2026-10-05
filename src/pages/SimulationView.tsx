@@ -559,7 +559,7 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
             <h2>De știut înainte de start</h2>
             <ol className="simulation-intro__steps">
               <li><span className="simulation-intro__step-number">1</span><span>Cronometrul merge doar cât lucrezi în pagina examenului.</span></li>
-              <li><span className="simulation-intro__step-number">2</span><span>Când ieși sau închizi pagina, timpul rămas se păstrează.</span></li>
+              <li><span className="simulation-intro__step-number">2</span><span><strong>Revino la set când dorești.</strong> Cronometrul pornește din nou doar când reiei rezolvarea.</span></li>
               <li><span className="simulation-intro__step-number">3</span><span>La expirare, răspunsurile <strong>se trimit automat.</strong></span></li>
             </ol>
           </section>
