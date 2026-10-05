@@ -35,7 +35,7 @@ export default function ExamHeaderTools({ comfortTheme, onComfortChange, onHome 
       <VisualComfortPicker value={comfortTheme} onChange={onComfortChange} />
       <button
         type="button"
-        className="simulation-intro__home"
+        className="simulation-intro__home practice-exam__home"
         onClick={onHome}
         aria-label="Acasă"
         title="Acasă"
