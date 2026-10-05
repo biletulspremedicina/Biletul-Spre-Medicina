@@ -1,244 +1,346 @@
-import { useState } from 'react';
-import { ArrowLeft, Eye, EyeOff, Loader2 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
-import Logo from '@/components/Logo';
-import SupportChat from '@/components/SupportChat';
-import './AuthPage.css';
-
-type Props = {
-  mode: 'signin' | 'signup';
-  onSuccess: () => void;
-  onSwitchMode: (mode: 'signin' | 'signup') => void;
-  onBack: () => void;
-};
-
-const socialProviders = [
-  'Facebook',
-  'Google',
-  'Yahoo',
-] as const;
-
-type SocialProvider = typeof socialProviders[number];
-
-function SocialIcon({ provider }: { provider: SocialProvider }) {
-  if (provider === 'Facebook') {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <path fill="#1877f2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-      </svg>
-    );
-  }
-
-  if (provider === 'Google') {
-    return (
-      <svg viewBox="0 0 48 48" aria-hidden="true" focusable="false">
-        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.7 9.5 24 9.5z" />
-        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.24 5.48-4.74 7.18l7.73 6c4.51-4.16 7.05-10.29 7.05-17.65z" />
-        <path fill="#FBBC05" d="M10.53 28.59A14.4 14.4 0 0 1 9.75 24c0-1.59.27-3.13.76-4.59l-7.95-6.19A23.97 23.97 0 0 0 0 24c0 3.87.92 7.52 2.56 10.78l7.97-6.19z" />
-        <path fill="#34A853" d="M24 48c6.48 0 11.92-2.13 15.89-5.8l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.3 0-11.57-4.22-13.47-9.91l-7.97 6.19C6.51 42.62 14.62 48 24 48z" />
-      </svg>
-    );
-  }
-
-  return (
-    <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
-      <rect x="1" y="1" width="30" height="30" rx="8" fill="#6001d2" />
-      <path d="M5.5 8.5h5.1l5.1 7.8 5.1-7.8h5.1l-8 12.1v4h-4.5v-4L5.5 8.5z" fill="#fff" />
-      <path d="M24.6 15.9h2.6l-.5 6.3h-1.6l-.5-6.3z" fill="#fff" />
-      <circle cx="25.9" cy="24.3" r="1.3" fill="#fff" />
-    </svg>
-  );
+.auth-page {
+  position: relative;
+  display: grid;
+  height: 100svh;
+  place-items: center;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 48px 24px 24px;
+  background: #f8f9f5;
+  color: #142d27;
 }
 
-export default function AuthPage({ mode, onSuccess, onSwitchMode, onBack }: Props) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+.auth-page::before,
+.auth-page::after {
+  position: absolute;
+  z-index: -1;
+  content: '';
+  pointer-events: none;
+}
 
-  const isSignup = mode === 'signup';
+.auth-page::before {
+  top: -34vw;
+  left: -22vw;
+  width: min(78vw, 1050px);
+  height: min(80vw, 1050px);
+  border-radius: 43% 57% 63% 37% / 59% 36% 64% 41%;
+  background: #e1eee6;
+  transform: rotate(-13deg);
+}
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    if (isSignup && password !== confirmPassword) {
-      setError('Parolele nu coincid. Verifică-le și încearcă din nou.');
-      return;
-    }
-    setLoading(true);
+.auth-page::after {
+  right: -22vw;
+  bottom: -42vw;
+  width: min(82vw, 1120px);
+  height: min(82vw, 1120px);
+  border-radius: 63% 37% 42% 58% / 39% 56% 44% 61%;
+  background: #d9eae1;
+  transform: rotate(19deg);
+}
 
-    try {
-      if (isSignup) {
-        const { error: signUpError } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { data: { full_name: fullName } },
-        });
-        if (signUpError) throw signUpError;
-        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-        if (signInError) throw signInError;
-        onSuccess();
-      } else {
-        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-        if (signInError) throw signInError;
-        onSuccess();
-      }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'A apărut o eroare';
-      if (msg.includes('Invalid login')) {
-        setError('Email sau parolă incorectă.');
-      } else if (msg.includes('already registered') || msg.includes('already been registered')) {
-        setError('Acest email este deja înregistrat. Încearcă să te autentifici.');
-      } else if (msg.includes('password') && msg.includes('at least')) {
-        setError('Parola trebuie să aibă cel puțin 6 caractere.');
-      } else {
-        setError(msg);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+.auth-page__back {
+  position: absolute;
+  z-index: 2;
+  top: 28px;
+  left: clamp(24px, 4vw, 72px);
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 0;
+  border: 0;
+  background: transparent;
+  color: #355e4e;
+  font-size: 14px;
+  font-weight: 650;
+  transition: color .2s ease, transform .2s ease;
+}
 
-  return (
-    <main className={`auth-page${isSignup ? ' auth-page--signup' : ''}`}>
-      <button type="button" className="auth-page__back" onClick={onBack}>
-        <ArrowLeft size={18} aria-hidden="true" />
-        <span>Înapoi la pagina principală</span>
-      </button>
+.auth-page__back:hover { color: #103d2f; transform: translateX(-3px); }
 
-      <section className="auth-card" aria-labelledby="auth-title">
-        <div className="auth-card__brand"><Logo showText linked={false} /></div>
+.auth-card {
+  position: relative;
+  width: min(100%, 512px);
+  padding: 36px;
+  border: 1px solid #e3ebe4;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, .97);
+  box-shadow: 0 28px 90px rgba(20, 68, 45, .10), 0 2px 12px rgba(20, 68, 45, .035);
+}
 
-        <div className="auth-card__intro">
-          <h1 id="auth-title">{isSignup ? 'Creează-ți contul' : 'Bine ai revenit'}</h1>
-          <p>{isSignup ? 'Începe pregătirea pentru admitere.' : 'Continuă pregătirea de unde ai rămas.'}</p>
-        </div>
+.auth-card__back {
+  position: absolute;
+  top: 17px;
+  left: 17px;
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 1px solid #dce9de;
+  border-radius: 9px;
+  background: #fff;
+  color: #236a4e;
+  transition: background-color .2s ease, border-color .2s ease;
+}
 
-        <form onSubmit={handleSubmit} className="auth-form">
-          {isSignup && (
-            <div className="auth-form__field">
-              <label htmlFor="auth-full-name">Nume complet</label>
-              <input
-                id="auth-full-name"
-                type="text"
-                autoComplete="name"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder="Numele tău complet"
-                required
-              />
-            </div>
-          )}
+.auth-card__back:hover { border-color: #a8c8b1; background: #f4faf5; }
 
-          <div className="auth-form__field">
-            <label htmlFor="auth-email">E-mail</label>
-            <input
-              id="auth-email"
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Introdu e-mailul tău"
-              required
-            />
-          </div>
+.auth-card__brand { display: flex; justify-content: center; }
+.auth-card__brand .brand-lockup { gap: 8px; }
+.auth-card__brand .brand-lockup img { width: 64px; height: 44px; }
+.auth-card__brand .brand-lockup > span { font-size: 15px; }
 
-          <div className="auth-form__field">
-            <label htmlFor="auth-password">Parolă</label>
-            <div className="auth-form__password">
-              <input
-                id="auth-password"
-                type={showPassword ? 'text' : 'password'}
-                autoComplete={isSignup ? 'new-password' : 'current-password'}
-                value={password}
-                onChange={(e) => { setPassword(e.target.value); setError(null); }}
-                placeholder={isSignup ? 'Minimum 6 caractere' : 'Introdu parola'}
-                required
-                minLength={6}
-              />
-              <button
-                type="button"
-                className="auth-form__reveal"
-                onClick={() => setShowPassword((visible) => !visible)}
-                aria-label={showPassword ? 'Ascunde parola' : 'Afișează parola'}
-                aria-pressed={showPassword}
-              >
-                {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
-              </button>
-            </div>
-          </div>
+.auth-card__intro {
+  margin: 22px 0;
+  text-align: center;
+}
 
-          {isSignup && (
-            <div className="auth-form__field">
-              <label htmlFor="auth-confirm-password">Confirmă parola</label>
-              <div className="auth-form__password">
-                <input
-                  id="auth-confirm-password"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  autoComplete="new-password"
-                  value={confirmPassword}
-                  onChange={(e) => { setConfirmPassword(e.target.value); setError(null); }}
-                  placeholder="Introdu parola din nou"
-                  required
-                  minLength={6}
-                />
-                <button
-                  type="button"
-                  className="auth-form__reveal"
-                  onClick={() => setShowConfirmPassword((visible) => !visible)}
-                  aria-label={showConfirmPassword ? 'Ascunde parola confirmată' : 'Afișează parola confirmată'}
-                  aria-pressed={showConfirmPassword}
-                >
-                  {showConfirmPassword ? <EyeOff size={19} /> : <Eye size={19} />}
-                </button>
-              </div>
-            </div>
-          )}
+.auth-card__intro h1 {
+  margin: 0;
+  color: #142e27;
+  font-family: Georgia, Cambria, 'Times New Roman', serif;
+  font-size: clamp(30px, 3.4vw, 39px);
+  font-weight: 700;
+  letter-spacing: -.035em;
+  line-height: 1.13;
+}
 
-          {error && <p className="auth-form__error" role="alert">{error}</p>}
+.auth-card__intro > p:last-child {
+  margin: 6px 0 0;
+  color: #718177;
+  font-size: 14px;
+}
 
-          <button type="submit" disabled={loading} className="auth-form__submit">
-            {loading && <Loader2 size={18} className="animate-spin" aria-hidden="true" />}
-            {isSignup ? 'Creează cont' : 'Mă conectez'}
-          </button>
-        </form>
+.auth-form { display: grid; gap: 14px; }
+.auth-form__field { display: grid; gap: 6px; }
+.auth-form__field label { color: #213b32; font-size: 13px; font-weight: 700; }
 
-        {!isSignup && (
-          <button type="button" className="auth-card__forgot" title="Funcție de configurat">
-            Ai uitat parola?
-          </button>
-        )}
+.auth-form__field input {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 17px;
+  border: 1px solid #d9e2da;
+  border-radius: 11px;
+  outline: none;
+  background: #fcfdfa;
+  color: #152d25;
+  font-size: 15px;
+  transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
+}
 
-        <div className="auth-card__social">
-          <div className="auth-card__social-options">
-            {socialProviders.map((provider) => (
-              // Butoanele sociale sunt doar UI; conectarea se poate atașa ulterior.
-              <button
-                key={provider}
-                type="button"
-                className="auth-card__social-button"
-                title="Funcție de configurat"
-              >
-                <span className="auth-card__social-mark"><SocialIcon provider={provider} /></span>
-                <span>{provider}</span>
-              </button>
-            ))}
-          </div>
-        </div>
+.auth-form__field input::placeholder { color: #9aa8a0; }
+.auth-form__field input:focus { border-color: #3d8b65; background: #fff; box-shadow: 0 0 0 3px rgba(42, 107, 78, .12); }
+.auth-form__password { position: relative; }
+.auth-form__password input { padding-right: 52px; }
 
-        <div className="auth-card__footer">
-          <span>{isSignup ? 'Ai deja cont?' : 'Nu ai cont?'}</span>
-          <button type="button" onClick={() => { setError(null); onSwitchMode(isSignup ? 'signin' : 'signup'); }}>
-            {isSignup ? 'Autentifică-te' : 'Creează-ți cont'}
-          </button>
-        </div>
-      </section>
+.auth-form__reveal {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #73877a;
+  transform: translateY(-50%);
+}
 
-      <SupportChat />
-    </main>
-  );
+.auth-form__reveal:hover { background: #edf4ee; color: #175a43; }
+.auth-form__error { margin: -2px 0 0; padding: 11px 14px; border: 1px solid #edcbc9; border-radius: 9px; background: #fff6f5; color: #9e3d38; font-size: 13px; }
+
+.auth-form__submit {
+  display: inline-flex;
+  min-height: 50px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin-top: 6px;
+  border: 1px solid #17634a;
+  border-radius: 11px;
+  background: #17634a;
+  box-shadow: 0 9px 18px rgba(23, 99, 74, .15);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 750;
+  transition: background-color .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+
+.auth-form__submit:hover:not(:disabled) { background: #104d39; box-shadow: 0 11px 22px rgba(23, 99, 74, .2); transform: translateY(-1px); }
+.auth-form__submit:disabled { cursor: wait; opacity: .65; }
+
+.auth-card__forgot {
+  display: block;
+  width: max-content;
+  margin: 11px 0 0 auto;
+  border: 0;
+  background: transparent;
+  color: #236a4e;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.auth-card__forgot:hover,
+.auth-card__footer button:hover { text-decoration: underline; text-underline-offset: 4px; }
+
+.auth-card__social { margin-top: 20px; }
+.auth-card__social-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; }
+
+.auth-card__social-button {
+  display: inline-flex;
+  min-width: 0;
+  min-height: 58px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 6px 9px;
+  border: 1px solid #dce5dd;
+  border-radius: 10px;
+  background: #fff;
+  color: #294036;
+  font-size: 13px;
+  font-weight: 700;
+  transition: border-color .2s ease, background-color .2s ease, transform .2s ease;
+}
+
+.auth-card__social-button:hover { border-color: #9dbfaa; background: #f5faf6; transform: translateY(-1px); }
+.auth-card__social-mark { display: grid; flex: 0 0 27px; width: 27px; height: 27px; place-items: center; }
+.auth-card__social-mark svg { display: block; width: 100%; height: 100%; }
+
+.auth-card__footer {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 20px;
+  padding-top: 17px;
+  border-top: 1px solid #e9eee8;
+  color: #7a887e;
+  font-size: 13px;
+}
+
+.auth-card__footer button { padding: 0; border: 0; background: transparent; color: #236a4e; font-size: inherit; font-weight: 750; }
+
+.auth-page--signup { align-items: start; padding-top: 0; padding-bottom: 0; }
+.auth-page--signup .auth-card__intro { margin-top: 34px; }
+.auth-page--signup .auth-card__footer { margin-top: auto; }
+
+.auth-page :is(button, input):focus-visible { outline: 3px solid rgba(42, 107, 78, .45); outline-offset: 3px; }
+
+@media (max-height: 860px) {
+  .auth-page--signup .auth-card { padding-top: 32px; padding-bottom: 32px; }
+  .auth-page--signup .auth-card__intro { margin: 19px 0; }
+  .auth-page--signup .auth-form { gap: 12px; }
+  .auth-page--signup .auth-form__field input { min-height: 44px; }
+  .auth-page--signup .auth-form__submit { min-height: 48px; margin-top: 4px; }
+  .auth-page--signup .auth-card__social { margin-top: 18px; }
+  .auth-page--signup .auth-card__social-button { min-height: 52px; }
+  .auth-page--signup .auth-card__footer { margin-top: auto; padding-top: 14px; }
+}
+
+@media (max-height: 730px) {
+  .auth-page--signup .auth-card { padding-top: 26px; padding-bottom: 26px; }
+  .auth-page--signup .auth-card__intro { margin: 16px 0; }
+  .auth-page--signup .auth-form { gap: 11px; }
+  .auth-page--signup .auth-card__social { margin-top: 16px; }
+  .auth-page--signup .auth-card__footer { margin-top: auto; }
+}
+
+@media (max-width: 600px) {
+  .auth-page { padding: 54px 15px 14px; }
+  .auth-page--signup { padding-top: 0; padding-bottom: 0; }
+  .auth-page::before { top: -180px; left: -230px; width: 480px; height: 480px; }
+  .auth-page::after { right: -240px; bottom: -220px; width: 490px; height: 490px; }
+  .auth-page__back { top: 17px; left: 20px; font-size: 12px; }
+  .auth-card { margin: 0 auto; padding: 22px; border-radius: 19px; }
+  .auth-card__intro { margin: 16px 0 17px; }
+  .auth-card__social-options { gap: 6px; }
+  .auth-card__social-button { gap: 5px; padding: 6px 4px; font-size: 11px; }
+  .auth-card__social-mark { flex-basis: 22px; width: 22px; height: 22px; }
+  .auth-page--signup .auth-card { padding: 18px; }
+}
+
+@media (max-height: 700px) {
+  .auth-page { padding-top: 48px; padding-bottom: 10px; }
+  .auth-page--signup { padding-top: 0; padding-bottom: 0; }
+  .auth-page__back { top: 11px; }
+  .auth-card { padding: 18px; }
+  .auth-card__brand .brand-lockup img { width: 56px; height: 38px; }
+  .auth-card__brand .brand-lockup > span { font-size: 13px; }
+  .auth-card__intro { margin: 12px 0 13px; }
+  .auth-card__intro h1 { font-size: 30px; }
+  .auth-card__intro > p:last-child { margin-top: 4px; font-size: 12px; }
+  .auth-form { gap: 8px; }
+  .auth-form__field { gap: 5px; }
+  .auth-form__field input { min-height: 44px; }
+  .auth-form__submit { min-height: 44px; margin-top: 4px; }
+  .auth-card__forgot { margin-top: 8px; }
+  .auth-card__social { margin-top: 12px; }
+  .auth-card__social-button { min-height: 48px; }
+  .auth-card__footer { margin-top: 12px; padding-top: 12px; }
+  .auth-page--signup .auth-card { padding: 18px; }
+  .auth-page--signup .auth-card__brand .brand-lockup img { width: 56px; height: 38px; }
+  .auth-page--signup .auth-card__brand .brand-lockup > span { font-size: 13px; }
+  .auth-page--signup .auth-card__intro { margin: 12px 0; }
+  .auth-page--signup .auth-card__intro > p:last-child { display: none; }
+  .auth-page--signup .auth-form { gap: 11px; }
+  .auth-page--signup .auth-form__field { gap: 5px; }
+  .auth-page--signup .auth-form__field input { min-height: 44px; }
+  .auth-page--signup .auth-form__submit { min-height: 44px; margin-top: 4px; }
+  .auth-page--signup .auth-card__social { margin-top: 12px; }
+  .auth-page--signup .auth-card__social-button { min-height: 48px; }
+  .auth-page--signup .auth-card__footer { margin-top: auto; padding-top: 10px; }
+}
+
+@media (max-height: 660px) {
+  .auth-page { padding-top: 40px; padding-bottom: 4px; }
+  .auth-page--signup { padding-top: 0; padding-bottom: 0; }
+  .auth-card { padding: 14px; }
+  .auth-card__brand .brand-lockup img { width: 48px; height: 32px; }
+  .auth-card__brand .brand-lockup > span { font-size: 12px; }
+  .auth-card__intro { margin: 8px 0; }
+  .auth-card__intro h1 { font-size: 26px; }
+  .auth-card__intro > p:last-child { display: none; }
+  .auth-form { gap: 6px; }
+  .auth-form__field { gap: 4px; }
+  .auth-form__field input { min-height: 40px; }
+  .auth-form__submit { min-height: 40px; margin-top: 2px; }
+  .auth-card__social { margin-top: 8px; }
+  .auth-card__social-button { min-height: 40px; }
+  .auth-card__footer { margin-top: 8px; padding-top: 8px; }
+  .auth-page--signup .auth-card { padding: 10px; }
+  .auth-page--signup .auth-card__brand .brand-lockup img { width: 48px; height: 32px; }
+  .auth-page--signup .auth-card__brand .brand-lockup > span { font-size: 12px; }
+  .auth-page--signup .auth-card__intro { margin: 8px 0; }
+  .auth-page--signup .auth-form { gap: 6px; }
+  .auth-page--signup .auth-form__field { gap: 4px; }
+  .auth-page--signup .auth-form__field input { min-height: 40px; }
+  .auth-page--signup .auth-form__submit { min-height: 40px; margin-top: 2px; }
+  .auth-page--signup .auth-card__social { margin-top: 8px; }
+  .auth-page--signup .auth-card__social-button { min-height: 40px; }
+  .auth-page--signup .auth-card__footer { margin-top: auto; padding-top: 8px; }
+  .auth-page--signup .auth-form__error { padding: 6px 8px; font-size: 11px; line-height: 1.2; }
+}
+
+/* Panoul de creare a contului atinge exact marginile de sus și de jos. */
+.auth-page--signup .auth-card {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  display: flex;
+  width: min(512px, calc(100vw - 48px));
+  height: auto;
+  flex-direction: column;
+  border-radius: 24px 24px 0 0;
+  transform: translateX(-50%);
+}
+
+@media (max-width: 600px) {
+  .auth-page--signup .auth-card { width: calc(100vw - 30px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-page *, .auth-page *::before, .auth-page *::after { transition-duration: .01ms !important; }
 }
