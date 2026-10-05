@@ -76,7 +76,10 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
 
   useEffect(() => {
     mountedRef.current = true;
-    return () => { mountedRef.current = false; };
+    return () => {
+      mountedRef.current = false;
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
   }, []);
 
   // Load simulation + question count
@@ -133,6 +136,10 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
         }
 
         const nextAttempt = mapRpcAttempt(att[0] as unknown as RpcAttemptRow);
+        if (nextAttempt.simulation_id !== simulationId) {
+          setError('Încercarea primită nu aparține acestei simulări. Reîncarcă pagina și încearcă din nou.');
+          return;
+        }
         if (nextAttempt.submitted_at) {
           setError('S-a primit o încercare deja încheiată. Reîncarcă pagina și încearcă din nou.');
           return;
@@ -263,7 +270,7 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
 
   const submitAttempt = useCallback(
     async (expired: boolean) => {
-      if (submittedRef.current || !profile || !simulation) return;
+      if (!mountedRef.current || submittedRef.current || !profile || !simulation) return;
       submittedRef.current = true;
       setSubmitting(true);
 
@@ -287,6 +294,8 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
           p_expired: expired,
         });
 
+      if (!mountedRef.current) return;
+
       if (submitError) {
         console.error('submit_exam_attempt error:', submitError);
         const msg = submitError.message || '';
@@ -304,8 +313,18 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
 
       if (data && data.length > 0) {
         const submitted = mapRpcAttempt(data[0] as unknown as RpcAttemptRow);
+        if (submitted.id !== attemptIdRef.current || submitted.simulation_id !== simulationId) {
+          setError('Răspunsul primit nu corespunde încercării curente. Verifică istoricul înainte de a relua.');
+          submittedRef.current = false;
+          setSubmitting(false);
+          return;
+        }
         setSubmitting(false);
         onComplete(submitted.id);
+      } else {
+        setError('Nu am primit confirmarea trimiterii. Verifică istoricul înainte de a relua.');
+        submittedRef.current = false;
+        setSubmitting(false);
       }
     },
     [profile, simulation, simulationId, onComplete]
@@ -423,8 +442,8 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
                 <p><strong>{simulation.duration_minutes}</strong> min</p>
               </div>
               <div className="simulation-intro__actions">
-                <button onClick={startAttempt} className="simulation-intro__start" type="button">
-                  Începe simularea
+                <button onClick={startAttempt} className="simulation-intro__start" type="button" disabled={starting}>
+                  {starting ? 'Se pornește…' : 'Începe simularea'}
                 </button>
                 <button onClick={onExit} className="simulation-intro__later" type="button">
                   Nu acum
