@@ -87,6 +87,16 @@ export default function PracticeSetView({ setId, lessonId, lessonTitle, onExit, 
   const submittedRef = useRef(false);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const autoSubmitTriggeredRef = useRef(false);
+  const mountedRef = useRef(true);
+  const startingRef = useRef(false);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -141,6 +151,7 @@ export default function PracticeSetView({ setId, lessonId, lessonTitle, onExit, 
 
   // Start or resume attempt
   const startAttempt = useCallback(async () => {
+    if (startingRef.current) return;
     const selectedMinutes = minutesInput.trim() === '' ? null : Number(minutesInput);
     if (selectedMinutes !== null && (
       !Number.isInteger(selectedMinutes) || selectedMinutes < 1 || selectedMinutes > MAX_TIME_LIMIT_MINUTES
@@ -148,56 +159,91 @@ export default function PracticeSetView({ setId, lessonId, lessonTitle, onExit, 
       setMinutesError(`Introdu un număr întreg între 1 și ${MAX_TIME_LIMIT_MINUTES} sau lasă câmpul gol.`);
       return;
     }
+    startingRef.current = true;
     setMinutesError(null);
     setError(null);
     setLoading(true);
-    const { data, error: startError } = await supabase.rpc('start_practice_attempt', {
-      p_set_id: setId,
-    });
+    let didStart = false;
+    try {
+      for (let pass = 0; pass < 2; pass += 1) {
+        const { data, error: startError } = await supabase.rpc('start_practice_attempt', {
+          p_set_id: setId,
+        });
+        if (!mountedRef.current) return;
+        if (startError) {
+          console.error('start_practice_attempt error:', startError);
+          const msg = startError.message || '';
+          if (msg.includes('Abonament necesar')) {
+            setError('Ai nevoie de un abonament activ pentru a accesa acest set.');
+          } else if (msg.includes('Limita de 3 încercări')) {
+            setError('Ai folosit toate cele 3 încercări pentru acest set.');
+          } else if (msg.includes('nu este disponibil')) {
+            setError('Acest set nu este disponibil momentan.');
+          } else {
+            setError('Nu s-a putut porni setul. Încearcă din nou.');
+          }
+          return;
+        }
+        if (!data || data.length === 0) {
+          setError('Nu s-a putut crea încercarea.');
+          return;
+        }
 
-    if (startError) {
-      const msg = startError.message || '';
-      if (msg.includes('Abonament necesar')) {
-        setError('Ai nevoie de un abonament activ pentru a accesa acest set.');
-      } else if (msg.includes('Limita de 3 încercări')) {
-        setError('Acest set a fost deja lucrat. Ai folosit toate cele 3 încercări.');
-      } else if (msg.includes('nu este disponibil')) {
-        setError('Acest set nu este disponibil momentan.');
-      } else {
-        setError('Nu s-a putut porni setul. Încearcă din nou.');
+        const att = data[0] as {
+          out_id: string;
+          out_set_id: string;
+          out_answers: Record<string, string>;
+          out_submitted_at: string | null;
+          out_is_new: boolean;
+        };
+        if (att.out_set_id !== setId) {
+          setError('Încercarea primită nu aparține acestui set. Reîncarcă pagina și încearcă din nou.');
+          return;
+        }
+        if (att.out_submitted_at) {
+          clearPracticeDeadline(att.out_id);
+          setError('S-a primit o încercare deja încheiată. Reîncarcă pagina și încearcă din nou.');
+          return;
+        }
+
+        const savedDeadline = att.out_is_new ? null : readPracticeDeadline(att.out_id);
+        if (savedDeadline !== null && savedDeadline <= Date.now()) {
+          const { error: expireError } = await supabase.rpc('submit_practice_attempt', {
+            p_set_id: setId,
+            p_answers: att.out_answers || {},
+          });
+          if (!mountedRef.current) return;
+          if (expireError) {
+            console.error('Expired practice attempt could not be finalized:', expireError);
+            setError('Încercarea anterioară a expirat, dar nu a putut fi încheiată. Încearcă din nou.');
+            return;
+          }
+          clearPracticeDeadline(att.out_id);
+          continue;
+        }
+
+        const nextDeadline = savedDeadline ?? (selectedMinutes === null ? null : Date.now() + selectedMinutes * 60_000);
+        if (savedDeadline === null && nextDeadline !== null) savePracticeDeadline(att.out_id, nextDeadline);
+        attemptIdRef.current = att.out_id;
+        answersRef.current = att.out_answers || {};
+        setAnswers(answersRef.current);
+        submittedRef.current = false;
+        autoSubmitTriggeredRef.current = false;
+        setDeadline(nextDeadline);
+        setTimeLeft(nextDeadline === null ? null : Math.max(0, Math.ceil((nextDeadline - Date.now()) / 1000)));
+        didStart = true;
+        setStarted(true);
+        return;
       }
-      setLoading(false);
-      return;
+      setError('Încercarea anterioară a expirat. Reîncearcă pornirea setului.');
+    } catch (err) {
+      console.error('Unexpected practice start error:', err);
+      if (mountedRef.current) setError('Nu s-a putut porni setul. Încearcă din nou.');
+    } finally {
+      startingRef.current = false;
+      if (mountedRef.current && !didStart) setLoading(false);
     }
-
-    if (!data || data.length === 0) {
-      setError('Nu s-a putut crea încercarea.');
-      setLoading(false);
-      return;
-    }
-
-    const att = data[0] as { out_id: string; out_answers: Record<string, string>; out_submitted_at: string | null };
-    attemptIdRef.current = att.out_id;
-
-    if (att.out_submitted_at) {
-      clearPracticeDeadline(att.out_id);
-      onComplete(att.out_id);
-      return;
-    }
-
-    const savedDeadline = readPracticeDeadline(att.out_id);
-    const nextDeadline = savedDeadline ?? (selectedMinutes === null ? null : Date.now() + selectedMinutes * 60_000);
-    if (savedDeadline === null && nextDeadline !== null) savePracticeDeadline(att.out_id, nextDeadline);
-    setDeadline(nextDeadline);
-    setTimeLeft(nextDeadline === null ? null : Math.max(0, Math.ceil((nextDeadline - Date.now()) / 1000)));
-    autoSubmitTriggeredRef.current = false;
-
-    if (att.out_answers && Object.keys(att.out_answers).length > 0) {
-      answersRef.current = att.out_answers as Record<string, string>;
-      setAnswers(att.out_answers as Record<string, string>);
-    }
-    setStarted(true);
-  }, [setId, onComplete, minutesInput]);
+  }, [setId, minutesInput]);
 
   // Load questions once started
   useEffect(() => {
@@ -259,7 +305,7 @@ export default function PracticeSetView({ setId, lessonId, lessonTitle, onExit, 
   }, []);
 
   const submitAttempt = useCallback(async () => {
-    if (submittedRef.current) return;
+    if (!mountedRef.current || submittedRef.current) return;
     submittedRef.current = true;
     setSubmitting(true);
 
@@ -281,6 +327,8 @@ export default function PracticeSetView({ setId, lessonId, lessonTitle, onExit, 
       p_answers: finalAnswers,
     });
 
+    if (!mountedRef.current) return;
+
     if (submitError) {
       const msg = submitError.message || '';
       if (msg.includes('Abonament necesar')) {
@@ -295,9 +343,19 @@ export default function PracticeSetView({ setId, lessonId, lessonTitle, onExit, 
 
     if (data && data.length > 0) {
       const result = data[0] as { out_id: string };
+      if (result.out_id !== attemptIdRef.current) {
+        setError('Răspunsul primit nu corespunde încercării curente. Verifică istoricul înainte de a relua.');
+        submittedRef.current = false;
+        setSubmitting(false);
+        return;
+      }
       if (attemptIdRef.current) clearPracticeDeadline(attemptIdRef.current);
       setSubmitting(false);
       onComplete(result.out_id);
+    } else {
+      setError('Nu am primit confirmarea trimiterii. Verifică istoricul înainte de a relua.');
+      submittedRef.current = false;
+      setSubmitting(false);
     }
   }, [setId, onComplete]);
 
@@ -440,7 +498,7 @@ export default function PracticeSetView({ setId, lessonId, lessonTitle, onExit, 
               </div>
               {minutesError && <p id="practice-time-error" className="simulation-intro__time-error" role="alert">{minutesError}</p>}
               <div className="simulation-intro__actions">
-                <button onClick={startAttempt} className="simulation-intro__start" type="button">Începe setul</button>
+                <button onClick={startAttempt} className="simulation-intro__start" type="button" disabled={startingRef.current}>Începe setul</button>
                 <button onClick={onExit} className="simulation-intro__later" type="button">Nu acum</button>
               </div>
             </section>
