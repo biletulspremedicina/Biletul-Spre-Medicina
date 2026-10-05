@@ -660,7 +660,7 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
             <span aria-hidden="true">/</span>
             <strong>{introMeta ? practiceSetName(introMeta.lessonTitle, introMeta.position) : 'Set de grile'}</strong>
           </nav>
-          <ExamHeaderTools comfortTheme={comfortTheme} onComfortChange={setComfortTheme} onHome={() => void leaveAttempt(onHome)} />
+          <ExamHeaderTools comfortTheme={comfortTheme} onComfortChange={setComfortTheme} onHome={() => void leaveAttempt(onHome)} homeVariant="practice" />
         </div>
       </header>
 
