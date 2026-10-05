@@ -41,8 +41,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
             Standardul{' '}
             <span className="landing-modern">
               <span className="landing-modern__paint" aria-hidden="true">
-                <span className="landing-modern__art">
-                  <svg viewBox="75 10 590 215" preserveAspectRatio="none" focusable="false">
+                <svg viewBox="75 10 590 215" preserveAspectRatio="none" focusable="false">
                   <defs>
                     <filter id="landing-brush-alpha" colorInterpolationFilters="sRGB">
                       <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  -.2126 -.7152 -.0722 0 1" />
@@ -55,8 +54,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
                     </mask>
                   </defs>
                   <rect x="0" y="0" width="721" height="237" fill="#78b193" mask="url(#landing-brush-photo-mask)" />
-                  </svg>
-                </span>
+                </svg>
               </span>
               <span className="landing-modern__text">modern</span>
             </span>{' '}în pregătirea pentru{' '}
@@ -68,7 +66,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
 
           <div
             className="mx-auto mt-8 max-w-2xl text-center"
-            style={{ animation: 'fadeIn 0.55s ease-out 0.15s both' }}
+            style={{ animation: 'fadeIn 0.8s ease-out 0.3s both' }}
           >
             <p className="text-xl font-light italic leading-relaxed text-stone-600 sm:text-2xl">
               Înțelegem presiunea.
@@ -82,7 +80,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
           <div
             className="mt-12"
             style={{
-              animation: 'fadeInUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both',
+              animation: 'fadeInUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both',
             }}
           >
             <TicketCard onGetStarted={onGetStarted} />
