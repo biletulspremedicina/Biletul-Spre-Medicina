@@ -1571,7 +1571,7 @@
                     className="simulation-library__biology-secondary">Vezi detalii</button>
                 )}
                 {paidLimitReached ? null : isFree || hasActiveSub ? (
-                  <button type="button" onClick={onStart} className="simulation-library__biology-primary">
+                  <button type="button" onClick={onStart} className={`simulation-library__biology-primary${sim.hasInProgress ? ' simulation-library__continue-button' : ''}`}>
                     {sim.hasInProgress ? 'Continuă' : `Rezolvă ${cardTitle === 'Examen' ? 'examenul' : 'simularea'}`}
                   </button>
                 ) : (
@@ -1648,7 +1648,7 @@
             </div>
           ) : isFree ? (
             <>
-              <button type="button" onClick={onStart} className="btn-primary w-full">
+              <button type="button" onClick={onStart} className={`btn-primary w-full${sim.hasInProgress ? ' simulation-library__continue-button' : ''}`}>
                 {sim.hasInProgress ? <><PlayCircle size={16} /> Continuă</>
                   : hasSubmitted ? <><RotateCcw size={16} /> Rezolvă din nou</>
                   : <><PlayCircle size={16} /> {isUmfcd ? 'Rezolvă examenul' : 'Rezolvă simularea'}</>}
@@ -1677,7 +1677,7 @@
             </>
           ) : hasActiveSub ? (
             <>
-              <button type="button" onClick={onStart} className="btn-primary w-full">
+              <button type="button" onClick={onStart} className={`btn-primary w-full${sim.hasInProgress ? ' simulation-library__continue-button' : ''}`}>
                 <PlayCircle size={16} /> {sim.hasInProgress
                   ? 'Continuă'
                   : (isUmfcd ? 'Rezolvă examenul' : 'Rezolvă simularea')}
