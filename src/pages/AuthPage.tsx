@@ -1,8 +1,9 @@
 import { useState } from 'react';
+import { ArrowLeft, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import Logo from '@/components/Logo';
-import { Loader2 } from 'lucide-react';
 import SupportChat from '@/components/SupportChat';
+import './AuthPage.css';
 
 type Props = {
   mode: 'signin' | 'signup';
@@ -11,10 +12,17 @@ type Props = {
   onBack: () => void;
 };
 
+const socialProviders = [
+  { name: 'Facebook', mark: 'f', className: 'facebook' },
+  { name: 'Google', mark: 'G', className: 'google' },
+  { name: 'Yahoo', mark: 'Y!', className: 'yahoo' },
+];
+
 export default function AuthPage({ mode, onSuccess, onSwitchMode, onBack }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,7 +41,6 @@ export default function AuthPage({ mode, onSuccess, onSwitchMode, onBack }: Prop
           options: { data: { full_name: fullName } },
         });
         if (signUpError) throw signUpError;
-        // Auto sign in after signup
         const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
         if (signInError) throw signInError;
         onSuccess();
@@ -59,94 +66,118 @@ export default function AuthPage({ mode, onSuccess, onSwitchMode, onBack }: Prop
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-b from-brand-50 to-stone-50">
-      <header className="px-4 sm:px-6 lg:px-8 py-5">
-        <div className="mx-auto max-w-7xl">
-        <button onClick={onBack} className="btn-ghost">
-          ← Înapoi
-        </button>
+    <main className="auth-page">
+      <button type="button" className="auth-page__back" onClick={onBack}>
+        <ArrowLeft size={18} aria-hidden="true" />
+        <span>Înapoi la pagina principală</span>
+      </button>
+
+      <section className="auth-card" aria-labelledby="auth-title">
+        <div className="auth-card__brand"><Logo showText linked={false} /></div>
+
+        <div className="auth-card__intro">
+          <p className="auth-card__eyebrow">Contul tău</p>
+          <h1 id="auth-title">{isSignup ? 'Creează-ți contul' : 'Bine ai revenit'}</h1>
+          <p>{isSignup ? 'Începe pregătirea pentru admitere.' : 'Continuă pregătirea de unde ai rămas.'}</p>
         </div>
-      </header>
 
-      <div className="flex flex-1 items-center justify-center px-4 sm:px-6 lg:px-8 pb-20">
-        <div className="w-full max-w-md">
-          <div className="mb-8 flex flex-col items-center gap-4">
-            <Logo size="lg" />
-            <h1 className="font-display text-2xl font-bold text-stone-900">
-              {isSignup ? 'Creează cont' : 'Bine ai revenit'}
-            </h1>
-            <p className="text-sm text-stone-600 text-center">
-              {isSignup
-                ? 'Înregistrează-te pentru a accesa simulările de admitere.'
-                : 'Autentifică-te pentru a continua la simulări.'}
-            </p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="card p-6 space-y-4">
-            {isSignup && (
-              <div>
-                <label className="label" htmlFor="fullName">Nume complet</label>
-                <input
-                  id="fullName"
-                  type="text"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="input"
-                  placeholder="Ion Popescu"
-                  required
-                />
-              </div>
-            )}
-            <div>
-              <label className="label" htmlFor="email">Email</label>
+        <form onSubmit={handleSubmit} className="auth-form">
+          {isSignup && (
+            <div className="auth-form__field">
+              <label htmlFor="auth-full-name">Nume complet</label>
               <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="input"
-                placeholder="ion@example.com"
+                id="auth-full-name"
+                type="text"
+                autoComplete="name"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Numele tău complet"
                 required
               />
             </div>
-            <div>
-              <label className="label" htmlFor="password">Parolă</label>
+          )}
+
+          <div className="auth-form__field">
+            <label htmlFor="auth-email">E-mail</label>
+            <input
+              id="auth-email"
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Introdu e-mailul tău"
+              required
+            />
+          </div>
+
+          <div className="auth-form__field">
+            <label htmlFor="auth-password">Parolă</label>
+            <div className="auth-form__password">
               <input
-                id="password"
-                type="password"
+                id="auth-password"
+                type={showPassword ? 'text' : 'password'}
+                autoComplete={isSignup ? 'new-password' : 'current-password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="input"
-                placeholder="Minim 6 caractere"
+                placeholder={isSignup ? 'Minimum 6 caractere' : 'Introdu parola'}
                 required
                 minLength={6}
               />
+              <button
+                type="button"
+                className="auth-form__reveal"
+                onClick={() => setShowPassword((visible) => !visible)}
+                aria-label={showPassword ? 'Ascunde parola' : 'Afișează parola'}
+                aria-pressed={showPassword}
+              >
+                {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
+              </button>
             </div>
+          </div>
 
-            {error && (
-              <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
-                {error}
-              </div>
-            )}
+          {error && <p className="auth-form__error" role="alert">{error}</p>}
 
-            <button type="submit" disabled={loading} className="btn-primary w-full">
-              {loading && <Loader2 size={18} className="animate-spin" />}
-              {isSignup ? 'Creează cont' : 'Autentifică-te'}
-            </button>
-          </form>
+          <button type="submit" disabled={loading} className="auth-form__submit">
+            {loading && <Loader2 size={18} className="animate-spin" aria-hidden="true" />}
+            {isSignup ? 'Creează cont' : 'Mă conectez'}
+          </button>
+        </form>
 
-          <p className="mt-6 text-center text-sm text-stone-600">
-            {isSignup ? 'Ai deja cont? ' : 'Nu ai cont? '}
-            <button
-              onClick={() => onSwitchMode(isSignup ? 'signin' : 'signup')}
-              className="font-semibold text-brand-600 hover:text-brand-700"
-            >
-              {isSignup ? 'Autentifică-te' : 'Creează cont'}
-            </button>
-          </p>
+        {!isSignup && (
+          <button type="button" className="auth-card__forgot" title="Funcție de configurat">
+            Ai uitat parola?
+          </button>
+        )}
+
+        <div className="auth-card__social">
+          <p>Sau continuă cu</p>
+          <div className="auth-card__social-options">
+            {socialProviders.map((provider) => (
+              // Butoanele sociale sunt doar UI; conectarea se poate atașa ulterior.
+              <button
+                key={provider.name}
+                type="button"
+                className="auth-card__social-button"
+                title="Funcție de configurat"
+              >
+                <span className={`auth-card__social-mark auth-card__social-mark--${provider.className}`} aria-hidden="true">
+                  {provider.mark}
+                </span>
+                <span>{provider.name}</span>
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+
+        <div className="auth-card__footer">
+          <span>{isSignup ? 'Ai deja cont?' : 'Nu ai cont?'}</span>
+          <button type="button" onClick={() => { setError(null); onSwitchMode(isSignup ? 'signin' : 'signup'); }}>
+            {isSignup ? 'Autentifică-te' : 'Creează-ți cont'}
+          </button>
+        </div>
+      </section>
+
       <SupportChat />
-    </div>
+    </main>
   );
 }
