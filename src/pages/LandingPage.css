@@ -10,8 +10,6 @@
   z-index: 1;
   display: block;
   color: inherit;
-  clip-path: inset(0 100% 0 0);
-  animation: landing-modern-brush .72s cubic-bezier(.25, .72, .22, 1) 1.06s both;
 }
 
 .landing-modern__paint {
@@ -23,7 +21,6 @@
   width: 112%;
   height: 112%;
   pointer-events: none;
-  opacity: 11;
   transform: rotate(2.5deg);
   transform-origin: 50% 50%;
   clip-path: inset(0 100% 0 0);
@@ -44,8 +41,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .landing-modern__paint,
-  .landing-modern__text {
+  .landing-modern__paint {
     animation: none;
     clip-path: none;
   }
