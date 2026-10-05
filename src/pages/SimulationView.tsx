@@ -502,8 +502,16 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
             <span aria-hidden="true">/</span>
             <strong>{displayName}</strong>
           </nav>
-          <span className={`practice-exam__header-timer${timeLeft < 300 ? ' practice-exam__header-timer--urgent' : ''}`} role="timer" aria-label={`Timp rămas${showSeconds ? '' : ', secundele ascunse'}: ${formatTime(timeLeft, showSeconds)}`}>{formatTime(timeLeft, showSeconds)}</span>
-          <VisualComfortPicker value={comfortTheme} onChange={setComfortTheme} />
+          <div className="practice-exam__header-tools">
+            <button
+              type="button"
+              className={`practice-exam__header-timer${timeLeft < 300 ? ' practice-exam__header-timer--urgent' : ''}`}
+              aria-pressed={!showSeconds}
+              aria-label={`Timp rămas: ${formatTime(timeLeft, showSeconds)}. ${showSeconds ? 'Ascunde secundele' : 'Afișează secundele'}`}
+              onClick={() => setShowSeconds((current) => !current)}
+            >{formatTime(timeLeft, showSeconds)}</button>
+            <VisualComfortPicker value={comfortTheme} onChange={setComfortTheme} />
+          </div>
         </div>
       </header>
 
@@ -546,15 +554,6 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
             )}
             <div className="practice-exam__progress-track" role="progressbar" aria-valuenow={answeredCount} aria-valuemin={0} aria-valuemax={questions.length} aria-label="Grile completate">
               <span style={{ width: `${questions.length ? (answeredCount / questions.length) * 100 : 0}%` }} />
-            </div>
-            <div className="practice-exam__timer-section">
-              <span className="practice-exam__section-label">Timp rămas</span>
-              <div className={`practice-exam__timer${timeLeft < 300 ? ' practice-exam__timer--urgent' : ''}`} role="timer" aria-label={`Timp rămas${showSeconds ? '' : ', secundele ascunse'}: ${formatTime(timeLeft, showSeconds)}`}>
-                <strong aria-hidden="true">{formatTime(timeLeft, showSeconds)}</strong>
-              </div>
-              <button className="practice-exam__seconds-toggle" type="button" aria-pressed={!showSeconds} onClick={() => setShowSeconds((current) => !current)}>
-                {showSeconds ? 'Ascunde secundele' : 'Afișează secundele'}
-              </button>
             </div>
             <button className="practice-exam__submit" type="button" onClick={() => void submitAttempt(false)} disabled={submitting || questions.length === 0}>
               <span>{submitting ? 'Se trimite…' : 'Trimite răspunsurile'}</span>
