@@ -506,8 +506,9 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
             <button
               type="button"
               className={`practice-exam__header-timer${timeLeft < 300 ? ' practice-exam__header-timer--urgent' : ''}`}
-              aria-pressed={!showSeconds}
-              aria-label={`Timp rămas: ${formatTime(timeLeft, showSeconds)}. ${showSeconds ? 'Ascunde secundele' : 'Afișează secundele'}`}
+              disabled={timeLeft >= 3600}
+              aria-pressed={timeLeft < 3600 ? !showSeconds : undefined}
+              aria-label={`Timp rămas: ${formatTime(timeLeft, showSeconds)}${timeLeft < 3600 ? `. ${showSeconds ? 'Ascunde secundele' : 'Afișează secundele'}` : ''}`}
               onClick={() => setShowSeconds((current) => !current)}
             >{formatTime(timeLeft, showSeconds)}</button>
             <VisualComfortPicker value={comfortTheme} onChange={setComfortTheme} />
@@ -569,8 +570,8 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
 function formatTime(seconds: number, showSeconds = true) {
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
+  if (h > 0) return `${h}:${m.toString().padStart(2, '0')}`;
   const s = showSeconds ? seconds % 60 : 0;
-  if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
