@@ -552,8 +552,8 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
             </div>
             <div className={`practice-exam__timer-ring${timeLeft < 300 ? ' practice-exam__timer-ring--urgent' : ''}`}>
               <svg viewBox="0 0 240 240" aria-hidden="true" focusable="false">
-                <circle className="practice-exam__timer-ring-track" cx="120" cy="120" r="105" />
-                <circle className="practice-exam__timer-ring-accent" cx="120" cy="120" r="105" pathLength="100" strokeDasharray={`${ringProgress} 100`} />
+                <circle className="practice-exam__timer-ring-track" cx="120" cy="120" r="92" />
+                <circle className="practice-exam__timer-ring-accent" cx="120" cy="120" r="92" pathLength="100" strokeDasharray={`${ringProgress} 100`} />
               </svg>
               <button
                 type="button"
