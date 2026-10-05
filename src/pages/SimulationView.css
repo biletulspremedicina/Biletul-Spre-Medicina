@@ -36,9 +36,9 @@
   gap: 7px;
   min-height: 42px;
   padding: 8px 13px;
-  border: 1px solid var(--intro-accent);
+  border: 1px solid #17634a;
   border-radius: 11px;
-  background: var(--intro-accent);
+  background: #17634a;
   color: #fff;
   font-size: 13px;
   font-weight: 650;
@@ -259,6 +259,7 @@
   outline: 3px solid var(--intro-accent);
   outline-offset: 3px;
 }
+.simulation-intro__home:focus-visible { outline-color: #17634a; }
 
 @media (min-width: 640px) {
   .simulation-intro__header-inner { padding-right: 28px; padding-left: 28px; }
