@@ -203,16 +203,20 @@
 
 .auth-card__footer button { padding: 0; border: 0; background: transparent; color: #236a4e; font-size: inherit; font-weight: 750; }
 
-.auth-page--signup .auth-card { padding-top: 27px; padding-bottom: 27px; }
-.auth-page--signup .auth-card__intro { margin: 15px 0; }
-.auth-page--signup .auth-form { gap: 10px; }
-.auth-page--signup .auth-form__field input { min-height: 44px; }
-.auth-page--signup .auth-form__submit { min-height: 48px; margin-top: 4px; }
-.auth-page--signup .auth-card__social { margin-top: 16px; }
-.auth-page--signup .auth-card__social-button { min-height: 52px; }
-.auth-page--signup .auth-card__footer { margin-top: 16px; padding-top: 14px; }
+.auth-page--signup { align-items: start; padding-top: 54px; }
 
 .auth-page :is(button, input):focus-visible { outline: 3px solid rgba(42, 107, 78, .45); outline-offset: 3px; }
+
+@media (max-height: 860px) {
+  .auth-page--signup .auth-card { padding-top: 28px; padding-bottom: 28px; }
+  .auth-page--signup .auth-card__intro { margin: 16px 0; }
+  .auth-page--signup .auth-form { gap: 10px; }
+  .auth-page--signup .auth-form__field input { min-height: 44px; }
+  .auth-page--signup .auth-form__submit { min-height: 48px; margin-top: 4px; }
+  .auth-page--signup .auth-card__social { margin-top: 16px; }
+  .auth-page--signup .auth-card__social-button { min-height: 52px; }
+  .auth-page--signup .auth-card__footer { margin-top: 16px; padding-top: 14px; }
+}
 
 @media (max-width: 600px) {
   .auth-page { padding: 54px 15px 14px; }
@@ -245,20 +249,20 @@
   .auth-card__social-button { min-height: 48px; }
   .auth-card__footer { margin-top: 12px; padding-top: 12px; }
   .auth-page--signup .auth-card { padding: 14px; }
-  .auth-page--signup .auth-card__brand .brand-lockup img { width: 48px; height: 32px; }
-  .auth-page--signup .auth-card__brand .brand-lockup > span { font-size: 12px; }
-  .auth-page--signup .auth-card__intro { margin: 8px 0; }
+  .auth-page--signup .auth-card__brand .brand-lockup img { width: 56px; height: 38px; }
+  .auth-page--signup .auth-card__brand .brand-lockup > span { font-size: 13px; }
+  .auth-page--signup .auth-card__intro { margin: 10px 0; }
   .auth-page--signup .auth-card__intro > p:last-child { display: none; }
-  .auth-page--signup .auth-form { gap: 6px; }
-  .auth-page--signup .auth-form__field { gap: 4px; }
-  .auth-page--signup .auth-form__field input { min-height: 40px; }
-  .auth-page--signup .auth-form__submit { min-height: 40px; margin-top: 2px; }
-  .auth-page--signup .auth-card__social { margin-top: 8px; }
-  .auth-page--signup .auth-card__social-button { min-height: 40px; }
-  .auth-page--signup .auth-card__footer { margin-top: 8px; padding-top: 8px; }
+  .auth-page--signup .auth-form { gap: 9px; }
+  .auth-page--signup .auth-form__field { gap: 5px; }
+  .auth-page--signup .auth-form__field input { min-height: 44px; }
+  .auth-page--signup .auth-form__submit { min-height: 44px; margin-top: 4px; }
+  .auth-page--signup .auth-card__social { margin-top: 10px; }
+  .auth-page--signup .auth-card__social-button { min-height: 48px; }
+  .auth-page--signup .auth-card__footer { margin-top: 10px; padding-top: 10px; }
 }
 
-@media (max-height: 600px) {
+@media (max-height: 660px) {
   .auth-page { padding-top: 40px; padding-bottom: 4px; }
   .auth-card { padding: 14px; }
   .auth-card__brand .brand-lockup img { width: 48px; height: 32px; }
@@ -274,6 +278,16 @@
   .auth-card__social-button { min-height: 40px; }
   .auth-card__footer { margin-top: 8px; padding-top: 8px; }
   .auth-page--signup .auth-card { padding: 10px; }
+  .auth-page--signup .auth-card__brand .brand-lockup img { width: 48px; height: 32px; }
+  .auth-page--signup .auth-card__brand .brand-lockup > span { font-size: 12px; }
+  .auth-page--signup .auth-card__intro { margin: 8px 0; }
+  .auth-page--signup .auth-form { gap: 6px; }
+  .auth-page--signup .auth-form__field { gap: 4px; }
+  .auth-page--signup .auth-form__field input { min-height: 40px; }
+  .auth-page--signup .auth-form__submit { min-height: 40px; margin-top: 2px; }
+  .auth-page--signup .auth-card__social { margin-top: 8px; }
+  .auth-page--signup .auth-card__social-button { min-height: 40px; }
+  .auth-page--signup .auth-card__footer { margin-top: 8px; padding-top: 8px; }
   .auth-page--signup .auth-form__error { padding: 6px 8px; font-size: 11px; line-height: 1.2; }
 }
 
