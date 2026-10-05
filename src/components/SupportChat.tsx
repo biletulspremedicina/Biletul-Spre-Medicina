@@ -21,7 +21,7 @@ const REASONS: ReasonOption[] = [
 const ANON_TOKEN_KEY = 'bsm_chat_anon_token';
 const CLOSED_MESSAGE = 'Această conversație a fost închisă. Sperăm că informațiile oferite ți-au fost de ajutor. Îți mulțumim că ai discutat cu noi!';
 
-export default function SupportChat() {
+export default function SupportChat({ hideFloatingButton = false }: { hideFloatingButton?: boolean }) {
   const { session, profile } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -55,6 +55,12 @@ export default function SupportChat() {
   useEffect(() => {
     isOpenRef.current = isOpen;
   }, [isOpen]);
+
+  useEffect(() => {
+    const openSupport = () => setIsOpen(true);
+    window.addEventListener('bsm:open-support', openSupport);
+    return () => window.removeEventListener('bsm:open-support', openSupport);
+  }, []);
 
   const refreshConversation = useCallback(async () => {
     let data: unknown = null;
@@ -376,7 +382,7 @@ export default function SupportChat() {
   return (
     <>
       {/* Floating button */}
-      {!isOpen && (
+      {!isOpen && !hideFloatingButton && (
         <button
           onClick={() => setIsOpen(true)}
           className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-brand-600 text-white shadow-lg transition-all hover:bg-brand-700 hover:shadow-xl active:scale-95"
