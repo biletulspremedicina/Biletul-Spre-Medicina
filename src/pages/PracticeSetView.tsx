@@ -134,7 +134,6 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
   const autoSubmitTriggeredRef = useRef(false);
   const mountedRef = useRef(true);
   const startingRef = useRef(false);
-  const autoResumeRef = useRef(false);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -316,12 +315,6 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
       if (mountedRef.current && !didStart) setLoading(false);
     }
   }, [setId, minutesInput]);
-
-  useEffect(() => {
-    if (!resume || !introMeta || loading || started || error || autoResumeRef.current) return;
-    autoResumeRef.current = true;
-    void startAttempt();
-  }, [resume, introMeta, loading, started, error, startAttempt]);
 
   // Load questions once started
   useEffect(() => {
@@ -633,7 +626,7 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
               </div>
               {minutesError && <p id="practice-time-error" className="simulation-intro__time-error" role="alert">{minutesError}</p>}
               <div className="simulation-intro__actions">
-                <button onClick={startAttempt} className="simulation-intro__start" type="button" disabled={startingRef.current}>Începe setul</button>
+                <button onClick={startAttempt} className="simulation-intro__start" type="button" disabled={startingRef.current}>{resume ? 'Continuă rezolvarea' : 'Începe setul'}</button>
                 <button onClick={() => void leaveAttempt(onExit)} className="simulation-intro__later" type="button">Nu acum</button>
               </div>
             </section>
