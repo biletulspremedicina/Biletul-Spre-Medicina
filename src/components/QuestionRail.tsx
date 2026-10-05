@@ -6,11 +6,12 @@ const TRANSITION_MS = 480;
 type Props = {
   questionIds: string[];
   answers: Record<string, string>;
+  markedIds: ReadonlySet<string>;
   activeIndex: number;
   questionIdPrefix: string;
 };
 
-export default function QuestionRail({ questionIds, answers, activeIndex, questionIdPrefix }: Props) {
+export default function QuestionRail({ questionIds, answers, markedIds, activeIndex, questionIdPrefix }: Props) {
   const targetGroup = Math.floor(Math.max(0, activeIndex) / GROUP_SIZE);
   const [visibleGroup, setVisibleGroup] = useState(targetGroup);
   const [outgoingGroup, setOutgoingGroup] = useState<number | null>(null);
@@ -61,11 +62,12 @@ export default function QuestionRail({ questionIds, answers, activeIndex, questi
                   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
                   document.getElementById(`${questionIdPrefix}${id}`)?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
                 }}
-                aria-label={`Mergi la întrebarea ${index + 1}${answers[id] ? ', completată' : ''}`}
+                aria-label={`Mergi la întrebarea ${index + 1}${answers[id] ? ', completată' : ''}${markedIds.has(id) ? ', marcată' : ''}`}
                 aria-current={activeIndex === index ? 'location' : undefined}
                 tabIndex={leaving ? -1 : 0}
               >
-                {index + 1}
+                <span>{index + 1}</span>
+                {markedIds.has(id) && <span className="practice-exam__marked-dot" aria-hidden="true" />}
               </button>
             </li>
           );
