@@ -26,6 +26,7 @@ const LETTERS = ['A', 'B', 'C', 'D', 'E'] as const;
 const MAX_TIME_LIMIT_MINUTES = 1440;
 const practiceTimerKey = (attemptId: string) => `bsm-practice-timer:${attemptId}`;
 const practiceTimerDurationKey = (attemptId: string) => `bsm-practice-timer-duration:${attemptId}`;
+const practiceTimerRemainingKey = (attemptId: string) => `bsm-practice-timer-remaining:${attemptId}`;
 
 function readPracticeDeadline(attemptId: string): number | null {
   try {
@@ -47,6 +48,25 @@ function readPracticeTimerDuration(attemptId: string): number | null {
   }
 }
 
+function readPracticeRemaining(attemptId: string): number | null {
+  try {
+    const saved = window.localStorage.getItem(practiceTimerRemainingKey(attemptId));
+    if (saved === null) return null;
+    const remaining = Number(saved);
+    return Number.isFinite(remaining) && remaining >= 0 ? remaining : null;
+  } catch {
+    return null;
+  }
+}
+
+function savePracticeRemaining(attemptId: string, remaining: number) {
+  try {
+    window.localStorage.setItem(practiceTimerRemainingKey(attemptId), String(remaining));
+  } catch {
+    // Best effort; the current session still keeps the timer in memory.
+  }
+}
+
 function savePracticeDeadline(attemptId: string, deadline: number, duration: number) {
   try {
     window.localStorage.setItem(practiceTimerKey(attemptId), String(deadline));
@@ -60,6 +80,7 @@ function clearPracticeDeadline(attemptId: string) {
   try {
     window.localStorage.removeItem(practiceTimerKey(attemptId));
     window.localStorage.removeItem(practiceTimerDurationKey(attemptId));
+    window.localStorage.removeItem(practiceTimerRemainingKey(attemptId));
   } catch {
     // Best effort.
   }
@@ -101,6 +122,10 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
   const [activeQuestion, setActiveQuestion] = useState(0);
   const [markAttemptId, setMarkAttemptId] = useState<string | null>(null);
   const { markedIds, toggleMark } = useQuestionMarks(markAttemptId);
+
+  const deadlineRef = useRef<number | null>(null);
+  const timeLeftRef = useRef<number | null>(null);
+  const timerPausedRef = useRef(false);
 
   const answersRef = useRef<Record<string, string>>({});
   const attemptIdRef = useRef<string | null>(null);
@@ -229,7 +254,8 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
         }
 
         const savedDeadline = att.out_is_new ? null : readPracticeDeadline(att.out_id);
-        if (savedDeadline !== null && savedDeadline <= Date.now()) {
+        const savedRemaining = att.out_is_new ? null : readPracticeRemaining(att.out_id);
+        if (savedRemaining === null && savedDeadline !== null && savedDeadline <= Date.now()) {
           const { error: expireError } = await supabase.rpc('submit_practice_attempt', {
             p_set_id: setId,
             p_answers: att.out_answers || {},
@@ -244,9 +270,11 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
           continue;
         }
 
-        const nextDeadline = savedDeadline ?? (selectedMinutes === null ? null : Date.now() + selectedMinutes * 60_000);
-        const initialTimeLeft = nextDeadline === null ? null : Math.max(0, Math.ceil((nextDeadline - Date.now()) / 1000));
-        const savedDuration = savedDeadline === null ? null : readPracticeTimerDuration(att.out_id);
+        const nextDeadline = savedRemaining !== null
+          ? Date.now() + savedRemaining * 1000
+          : savedDeadline ?? (selectedMinutes === null ? null : Date.now() + selectedMinutes * 60_000);
+        const initialTimeLeft = savedRemaining ?? (nextDeadline === null ? null : Math.max(0, Math.ceil((nextDeadline - Date.now()) / 1000)));
+        const savedDuration = att.out_is_new ? null : readPracticeTimerDuration(att.out_id);
         const startedAt = Date.parse(att.out_started_at);
         const inferredDuration = savedDeadline !== null && Number.isFinite(startedAt)
           ? Math.ceil((savedDeadline - startedAt) / 1000)
@@ -255,10 +283,13 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
           && inferredDuration >= initialTimeLeft
           ? inferredDuration : null;
         const nextTimerDuration = nextDeadline === null ? null : (
-          savedDeadline === null ? selectedMinutes! * 60 : savedDuration ?? validInferredDuration ?? initialTimeLeft
+          savedDeadline === null && savedRemaining === null
+            ? selectedMinutes! * 60
+            : savedDuration ?? validInferredDuration ?? initialTimeLeft
         );
-        if (nextDeadline !== null && nextTimerDuration !== null && (savedDeadline === null || savedDuration === null)) {
+        if (nextDeadline !== null && nextTimerDuration !== null) {
           savePracticeDeadline(att.out_id, nextDeadline, nextTimerDuration);
+          if (initialTimeLeft !== null) savePracticeRemaining(att.out_id, initialTimeLeft);
         }
         attemptIdRef.current = att.out_id;
         setMarkAttemptId(att.out_id);
@@ -268,6 +299,9 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
         autoSubmitTriggeredRef.current = false;
         setDeadline(nextDeadline);
         setTimeLeft(initialTimeLeft);
+        deadlineRef.current = nextDeadline;
+        timeLeftRef.current = initialTimeLeft;
+        timerPausedRef.current = document.hidden;
         setTimerDuration(nextTimerDuration);
         didStart = true;
         setStarted(true);
@@ -403,24 +437,55 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
     }
   }, [setId, onComplete]);
 
+  const pausePracticeTimer = useCallback(() => {
+    if (timerPausedRef.current || deadlineRef.current === null) return;
+    const remaining = Math.max(0, Math.min(
+      timeLeftRef.current ?? Infinity,
+      Math.ceil((deadlineRef.current - Date.now()) / 1000)
+    ));
+    timerPausedRef.current = true;
+    timeLeftRef.current = remaining;
+    setTimeLeft(remaining);
+    if (attemptIdRef.current) savePracticeRemaining(attemptIdRef.current, remaining);
+  }, []);
+
+  const resumePracticeTimer = useCallback(() => {
+    if (!timerPausedRef.current || timeLeftRef.current === null) return;
+    const nextDeadline = Date.now() + timeLeftRef.current * 1000;
+    timerPausedRef.current = false;
+    deadlineRef.current = nextDeadline;
+    setDeadline(nextDeadline);
+    if (attemptIdRef.current) {
+      savePracticeDeadline(attemptIdRef.current, nextDeadline, timerDuration ?? timeLeftRef.current);
+    }
+  }, [timerDuration]);
+
   useEffect(() => {
     if (!started || deadline === null) return;
     const tick = () => {
+      if (timerPausedRef.current || document.hidden) return;
       const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+      timeLeftRef.current = remaining;
       setTimeLeft(remaining);
+      if (attemptIdRef.current) savePracticeRemaining(attemptIdRef.current, remaining);
       if (remaining === 0 && !autoSubmitTriggeredRef.current) {
         autoSubmitTriggeredRef.current = true;
         void submitAttempt();
       }
     };
+    const handleVisibility = () => {
+      if (document.hidden) pausePracticeTimer();
+      else resumePracticeTimer();
+    };
+    if (document.hidden) pausePracticeTimer();
     tick();
     const interval = window.setInterval(tick, 1000);
-    document.addEventListener('visibilitychange', tick);
+    document.addEventListener('visibilitychange', handleVisibility);
     return () => {
       window.clearInterval(interval);
-      document.removeEventListener('visibilitychange', tick);
+      document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, [started, deadline, submitAttempt]);
+  }, [started, deadline, submitAttempt, pausePracticeTimer, resumePracticeTimer]);
 
   const handleAnswer = (questionId: string, letter: string) => {
     const newAnswers = { ...answersRef.current, [questionId]: letter };
@@ -435,6 +500,7 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
 
   const leaveAttempt = async (navigate: () => void) => {
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    pausePracticeTimer();
     if (started && attemptIdRef.current && !submittedRef.current && Object.keys(answersRef.current).length > 0) {
       try {
         const { error: saveError } = await supabase.rpc('save_practice_progress', {
@@ -445,6 +511,7 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
       } catch (saveError) {
         console.error('Save before exit error:', saveError);
         setSaveState('error');
+        if (!document.hidden) resumePracticeTimer();
         return;
       }
     }
@@ -455,6 +522,7 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
   useEffect(() => {
     if (!started) return;
     const handleBeforeUnload = () => {
+      pausePracticeTimer();
       if (session?.access_token && attemptIdRef.current && !submittedRef.current && Object.keys(answersRef.current).length > 0) {
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
         const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
@@ -482,8 +550,9 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('pagehide', handleBeforeUnload);
+      if (!mountedRef.current && !timerPausedRef.current && !submittedRef.current) handleBeforeUnload();
     };
-  }, [started, session?.access_token]);
+  }, [started, session?.access_token, pausePracticeTimer]);
 
   if (loading) return <Loading message="Se încarcă setul de grile..." />;
 
@@ -509,7 +578,7 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
         <header className="simulation-intro__header">
           <div className="simulation-intro__header-inner">
             <div className="simulation-intro__brand">
-              <Logo showText />
+              <Logo showText linked={false} />
             </div>
             <button onClick={() => void leaveAttempt(onHome)} className="simulation-intro__home" type="button" aria-label="Acasă">
               <img src="/Home.png" alt="" width={22} height={22} /><span>Acasă</span>
@@ -525,7 +594,7 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
             <h2>De știut înainte de start</h2>
             <ol className="simulation-intro__steps">
               <li><span className="simulation-intro__step-number">1</span><span>Poți introduce timpul-limită pentru acest set.<strong className="simulation-intro__step-note">( Câmp gol = Fără limită )</strong></span></li>
-              <li><span className="simulation-intro__step-number">2</span><span>Poți reveni la set; cronometrul continuă dacă l-ai activat.</span></li>
+              <li><span className="simulation-intro__step-number">2</span><span>Poți reveni la set; cronometrul se oprește cât ești plecat.</span></li>
               <li><span className="simulation-intro__step-number">3</span><span>La expirare, răspunsurile <strong>se trimit automat.</strong></span></li>
             </ol>
           </section>
@@ -583,9 +652,9 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
     <div className={`practice-exam${comfortTheme === 'light' ? '' : ` practice-exam--${comfortTheme}`}`}>
       <header className="practice-exam__header">
         <div className="practice-exam__header-inner">
-          <button className="practice-exam__brand" type="button" onClick={() => void leaveAttempt(onHome)} aria-label="Acasă — Biletul spre Medicină">
+          <div className="practice-exam__brand">
             <Logo showText linked={false} />
-          </button>
+          </div>
           <nav className="practice-exam__breadcrumb" aria-label="Locația curentă">
             <button type="button" onClick={() => void leaveAttempt(onExit)}>Antrenament pe capitole</button>
             <span aria-hidden="true">/</span>
