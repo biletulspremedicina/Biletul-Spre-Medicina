@@ -719,6 +719,11 @@
   }
   .simulation-library__biology-secondary:hover { background: #f3f8f3; border-color: #438461; }
   .simulation-library__biology-primary { flex: 1; color: #fff; background: #174c37; }
+  .simulation-library__biology-actions .simulation-library__continue-button,
+  .simulation-library__card .btn-primary.simulation-library__continue-button {
+    font-size: 17px;
+    font-weight: 700;
+  }
   .simulation-library__biology-primary:hover { background: #216044; }
   .simulation-library__biology-primary:disabled { cursor: wait; opacity: .7; }
   .simulation-library__biology-primary--locked:disabled,
