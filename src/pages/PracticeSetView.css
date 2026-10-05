@@ -163,10 +163,17 @@
 }
 .practice-exam__header-action:hover { border-color: #9db9a8; background: #f4f9f5; transform: translateY(-1px); }
 .practice-exam__header-action:active { transform: translateY(0); }
+.practice-exam__header-action--help { min-height: 44px; gap: 10px; text-align: left; }
+.practice-exam__header-help-copy { display: flex; flex-direction: column; gap: 2px; line-height: 1.2; }
+.practice-exam__header-help-copy strong { font-size: 12px; font-weight: 700; }
+.practice-exam__header-help-copy small { color: #6e8175; font-size: 11px; font-weight: 400; }
 .practice-exam--dark .practice-exam__header-action { border-color: #496455; color: #d0e0d5; }
 .practice-exam--dark .practice-exam__header-action:hover { border-color: #85c69d; background: #254435; }
+.practice-exam--dark .practice-exam__header-help-copy small { color: #a7b9ae; }
 .practice-exam--vanilla .practice-exam__header-action,
 .practice-exam--blue .practice-exam__header-action { border-color: var(--exam-border); color: var(--exam-accent); }
+.practice-exam--vanilla .practice-exam__header-help-copy small,
+.practice-exam--blue .practice-exam__header-help-copy small { color: var(--exam-muted); }
 .practice-exam--vanilla .practice-exam__header-action:hover,
 .practice-exam--blue .practice-exam__header-action:hover { background: var(--exam-hover); }
 
@@ -649,7 +656,8 @@
 
 @media (max-width: 760px) {
   .practice-exam__header-action { width: 36px; min-height: 36px; padding: 0; }
-  .practice-exam__header-action span { display: none; }
+  .practice-exam__header-action--help { min-height: 36px; }
+  .practice-exam__header-help-copy { display: none; }
 }
 
 @media (max-width: 640px) {
