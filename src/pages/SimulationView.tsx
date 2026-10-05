@@ -166,6 +166,9 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
           continue;
         }
 
+        if (Number.isFinite(expiresAt)) {
+          setTimeLeft(Math.max(0, Math.floor((expiresAt - Date.now()) / 1000)));
+        }
         setAttempt(nextAttempt);
         attemptIdRef.current = nextAttempt.id;
         answersRef.current = nextAttempt.answers || {};
@@ -493,7 +496,12 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
   const activeQuestionId = questions[activeQuestion]?.id;
   const categoryName = simulation.student_section === 'umfcd' ? 'Examene UMFCD' : 'Simulări biologie';
   const ringSeconds = timeLeft >= 3600 || !showSeconds ? Math.ceil(timeLeft / 60) * 60 : timeLeft;
-  const ringProgress = Math.min(100, Math.max(0, 100 * ringSeconds / Math.max(1, simulation.duration_minutes * 60)));
+  const startedAt = attempt?.started_at ? Date.parse(attempt.started_at) : NaN;
+  const expiresAt = attempt?.expires_at ? Date.parse(attempt.expires_at) : NaN;
+  const originalDuration = Number.isFinite(startedAt) && Number.isFinite(expiresAt) && expiresAt > startedAt
+    ? (expiresAt - startedAt) / 1000
+    : simulation.duration_minutes * 60;
+  const ringProgress = Math.min(100, Math.max(0, 100 * ringSeconds / Math.max(1, originalDuration)));
 
   return (
     <div className={`practice-exam${comfortTheme === 'light' ? '' : ` practice-exam--${comfortTheme}`}`}>
