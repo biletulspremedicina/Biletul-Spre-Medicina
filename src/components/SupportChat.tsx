@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, type CSSProperties } from 'react';
 import { supabase, type ChatMessage, type ChatReason } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import { MessageCircle, Send, Loader2, ChevronDown, Circle, Star } from 'lucide-react';
@@ -20,10 +20,13 @@ const REASONS: ReasonOption[] = [
 
 const ANON_TOKEN_KEY = 'bsm_chat_anon_token';
 const CLOSED_MESSAGE = 'Această conversație a fost închisă. Sperăm că informațiile oferite ți-au fost de ajutor. Îți mulțumim că ai discutat cu noi!';
+type HeaderAnchor = { top: number; left: number; originX: number };
+type OpenSupportDetail = { anchor?: { left: number; right: number; bottom: number; width: number } };
 
 export default function SupportChat({ hideFloatingButton = false }: { hideFloatingButton?: boolean }) {
   const { session, profile } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const [headerAnchor, setHeaderAnchor] = useState<HeaderAnchor | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [anonToken, setAnonToken] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -57,10 +60,28 @@ export default function SupportChat({ hideFloatingButton = false }: { hideFloati
   }, [isOpen]);
 
   useEffect(() => {
-    const openSupport = () => setIsOpen(true);
+    const openSupport = (event: Event) => {
+      const anchor = (event as CustomEvent<OpenSupportDetail>).detail?.anchor;
+      if (anchor) {
+        const width = Math.min(380, window.innerWidth - 24);
+        const left = Math.min(Math.max(12, anchor.right - width), window.innerWidth - width - 12);
+        setHeaderAnchor({
+          top: anchor.bottom + 12,
+          left,
+          originX: Math.min(width, Math.max(0, anchor.left + anchor.width / 2 - left)),
+        });
+      } else {
+        setHeaderAnchor(null);
+      }
+      setIsOpen(true);
+    };
     window.addEventListener('bsm:open-support', openSupport);
     return () => window.removeEventListener('bsm:open-support', openSupport);
   }, []);
+
+  useEffect(() => {
+    if (!hideFloatingButton) setHeaderAnchor(null);
+  }, [hideFloatingButton]);
 
   const refreshConversation = useCallback(async () => {
     let data: unknown = null;
@@ -384,7 +405,7 @@ export default function SupportChat({ hideFloatingButton = false }: { hideFloati
       {/* Floating button */}
       {!isOpen && !hideFloatingButton && (
         <button
-          onClick={() => setIsOpen(true)}
+          onClick={() => { setHeaderAnchor(null); setIsOpen(true); }}
           className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-brand-600 text-white shadow-lg transition-all hover:bg-brand-700 hover:shadow-xl active:scale-95"
           aria-label="Asistență"
         >
@@ -399,8 +420,13 @@ export default function SupportChat({ hideFloatingButton = false }: { hideFloati
 
       {/* Chat window */}
       {isOpen && (
-        <div className="fixed bottom-5 right-5 z-50 w-[calc(100vw-2.5rem)] max-w-[380px]">
-          <div className="flex max-h-[65vh] flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-2xl sm:max-h-[520px] animate-[slideUp_0.2s_ease-out]">
+        <div
+          className={headerAnchor ? 'support-chat--header-anchor fixed z-50 w-[calc(100vw-1.5rem)] max-w-[380px]' : 'fixed bottom-5 right-5 z-50 w-[calc(100vw-2.5rem)] max-w-[380px]'}
+          style={headerAnchor ? { top: headerAnchor.top, left: headerAnchor.left, '--support-anchor-top': `${headerAnchor.top}px`, '--support-origin-x': `${headerAnchor.originX}px` } as CSSProperties : undefined}
+          role="dialog"
+          aria-label="Asistență"
+        >
+          <div className={`flex max-h-[65vh] flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-2xl sm:max-h-[520px]${headerAnchor ? '' : ' animate-[slideUp_0.2s_ease-out]'}`}>
             {/* Header */}
             <div className="flex items-center justify-between border-b border-stone-100 bg-stone-50 px-4 py-3">
               <div className="flex items-center gap-2">
@@ -418,6 +444,7 @@ export default function SupportChat({ hideFloatingButton = false }: { hideFloati
               <button
                 onClick={() => setIsOpen(false)}
                 className="rounded-lg p-1.5 text-stone-400 transition-colors hover:bg-stone-200 hover:text-stone-600"
+                aria-label="Închide asistența"
               >
                 <ChevronDown size={18} />
               </button>
