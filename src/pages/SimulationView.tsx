@@ -70,6 +70,9 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
   const [activeQuestion, setActiveQuestion] = useState(0);
   const { markedIds, toggleMark } = useQuestionMarks(attempt?.id ?? null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const activeDeadlineRef = useRef<number | null>(null);
+  const timerPausedRef = useRef(false);
+  const timerSyncQueueRef = useRef<Promise<void>>(Promise.resolve());
   const submittedRef = useRef(false);
   const answersRef = useRef<Record<string, string>>({});
   const attemptIdRef = useRef<string | null>(null);
@@ -85,6 +88,21 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
       mountedRef.current = false;
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     };
+  }, []);
+
+  const syncTimer = useCallback((active: boolean): Promise<number> => {
+    const attemptId = attemptIdRef.current;
+    if (!attemptId) return Promise.reject(new Error('Încercarea nu este disponibilă.'));
+    const request = timerSyncQueueRef.current.then(async () => {
+      const { data, error: syncError } = await supabase.rpc('sync_exam_timer', {
+        p_attempt_id: attemptId,
+        p_active: active,
+      });
+      if (syncError) throw syncError;
+      return Math.max(0, Number(data) || 0);
+    });
+    timerSyncQueueRef.current = request.then(() => undefined, () => undefined);
+    return request;
   }, []);
 
   // Load simulation + question count
@@ -168,7 +186,9 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
 
         if (Number.isFinite(expiresAt)) {
           setTimeLeft(Math.max(0, Math.floor((expiresAt - Date.now()) / 1000)));
+          activeDeadlineRef.current = expiresAt;
         }
+        timerPausedRef.current = false;
         setAttempt(nextAttempt);
         attemptIdRef.current = nextAttempt.id;
         answersRef.current = nextAttempt.answers || {};
@@ -193,31 +213,61 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
     void startAttempt();
   }, [resume, profile, simulation, loading, started, error, startAttempt]);
 
-  // Timer: calculate from expires_at — never from Date.now() as start
+  // The server stores remaining time; the view consumes it only while visible.
   useEffect(() => {
     if (!started || !attempt) return;
-
-    const expiresAtStr = attempt.expires_at;
-    if (!expiresAtStr) return;
-
-    const expiresAtMs = new Date(expiresAtStr).getTime();
-
     const tick = () => {
-      const remaining = Math.max(0, Math.floor((expiresAtMs - Date.now()) / 1000));
+      if (timerPausedRef.current || document.hidden || activeDeadlineRef.current === null || submittedRef.current) return;
+      const remaining = Math.max(0, Math.ceil((activeDeadlineRef.current - Date.now()) / 1000));
       setTimeLeft(remaining);
       if (remaining <= 0) {
         if (timerRef.current) clearInterval(timerRef.current);
-        submitAttempt(true);
+        void submitAttempt(true);
       }
     };
+
+    const heartbeat = () => {
+      if (timerPausedRef.current || document.hidden || submittedRef.current) return;
+      void syncTimer(true).then((remaining) => {
+        if (!mountedRef.current || timerPausedRef.current || submittedRef.current) return;
+        activeDeadlineRef.current = Date.now() + remaining * 1000;
+        setTimeLeft(remaining);
+        if (remaining === 0) void submitAttempt(true);
+      }).catch((syncError) => console.error('Exam timer sync error:', syncError));
+    };
+
+    const handleVisibility = () => {
+      if (document.hidden) {
+        timerPausedRef.current = true;
+        activeDeadlineRef.current = null;
+        void syncTimer(false).then((remaining) => {
+          if (mountedRef.current) setTimeLeft(remaining);
+        }).catch((syncError) => console.error('Exam timer pause error:', syncError));
+      } else {
+        timerPausedRef.current = false;
+        void syncTimer(true).then((remaining) => {
+          if (!mountedRef.current || timerPausedRef.current) return;
+          activeDeadlineRef.current = Date.now() + remaining * 1000;
+          setTimeLeft(remaining);
+          if (remaining === 0) void submitAttempt(true);
+        }).catch((syncError) => console.error('Exam timer resume error:', syncError));
+      }
+    };
+
+    if (document.hidden) handleVisibility();
+    else if (!attempt.expires_at) void submitAttempt(true);
     tick();
     timerRef.current = setInterval(tick, 1000);
+    const heartbeatInterval = window.setInterval(heartbeat, 5000);
+    document.addEventListener('visibilitychange', handleVisibility);
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
+      window.clearInterval(heartbeatInterval);
+      document.removeEventListener('visibilitychange', handleVisibility);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [started, attempt]);
+  }, [started, attempt?.id, syncTimer]);
 
   // Load questions once started
   useEffect(() => {
@@ -358,6 +408,22 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
 
   const handleExit = async () => {
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    const previousDeadline = activeDeadlineRef.current;
+    if (started && attemptIdRef.current && !submittedRef.current) {
+      timerPausedRef.current = true;
+      activeDeadlineRef.current = null;
+      try {
+        setTimeLeft(await syncTimer(false));
+      } catch (syncError) {
+        console.error('Pause before exit error:', syncError);
+        setSaveState('error');
+        if (!document.hidden) {
+          timerPausedRef.current = false;
+          activeDeadlineRef.current = previousDeadline;
+        }
+        return;
+      }
+    }
     if (started && attemptIdRef.current && !submittedRef.current && Object.keys(answersRef.current).length > 0) {
       try {
         const { error: saveError } = await supabase.rpc('save_attempt_progress', {
@@ -368,6 +434,17 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
       } catch (saveError) {
         console.error('Save before exit error:', saveError);
         setSaveState('error');
+        if (!document.hidden) {
+          timerPausedRef.current = false;
+          try {
+            const remaining = await syncTimer(true);
+            activeDeadlineRef.current = Date.now() + remaining * 1000;
+            setTimeLeft(remaining);
+          } catch (resumeError) {
+            console.error('Resume after failed exit error:', resumeError);
+            timerPausedRef.current = true;
+          }
+        }
         return;
       }
     }
@@ -378,6 +455,26 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
   useEffect(() => {
     if (!started) return;
     const handleBeforeUnload = () => {
+      if (session?.access_token && attemptIdRef.current && !submittedRef.current) {
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+        const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+        timerPausedRef.current = true;
+        activeDeadlineRef.current = null;
+        try {
+          void fetch(`${supabaseUrl}/rest/v1/rpc/sync_exam_timer`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': supabaseKey,
+              'Authorization': `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({ p_attempt_id: attemptIdRef.current, p_active: false }),
+            keepalive: true,
+          });
+        } catch {
+          // The heartbeat limits time loss if the browser cannot send this request.
+        }
+      }
       if (session?.access_token && attemptIdRef.current && !submittedRef.current && Object.keys(answersRef.current).length > 0) {
         // Use sendBeacon-style fire-and-forget via fetch with keepalive
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
@@ -407,6 +504,7 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('pagehide', handleBeforeUnload);
+      if (!mountedRef.current && !timerPausedRef.current && !submittedRef.current) handleBeforeUnload();
     };
   }, [started, session?.access_token]);
 
@@ -445,7 +543,7 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
         <header className="simulation-intro__header">
           <div className="simulation-intro__header-inner">
             <div className="simulation-intro__brand">
-              <Logo showText />
+              <Logo showText linked={false} />
             </div>
             <button onClick={handleExit} className="simulation-intro__home" type="button" aria-label="Acasă">
               <img src="/Home.png" alt="" width={22} height={22} /><span>Acasă</span>
@@ -460,8 +558,8 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
             <div className="simulation-intro__rule" />
             <h2>De știut înainte de start</h2>
             <ol className="simulation-intro__steps">
-              <li><span className="simulation-intro__step-number">1</span><span>Cronometrul <strong>nu poate fi pus pe pauză.</strong></span></li>
-              <li><span className="simulation-intro__step-number">2</span><span>Dacă închizi pagina, poți reveni cu timpul rămas.</span></li>
+              <li><span className="simulation-intro__step-number">1</span><span>Cronometrul merge doar cât lucrezi în pagina examenului.</span></li>
+              <li><span className="simulation-intro__step-number">2</span><span>Când ieși sau închizi pagina, timpul rămas se păstrează.</span></li>
               <li><span className="simulation-intro__step-number">3</span><span>La expirare, răspunsurile <strong>se trimit automat.</strong></span></li>
             </ol>
           </section>
@@ -496,20 +594,15 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
   const activeQuestionId = questions[activeQuestion]?.id;
   const categoryName = simulation.student_section === 'umfcd' ? 'Examene UMFCD' : 'Simulări biologie';
   const ringSeconds = timeLeft >= 3600 || !showSeconds ? Math.ceil(timeLeft / 60) * 60 : timeLeft;
-  const startedAt = attempt?.started_at ? Date.parse(attempt.started_at) : NaN;
-  const expiresAt = attempt?.expires_at ? Date.parse(attempt.expires_at) : NaN;
-  const originalDuration = Number.isFinite(startedAt) && Number.isFinite(expiresAt) && expiresAt > startedAt
-    ? (expiresAt - startedAt) / 1000
-    : simulation.duration_minutes * 60;
-  const ringProgress = Math.min(100, Math.max(0, 100 * ringSeconds / Math.max(1, originalDuration)));
+  const ringProgress = Math.min(100, Math.max(0, 100 * ringSeconds / Math.max(1, simulation.duration_minutes * 60)));
 
   return (
     <div className={`practice-exam${comfortTheme === 'light' ? '' : ` practice-exam--${comfortTheme}`}`}>
       <header className="practice-exam__header">
         <div className="practice-exam__header-inner">
-          <button className="practice-exam__brand" type="button" onClick={handleExit} aria-label="Înapoi la materiale">
+          <div className="practice-exam__brand">
             <Logo showText linked={false} />
-          </button>
+          </div>
           <nav className="practice-exam__breadcrumb" aria-label="Locația curentă">
             <button type="button" onClick={handleExit}>{categoryName}</button>
             <span aria-hidden="true">/</span>
