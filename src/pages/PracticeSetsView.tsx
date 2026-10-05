@@ -11,7 +11,7 @@ type Props = {
   lessonId: string;
   lessonTitle: string;
   focusSetId?: string;
-  onStartSet: (setId: string) => void;
+  onStartSet: (setId: string, resume?: boolean) => void;
   onViewResults: (setId: string, attemptId?: string) => void;
   onBack: () => void;
   onHome: () => void;
@@ -46,9 +46,7 @@ export default function PracticeSetsView({
         .from('practice_attempts')
         .select('*')
         .eq('user_id', profile.id)
-        .in('set_id', lessonSets.map((set) => set.out_id))
-        .not('submitted_at', 'is', null)
-        .order('submitted_at', { ascending: true });
+        .in('set_id', lessonSets.map((set) => set.out_id));
       if (attemptsError) console.error('practice_attempts error:', attemptsError);
       setAttempts((attemptData || []) as PracticeAttempt[]);
     } else {
@@ -83,7 +81,7 @@ export default function PracticeSetsView({
 
   const hasActiveSub = !!subscription;
   const totalQuestions = sets.reduce((total, set) => total + set.out_question_count, 0);
-  const completedSetCount = sets.filter((set) => attempts.some((attempt) => attempt.set_id === set.out_id)).length;
+  const completedSetCount = sets.filter((set) => attempts.some((attempt) => attempt.set_id === set.out_id && !!attempt.submitted_at)).length;
 
   return (
     <div className={`practice-sets-page bg-stone-50 ${embedded ? 'practice-sets-page--embedded' : 'min-h-screen'}`}>
@@ -132,18 +130,17 @@ export default function PracticeSetsView({
           </div>
         ) : (
           <div className="practice-sets-page__grid">
-            {sets.map((set, index) => (
+            {sets.map((set) => (
               <PracticeSetCard
                 key={set.out_id}
                 set={set}
                 lessonTitle={lessonTitle}
-                index={index}
                 attempts={attempts.filter((attempt) => attempt.set_id === set.out_id)}
                 initialHistoryOpen={openHistories.current[set.out_id] ?? false}
                 onHistoryOpenChange={(open) => { openHistories.current[set.out_id] = open; }}
                 focused={set.out_id === focusSetId}
                 hasActiveSub={hasActiveSub}
-                onStart={() => onStartSet(set.out_id)}
+                onStart={() => onStartSet(set.out_id, attempts.some((attempt) => attempt.set_id === set.out_id && !attempt.submitted_at))}
                 onViewResults={(attemptId) => onViewResults(set.out_id, attemptId)}
                 onBuySubscription={onBuySubscription}
                 buyingSub={buyingSub}
@@ -158,11 +155,10 @@ export default function PracticeSetsView({
 }
 
 function PracticeSetCard({
-  set, lessonTitle, index, attempts, initialHistoryOpen, onHistoryOpenChange, focused, hasActiveSub, onStart, onViewResults, onBuySubscription, buyingSub, onReleaseReached,
+  set, lessonTitle, attempts, initialHistoryOpen, onHistoryOpenChange, focused, hasActiveSub, onStart, onViewResults, onBuySubscription, buyingSub, onReleaseReached,
 }: {
   set: PracticeSetRPC;
   lessonTitle: string;
-  index: number;
   attempts: PracticeAttempt[];
   initialHistoryOpen: boolean;
   onHistoryOpenChange: (open: boolean) => void;
@@ -176,13 +172,17 @@ function PracticeSetCard({
 }) {
   const isPremium = set.out_requires_subscription;
   const isLocked = isPremium && !hasActiveSub;
-  const hasAttempts = set.out_attempt_count > 0;
-  const limitReached = isPremium && set.out_attempt_count >= PREMIUM_ATTEMPT_LIMIT;
+  const completedAttempts = attempts
+    .filter((attempt) => !!attempt.submitted_at)
+    .sort((first, second) => new Date(first.submitted_at!).getTime() - new Date(second.submitted_at!).getTime());
+  const hasAttempts = completedAttempts.length > 0;
+  const hasInProgress = attempts.some((attempt) => !attempt.submitted_at);
+  const limitReached = isPremium && set.out_attempt_count >= PREMIUM_ATTEMPT_LIMIT && !hasInProgress;
   const isScheduled = !!set.out_available_at && new Date(set.out_available_at).getTime() > Date.now();
-  const latestAttempt = attempts[attempts.length - 1];
+  const latestAttempt = completedAttempts[completedAttempts.length - 1];
   const historySlotCount = isPremium
-    ? Math.max(PREMIUM_ATTEMPT_LIMIT, attempts.length)
-    : Math.max(3, attempts.length + 1);
+    ? Math.max(PREMIUM_ATTEMPT_LIMIT, completedAttempts.length)
+    : Math.max(3, completedAttempts.length + 1);
   const [historyOpen, setHistoryOpen] = useState(initialHistoryOpen);
   const historyRef = useRef<HTMLOListElement>(null);
   const shortTitle = shortPracticeChapterTitle(lessonTitle);
@@ -246,8 +246,8 @@ function PracticeSetCard({
             <ol ref={historyRef} tabIndex={historyOpen && historySlotCount > 3 ? 0 : undefined}
               aria-label={historySlotCount > 3 ? 'Istoricul rezolvărilor; derulează orizontal pentru a le vedea pe toate' : 'Istoricul rezolvărilor'}>
               {Array.from({ length: historySlotCount }, (_, attemptIndex) => {
-                const attempt = attempts[attemptIndex];
-                const nextIsComplete = !!attempts[attemptIndex + 1];
+                const attempt = completedAttempts[attemptIndex];
+                const nextIsComplete = !!completedAttempts[attemptIndex + 1];
                 return (
                   <li key={attempt?.id ?? `pending-${attemptIndex}`}>
                     {attemptIndex < historySlotCount - 1 && (
@@ -283,7 +283,7 @@ function PracticeSetCard({
               </button>
             ) : (
               <button type="button" onClick={onStart} className="simulation-library__biology-primary">
-                {hasAttempts ? 'Rezolvă din nou' : 'Rezolvă setul'}
+                {hasInProgress ? 'Continuă rezolvarea' : hasAttempts ? 'Rezolvă din nou' : 'Rezolvă setul'}
               </button>
             )}
           </>
