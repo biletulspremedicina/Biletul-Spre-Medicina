@@ -353,7 +353,7 @@
   flex: none;
   margin: 36px auto 20px;
   /* //modificare timer */
-  transform: translateY(-30px);
+  transform: translateY(-35px);
 }
 .practice-exam__timer-ring svg { display: block; width: 100%; height: 100%; pointer-events: none; }
 .practice-exam__timer-ring circle { fill: none; stroke-width: 6; }
