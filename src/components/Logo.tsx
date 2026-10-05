@@ -6,7 +6,7 @@ type Props = {
   tone?: 'light' | 'inverse';
 };
 
-export default function Logo({ size = 'md', className = '', showText = false, linked = true, tone = 'light' }: Props) {
+export default function Logo({ size = 'md', className = '', showText = false, linked = false, tone = 'light' }: Props) {
   const sizeClass =
     size === 'sm'
       ? 'h-10'
