@@ -1,12 +1,13 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase, type Simulation, type ExamQuestion, type Attempt } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
-import { AlertTriangle, ChevronLeft, Send } from 'lucide-react';
+import { AlertTriangle, Bookmark, ChevronLeft, MessageCircle, Send } from 'lucide-react';
 import Logo from '@/components/Logo';
 import VisualComfortPicker from '@/components/VisualComfortPicker';
 import QuestionRail from '@/components/QuestionRail';
 import Loading from '@/components/Loading';
 import { useVisualComfort } from '@/hooks/useVisualComfort';
+import { useQuestionMarks } from '@/hooks/useQuestionMarks';
 import { biologySimulationName, umfcdSimulationName } from '@/lib/materialDisplayNames';
 import './SimulationView.css';
 import './PracticeSetView.css';
@@ -67,6 +68,7 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
   const [saveState, setSaveState] = useState<SaveState>('idle');
   const [questionCount, setQuestionCount] = useState(0);
   const [activeQuestion, setActiveQuestion] = useState(0);
+  const { markedIds, toggleMark } = useQuestionMarks(attempt?.id ?? null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const submittedRef = useRef(false);
   const answersRef = useRef<Record<string, string>>({});
@@ -488,6 +490,7 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
   }
 
   const answeredCount = Object.keys(answers).length;
+  const activeQuestionId = questions[activeQuestion]?.id;
   const categoryName = simulation.student_section === 'umfcd' ? 'Examene UMFCD' : 'Simulări biologie';
   const ringSeconds = timeLeft >= 3600 || !showSeconds ? Math.ceil(timeLeft / 60) * 60 : timeLeft;
   const ringProgress = Math.min(100, Math.max(0, 100 * ringSeconds / Math.max(1, simulation.duration_minutes * 60)));
@@ -511,7 +514,7 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
       </header>
 
       <div className="practice-exam__layout">
-        <QuestionRail questionIds={questions.map((question) => question.id)} answers={answers} activeIndex={activeQuestion} questionIdPrefix="exam-question-" />
+        <QuestionRail questionIds={questions.map((question) => question.id)} answers={answers} markedIds={markedIds} activeIndex={activeQuestion} questionIdPrefix="exam-question-" />
 
         <main className="practice-exam__questions" aria-label="Grilele simulării">
           {questions.map((q, idx) => (
@@ -563,6 +566,16 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
                 aria-label={`Timp rămas: ${formatTime(timeLeft, showSeconds)}${timeLeft < 3600 ? `. ${showSeconds ? 'Ascunde secundele' : 'Afișează secundele'}` : ''}`}
                 onClick={() => setShowSeconds((current) => !current)}
               >{formatTime(timeLeft, showSeconds)}</button>
+            </div>
+            <div className="practice-exam__side-actions">
+              <button className="practice-exam__side-action practice-exam__side-action--help" type="button" onClick={() => window.dispatchEvent(new Event('bsm:open-support'))}>
+                <MessageCircle size={19} strokeWidth={1.8} aria-hidden="true" />
+                <span><strong>Ai întrebări?</strong><small>Suntem aici pentru tine.</small></span>
+              </button>
+              <button className="practice-exam__side-action" type="button" disabled={!activeQuestionId} aria-pressed={activeQuestionId ? markedIds.has(activeQuestionId) : false} onClick={() => { if (activeQuestionId) toggleMark(activeQuestionId); }}>
+                <Bookmark size={18} strokeWidth={1.8} aria-hidden="true" />
+                <span>{activeQuestionId && markedIds.has(activeQuestionId) ? 'Demarchează grila' : 'Marchează grila'}</span>
+              </button>
             </div>
             <button className="practice-exam__submit" type="button" onClick={() => void submitAttempt(false)} disabled={submitting || questions.length === 0}>
               <span>{submitting ? 'Se trimite…' : 'Trimite răspunsurile'}</span>
