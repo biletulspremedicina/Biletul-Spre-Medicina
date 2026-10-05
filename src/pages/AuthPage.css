@@ -57,6 +57,7 @@
 .auth-page__back:hover { color: #103d2f; transform: translateX(-3px); }
 
 .auth-card {
+  position: relative;
   width: min(100%, 512px);
   padding: 36px;
   border: 1px solid #e3ebe4;
@@ -64,6 +65,23 @@
   background: rgba(255, 255, 255, .97);
   box-shadow: 0 28px 90px rgba(20, 68, 45, .10), 0 2px 12px rgba(20, 68, 45, .035);
 }
+
+.auth-card__back {
+  position: absolute;
+  top: 17px;
+  left: 17px;
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 1px solid #dce9de;
+  border-radius: 9px;
+  background: #fff;
+  color: #236a4e;
+  transition: background-color .2s ease, border-color .2s ease;
+}
+
+.auth-card__back:hover { border-color: #a8c8b1; background: #f4faf5; }
 
 .auth-card__brand { display: flex; justify-content: center; }
 .auth-card__brand .brand-lockup { gap: 8px; }
@@ -203,23 +221,32 @@
 
 .auth-card__footer button { padding: 0; border: 0; background: transparent; color: #236a4e; font-size: inherit; font-weight: 750; }
 
-.auth-page--signup { align-items: start; padding-top: 54px; }
+.auth-page--signup { align-items: start; padding-top: 0; }
 
 .auth-page :is(button, input):focus-visible { outline: 3px solid rgba(42, 107, 78, .45); outline-offset: 3px; }
 
 @media (max-height: 860px) {
-  .auth-page--signup .auth-card { padding-top: 28px; padding-bottom: 28px; }
-  .auth-page--signup .auth-card__intro { margin: 16px 0; }
-  .auth-page--signup .auth-form { gap: 10px; }
+  .auth-page--signup .auth-card { padding-top: 32px; padding-bottom: 32px; }
+  .auth-page--signup .auth-card__intro { margin: 19px 0; }
+  .auth-page--signup .auth-form { gap: 12px; }
   .auth-page--signup .auth-form__field input { min-height: 44px; }
   .auth-page--signup .auth-form__submit { min-height: 48px; margin-top: 4px; }
-  .auth-page--signup .auth-card__social { margin-top: 16px; }
+  .auth-page--signup .auth-card__social { margin-top: 18px; }
   .auth-page--signup .auth-card__social-button { min-height: 52px; }
-  .auth-page--signup .auth-card__footer { margin-top: 16px; padding-top: 14px; }
+  .auth-page--signup .auth-card__footer { margin-top: 18px; padding-top: 14px; }
+}
+
+@media (max-height: 730px) {
+  .auth-page--signup .auth-card { padding-top: 26px; padding-bottom: 26px; }
+  .auth-page--signup .auth-card__intro { margin: 16px 0; }
+  .auth-page--signup .auth-form { gap: 11px; }
+  .auth-page--signup .auth-card__social { margin-top: 16px; }
+  .auth-page--signup .auth-card__footer { margin-top: 16px; }
 }
 
 @media (max-width: 600px) {
   .auth-page { padding: 54px 15px 14px; }
+  .auth-page--signup { padding-top: 0; }
   .auth-page::before { top: -180px; left: -230px; width: 480px; height: 480px; }
   .auth-page::after { right: -240px; bottom: -220px; width: 490px; height: 490px; }
   .auth-page__back { top: 17px; left: 20px; font-size: 12px; }
@@ -233,6 +260,7 @@
 
 @media (max-height: 700px) {
   .auth-page { padding-top: 48px; padding-bottom: 10px; }
+  .auth-page--signup { padding-top: 0; }
   .auth-page__back { top: 11px; }
   .auth-card { padding: 18px; }
   .auth-card__brand .brand-lockup img { width: 56px; height: 38px; }
@@ -248,22 +276,23 @@
   .auth-card__social { margin-top: 12px; }
   .auth-card__social-button { min-height: 48px; }
   .auth-card__footer { margin-top: 12px; padding-top: 12px; }
-  .auth-page--signup .auth-card { padding: 14px; }
+  .auth-page--signup .auth-card { padding: 18px; }
   .auth-page--signup .auth-card__brand .brand-lockup img { width: 56px; height: 38px; }
   .auth-page--signup .auth-card__brand .brand-lockup > span { font-size: 13px; }
-  .auth-page--signup .auth-card__intro { margin: 10px 0; }
+  .auth-page--signup .auth-card__intro { margin: 12px 0; }
   .auth-page--signup .auth-card__intro > p:last-child { display: none; }
-  .auth-page--signup .auth-form { gap: 9px; }
+  .auth-page--signup .auth-form { gap: 11px; }
   .auth-page--signup .auth-form__field { gap: 5px; }
   .auth-page--signup .auth-form__field input { min-height: 44px; }
   .auth-page--signup .auth-form__submit { min-height: 44px; margin-top: 4px; }
-  .auth-page--signup .auth-card__social { margin-top: 10px; }
+  .auth-page--signup .auth-card__social { margin-top: 12px; }
   .auth-page--signup .auth-card__social-button { min-height: 48px; }
-  .auth-page--signup .auth-card__footer { margin-top: 10px; padding-top: 10px; }
+  .auth-page--signup .auth-card__footer { margin-top: 12px; padding-top: 10px; }
 }
 
 @media (max-height: 660px) {
   .auth-page { padding-top: 40px; padding-bottom: 4px; }
+  .auth-page--signup { padding-top: 0; }
   .auth-card { padding: 14px; }
   .auth-card__brand .brand-lockup img { width: 48px; height: 32px; }
   .auth-card__brand .brand-lockup > span { font-size: 12px; }
