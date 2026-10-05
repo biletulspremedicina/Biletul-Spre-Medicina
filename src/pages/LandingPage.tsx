@@ -53,7 +53,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
                       <image href="/modern-brush-reference.png" x="0" y="0" width="721" height="237" filter="url(#landing-brush-alpha)" />
                     </mask>
                   </defs>
-                  <rect x="0" y="0" width="721" height="237" fill="#2b6d50" mask="url(#landing-brush-photo-mask)" />
+                  <rect x="0" y="0" width="721" height="237" fill="#499b73" mask="url(#landing-brush-photo-mask)" />
                 </svg>
               </span>
               <span className="landing-modern__text">modern</span>
