@@ -621,16 +621,10 @@
     min-width: 0;
     overflow-x: auto;
     overflow-y: hidden;
-    scrollbar-width: thin;
-    scrollbar-color: #aebfb3 transparent;
+    scrollbar-width: none;
   }
 
-  .simulation-library__biology-history ol::-webkit-scrollbar { height: 7px; }
-  .simulation-library__biology-history ol::-webkit-scrollbar-track { background: transparent; }
-  .simulation-library__biology-history ol::-webkit-scrollbar-thumb {
-    border-radius: 999px;
-    background: #aebfb3;
-  }
+  .simulation-library__biology-history ol::-webkit-scrollbar { display: none; }
   .simulation-library__biology-history ol:focus-visible { outline: 2px solid #208358; outline-offset: 2px; }
   .simulation-library__biology-history li {
     position: relative;
@@ -865,8 +859,6 @@
   .simulation-library--umfcd .simulation-library__biology-access--free { color: #286b96; }
   .simulation-library--umfcd .simulation-library__biology-history { border-color: #dce7ee; }
   .simulation-library--umfcd .simulation-library__biology-history-slider { background: #fbfdff; border-color: #e0e9ef; }
-  .simulation-library--umfcd .simulation-library__biology-history ol { scrollbar-color: #9fb9cb transparent; }
-  .simulation-library--umfcd .simulation-library__biology-history ol::-webkit-scrollbar-thumb { background: #9fb9cb; }
   .simulation-library--umfcd .simulation-library__biology-history-node { border-color: #39799c; background: #fbfdff; }
   .simulation-library--umfcd .simulation-library__biology-history-node--complete { background: #39799c; }
   .simulation-library--umfcd .simulation-library__biology-history-link { color: #8dadc0; }
@@ -1235,8 +1227,6 @@
   .practice-sets-page .practice-set-card .simulation-library__biology-access--premium { color: #ad7116; }
   .practice-sets-page .practice-set-card .simulation-library__biology-history { border-color: #ead9dd; }
   .practice-sets-page .practice-set-card .simulation-library__biology-history-slider { border-color: #ead9dd; background: #fffaf9; }
-  .practice-sets-page .practice-set-card .simulation-library__biology-history ol { scrollbar-color: #cda9b2 transparent; }
-  .practice-sets-page .practice-set-card .simulation-library__biology-history ol::-webkit-scrollbar-thumb { background: #cda9b2; }
   .practice-sets-page .practice-set-card .simulation-library__biology-history-node { border-color: #a34b61; background: #fffaf9; }
   .practice-sets-page .practice-set-card .simulation-library__biology-history-node--complete { background: #a34b61; }
   .practice-sets-page .practice-set-card .simulation-library__biology-history-link { color: #bc8290; }
