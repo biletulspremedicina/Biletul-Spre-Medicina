@@ -43,23 +43,21 @@ export default function LandingPage({ onGetStarted, onSignIn }: Props) {
               <span className="landing-modern__paint" aria-hidden="true">
                 <svg viewBox="0 0 520 126" preserveAspectRatio="none" focusable="false">
                   <defs>
-                    <filter id="landing-brush-edge" x="-5%" y="-20%" width="110%" height="140%">
-                      <feTurbulence type="fractalNoise" baseFrequency="0.025 0.075" numOctaves="2" seed="8" result="noise" />
-                      <feDisplacementMap in="SourceGraphic" in2="noise" scale="7" xChannelSelector="R" yChannelSelector="G" />
-                    </filter>
                     <mask id="landing-brush-grain">
                       <rect width="520" height="126" fill="white" />
                       <path d="M25 57 64 53m17-12 29-3m-74 30 26-3m65 37 37-3m29-69 31-4m0 55 38-4m19-47 24-3m23 59 38-6m21-55 25-2m-13 44 36-5m15-28 19-3" fill="none" stroke="black" strokeWidth="2" strokeLinecap="round" opacity=".5" />
                       <path d="M89 77 121 74m147-36 22-3m51 48 29-3m36-39 35-5" fill="none" stroke="black" strokeWidth="1.2" opacity=".5" />
                     </mask>
                   </defs>
-                  <g mask="url(#landing-brush-grain)" filter="url(#landing-brush-edge)">
-                    <path d="M7 55 30 47 62 43 74 45 109 36 140 39 168 32 197 33 226 27 251 29 281 22 310 23 341 17 367 19 399 14 425 16 459 11 482 13 501 8 493 19 516 22 496 29 508 35 488 40 517 46 496 51 509 57 492 62 515 70 487 73 505 79 474 81 485 87 456 88 462 95 427 92 401 98 372 95 341 102 309 98 277 106 248 101 216 108 186 104 154 112 126 106 101 114 78 107 55 112 42 105 18 103 29 95 4 91 22 82 2 76 25 69 5 65Z" fill="#68a98b" opacity=".72" />
-                    <path d="M15 72 75 58 139 53 203 43 271 39 334 29 401 27 488 17 505 19 489 24 507 27 428 36 359 41 285 53 218 58 156 66 83 75 10 85Z" fill="#34795d" opacity=".23" />
-                  </g>
-                  <g fill="none" stroke="#4b9472" strokeLinecap="round" opacity=".42">
-                    <path d="M14 48 51 40m13-3 42-8m56-3 29-5m94-5 42-5m130-5 34-4M28 109l29-1m17 5 43-4m142 3 32-2m107-7 48-5" strokeWidth="2.2" />
-                    <path d="M7 97 33 96m125 16 20-2m45 2 31-5m111-6 24-3m74-6 35-4" strokeWidth="1.2" />
+                  <g transform="matrix(1 .09 0 1 0 -24)">
+                    <g mask="url(#landing-brush-grain)">
+                      <path d="M7 55 30 47 62 43 74 45 109 36 140 39 168 32 197 33 226 27 251 29 281 22 310 23 341 17 367 19 399 14 425 16 459 11 482 13 501 8 493 19 516 22 496 29 508 35 488 40 517 46 496 51 509 57 492 62 515 70 487 73 505 79 474 81 485 87 456 88 462 95 427 92 401 98 372 95 341 102 309 98 277 106 248 101 216 108 186 104 154 112 126 106 101 114 78 107 55 112 42 105 18 103 29 95 4 91 22 82 2 76 25 69 5 65Z" fill="#68a98b" opacity=".9" />
+                      <path d="M15 72 75 58 139 53 203 43 271 39 334 29 401 27 488 17 505 19 489 24 507 27 428 36 359 41 285 53 218 58 156 66 83 75 10 85Z" fill="#34795d" opacity=".3" />
+                    </g>
+                    <g fill="none" stroke="#4b9472" strokeLinecap="round" opacity=".5">
+                      <path d="M14 48 51 40m13-3 42-8m56-3 29-5m94-5 42-5m130-5 34-4M28 109l29-1m17 5 43-4m142 3 32-2m107-7 48-5" strokeWidth="2.2" />
+                      <path d="M7 97 33 96m125 16 20-2m45 2 31-5m111-6 24-3m74-6 35-4" strokeWidth="1.2" />
+                    </g>
                   </g>
                 </svg>
               </span>
