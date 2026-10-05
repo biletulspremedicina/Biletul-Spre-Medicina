@@ -163,6 +163,8 @@
 }
 .practice-exam__header-action:hover { background: #f4f9f5; transform: translateY(-1px); }
 .practice-exam__header-action:active { transform: translateY(0); }
+.practice-exam__home { border-color: #17634a; background: #17634a; }
+.practice-exam__home:focus-visible { outline-color: #17634a; }
 .practice-exam__header-action--help { min-height: 44px; gap: 10px; text-align: left; }
 .practice-exam__header-help-copy { display: flex; flex-direction: column; gap: 2px; line-height: 1.2; }
 .practice-exam__header-help-copy strong { font-size: 12px; font-weight: 700; }
