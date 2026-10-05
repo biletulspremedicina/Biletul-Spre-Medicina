@@ -24,13 +24,16 @@ export default function ExamHeaderTools({ comfortTheme, onComfortChange, onHome,
     <div className="practice-exam__header-tools">
       <button
         type="button"
-        className="practice-exam__header-action"
+        className="practice-exam__header-action practice-exam__header-action--help"
         onClick={openSupport}
-        aria-label="Ai întrebări? Deschide asistența"
+        aria-label="Ai întrebări? Suntem aici pentru tine. Deschide asistența"
         title="Ai întrebări?"
       >
-        <MessageCircle size={18} strokeWidth={1.8} aria-hidden="true" />
-        <span>Ai întrebări?</span>
+        <MessageCircle size={22} strokeWidth={1.8} aria-hidden="true" />
+        <span className="practice-exam__header-help-copy">
+          <strong>Ai întrebări?</strong>
+          <small>Suntem aici pentru tine.</small>
+        </span>
       </button>
       <VisualComfortPicker value={comfortTheme} onChange={onComfortChange} />
       <button
