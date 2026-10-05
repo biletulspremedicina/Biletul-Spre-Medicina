@@ -158,6 +158,7 @@
   white-space: nowrap;
 }
 .practice-exam__header-timer--urgent { color: #a53838; }
+.practice-exam__header-timer:disabled { cursor: default; opacity: 1; }
 
 .practice-exam__layout {
   display: grid;
