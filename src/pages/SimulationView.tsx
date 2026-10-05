@@ -12,6 +12,7 @@ import './PracticeSetView.css';
 
 type Props = {
   simulationId: string;
+  resume?: boolean;
   onExit: () => void;
   onComplete: (attemptId: string) => void;
 };
@@ -49,8 +50,8 @@ function mapRpcAttempt(row: RpcAttemptRow): Attempt {
   };
 }
 
-export default function SimulationView({ simulationId, onExit, onComplete }: Props) {
-  const { profile } = useAuth();
+export default function SimulationView({ simulationId, resume = false, onExit, onComplete }: Props) {
+  const { profile, session } = useAuth();
   const [simulation, setSimulation] = useState<Simulation | null>(null);
   const [questions, setQuestions] = useState<ExamQuestion[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -72,6 +73,7 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
   const startingRef = useRef(false);
+  const autoResumeRef = useRef(false);
   const [starting, setStarting] = useState(false);
 
   useEffect(() => {
@@ -178,6 +180,12 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
       if (mountedRef.current) setStarting(false);
     }
   }, [profile, simulationId]);
+
+  useEffect(() => {
+    if (!resume || !profile || !simulation || loading || started || error || autoResumeRef.current) return;
+    autoResumeRef.current = true;
+    void startAttempt();
+  }, [resume, profile, simulation, loading, started, error, startAttempt]);
 
   // Timer: calculate from expires_at — never from Date.now() as start
   useEffect(() => {
@@ -342,11 +350,29 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
     }, 800);
   };
 
+  const handleExit = async () => {
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    if (started && attemptIdRef.current && !submittedRef.current && Object.keys(answersRef.current).length > 0) {
+      try {
+        const { error: saveError } = await supabase.rpc('save_attempt_progress', {
+          p_attempt_id: attemptIdRef.current,
+          p_answers: answersRef.current,
+        });
+        if (saveError) throw saveError;
+      } catch (saveError) {
+        console.error('Save before exit error:', saveError);
+        setSaveState('error');
+        return;
+      }
+    }
+    onExit();
+  };
+
   // Save before unload
   useEffect(() => {
     if (!started) return;
     const handleBeforeUnload = () => {
-      if (attemptIdRef.current && !submittedRef.current && Object.keys(answersRef.current).length > 0) {
+      if (session?.access_token && attemptIdRef.current && !submittedRef.current && Object.keys(answersRef.current).length > 0) {
         // Use sendBeacon-style fire-and-forget via fetch with keepalive
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
         const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
@@ -360,7 +386,7 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
             headers: {
               'Content-Type': 'application/json',
               'apikey': supabaseKey,
-              'Authorization': `Bearer ${supabaseKey}`,
+              'Authorization': `Bearer ${session.access_token}`,
             },
             body,
             keepalive: true,
@@ -371,8 +397,12 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
       }
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [started]);
+    window.addEventListener('pagehide', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pagehide', handleBeforeUnload);
+    };
+  }, [started, session?.access_token]);
 
   if (loading) return <Loading message="Se încarcă simularea..." />;
 
@@ -395,7 +425,7 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
           <AlertTriangle size={32} className="mx-auto mb-4 text-red-500" />
           <p className="text-stone-700 font-medium mb-2">A apărut o eroare</p>
           <p className="text-sm text-stone-500 mb-6">{error}</p>
-          <button onClick={onExit} className="btn-secondary">
+          <button onClick={handleExit} className="btn-secondary">
             <ChevronLeft size={16} /> Înapoi
           </button>
         </div>
@@ -411,7 +441,7 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
             <div className="simulation-intro__brand">
               <Logo showText />
             </div>
-            <button onClick={onExit} className="simulation-intro__home" type="button" aria-label="Acasă">
+            <button onClick={handleExit} className="simulation-intro__home" type="button" aria-label="Acasă">
               <img src="/Home.png" alt="" width={22} height={22} /><span>Acasă</span>
             </button>
           </div>
@@ -445,7 +475,7 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
                 <button onClick={startAttempt} className="simulation-intro__start" type="button" disabled={starting}>
                   {starting ? 'Se pornește…' : 'Începe simularea'}
                 </button>
-                <button onClick={onExit} className="simulation-intro__later" type="button">
+                <button onClick={handleExit} className="simulation-intro__later" type="button">
                   Nu acum
                 </button>
               </div>
@@ -463,11 +493,11 @@ export default function SimulationView({ simulationId, onExit, onComplete }: Pro
     <div className={`practice-exam${comfortMode ? ' practice-exam--dark' : ''}`}>
       <header className="practice-exam__header">
         <div className="practice-exam__header-inner">
-          <button className="practice-exam__brand" type="button" onClick={onExit} aria-label="Înapoi la materiale">
+          <button className="practice-exam__brand" type="button" onClick={handleExit} aria-label="Înapoi la materiale">
             <Logo showText linked={false} />
           </button>
           <nav className="practice-exam__breadcrumb" aria-label="Locația curentă">
-            <button type="button" onClick={onExit}>{categoryName}</button>
+            <button type="button" onClick={handleExit}>{categoryName}</button>
             <span aria-hidden="true">/</span>
             <strong>{displayName}</strong>
           </nav>
