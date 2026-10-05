@@ -9,7 +9,7 @@
   position: relative;
   z-index: 1;
   display: block;
-  color: #fafaf9;
+  color: inherit;
   clip-path: inset(0 100% 0 0);
   animation: landing-modern-brush .72s cubic-bezier(.25, .72, .22, 1) 1.06s both;
 }
@@ -18,9 +18,9 @@
   position: absolute;
   z-index: 0;
   top: 13%;
-  left: -15%;
+  left: -6%;
   display: block;
-  width: 130%;
+  width: 112%;
   height: 112%;
   pointer-events: none;
   transform: rotate(2.5deg);
