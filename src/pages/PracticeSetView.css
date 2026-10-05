@@ -32,7 +32,7 @@
   text-align: left;
   background: transparent;
   border: 0;
-  cursor: pointer;
+  cursor: default;
 }
 
 .practice-exam__breadcrumb {
