@@ -4,6 +4,7 @@ import { biologySimulationName, practiceSetName, umfcdSimulationName } from '@/l
 export type MaterialTarget = { kind: 'simulation' | 'practice'; id: string };
 export type ActiveMaterial = {
   name: string;
+  section: string;
   target: MaterialTarget;
   lessonId?: string;
   lessonTitle?: string;
@@ -37,22 +38,23 @@ export async function findOtherActiveMaterial(userId: string, target: MaterialTa
       .select('title, student_section, display_order, umfcd_kind, umfcd_year')
       .eq('id', blocking.id).maybeSingle();
     if (error) throw error;
-    if (!data) return { name: 'O simulare', target: blockingTarget };
+    if (!data) return { name: 'O simulare', section: 'Simulări', target: blockingTarget };
     const simulation = data as Pick<Simulation, 'title' | 'student_section' | 'display_order' | 'umfcd_kind' | 'umfcd_year'>;
     return simulation.student_section === 'umfcd'
-      ? { name: umfcdSimulationName(simulation), target: blockingTarget }
-      : { name: simulation.display_order ? biologySimulationName(simulation.display_order) : simulation.title, target: blockingTarget };
+      ? { name: umfcdSimulationName(simulation), section: 'Examene UMFCD', target: blockingTarget }
+      : { name: simulation.display_order ? biologySimulationName(simulation.display_order) : simulation.title, section: 'Simulări biologie', target: blockingTarget };
   }
 
   const { data: set, error: setError } = await supabase.from('practice_sets')
     .select('title, position, lesson_id').eq('id', blocking.id).maybeSingle();
   if (setError) throw setError;
-  if (!set) return { name: 'Un set', target: blockingTarget };
+  if (!set) return { name: 'Un set', section: 'Antrenament pe capitole', target: blockingTarget };
   const { data: lesson, error: lessonError } = await supabase.from('practice_lessons')
     .select('title').eq('id', set.lesson_id).maybeSingle();
   if (lessonError) throw lessonError;
   return {
     name: lesson ? practiceSetName(lesson.title, set.position + 1) : set.title,
+    section: 'Antrenament pe capitole',
     target: blockingTarget,
     lessonId: set.lesson_id,
     lessonTitle: lesson?.title,
