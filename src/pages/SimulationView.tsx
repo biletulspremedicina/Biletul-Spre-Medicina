@@ -17,6 +17,7 @@ type Props = {
   resume?: boolean;
   onExit: () => void;
   onComplete: (attemptId: string) => void;
+  canStart: () => Promise<boolean>;
 };
 
 const LETTERS = ['A', 'B', 'C', 'D', 'E'] as const;
@@ -52,7 +53,7 @@ function mapRpcAttempt(row: RpcAttemptRow): Attempt {
   };
 }
 
-export default function SimulationView({ simulationId, resume = false, onExit, onComplete }: Props) {
+export default function SimulationView({ simulationId, resume = false, onExit, onComplete, canStart }: Props) {
   const { profile, session } = useAuth();
   const [simulation, setSimulation] = useState<Simulation | null>(null);
   const [questions, setQuestions] = useState<ExamQuestion[]>([]);
@@ -134,6 +135,7 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
     setStarting(true);
     setError(null);
     try {
+      if (!await canStart()) return;
       for (let pass = 0; pass < 2; pass += 1) {
         const { data: att, error: startError } = await supabase
           .rpc('start_exam_attempt', { p_simulation_id: simulationId });
@@ -141,7 +143,9 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
         if (startError) {
           console.error('start_exam_attempt error:', startError);
           const msg = startError.message || '';
-          if (msg.includes('Abonament necesar')) {
+          if (msg.includes('active_material_in_progress')) {
+            if (await canStart()) setError('Există deja o altă rezolvare în desfășurare. Reîncearcă.');
+          } else if (msg.includes('Abonament necesar')) {
             setError('Ai nevoie de un abonament activ pentru a accesa această simulare.');
           } else if (msg.includes('Limita de 3 încercări')) {
             setError('Ai folosit toate cele 3 încercări pentru această simulare.');
@@ -204,7 +208,7 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
       startingRef.current = false;
       if (mountedRef.current) setStarting(false);
     }
-  }, [profile, simulationId]);
+  }, [profile, simulationId, canStart]);
 
   // The server stores remaining time; the view consumes it only while visible.
   useEffect(() => {
