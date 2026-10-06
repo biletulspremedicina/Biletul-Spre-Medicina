@@ -1,7 +1,22 @@
-import { useEffect, useRef } from 'react';
-import { BookOpen } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import MaterialLocationCard from '@/components/MaterialLocationCard';
 import type { ActiveMaterial } from '@/lib/activeMaterial';
 import './ActiveMaterialDialog.css';
+
+// OpenMoji project, 2757 (red exclamation mark), CC BY-SA 4.0:
+// https://github.com/hfg-gmuend/openmoji/blob/17.0.0/color/svg/2757.svg
+const EXCLAMATION_SRC = 'https://cdn.jsdelivr.net/gh/hfg-gmuend/openmoji@17.0.0/color/svg/2757.svg';
+
+function ExclamationMark({ side }: { side: 'left' | 'right' }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  return (
+    <span className={`active-material-dialog__exclamation active-material-dialog__exclamation--${side}`} aria-hidden="true">
+      {imageFailed ? <span className="active-material-dialog__exclamation-fallback">!</span> : (
+        <img src={EXCLAMATION_SRC} alt="" onError={() => setImageFailed(true)} draggable={false} />
+      )}
+    </span>
+  );
+}
 
 type Props = {
   material: ActiveMaterial | null;
@@ -42,15 +57,16 @@ export default function ActiveMaterialDialog({ material, verificationError, onCl
     <div className="active-material-dialog__backdrop">
       <section className="active-material-dialog" role="alertdialog" aria-modal="true"
         aria-labelledby="active-material-dialog-title" aria-describedby="active-material-dialog-description">
-        <span className="active-material-dialog__exclamation" aria-hidden="true" />
-        <h2 id="active-material-dialog-title">{verificationError ? 'Nu am putut verifica progresul' : 'Ai deja o rezolvare în desfășurare'}</h2>
+        <h2 id="active-material-dialog-title" className={verificationError ? 'active-material-dialog__title--error' : undefined}>
+          {verificationError ? 'Nu am putut verifica progresul' : 'Rezolvare în desfășurare'}
+        </h2>
         {material && !verificationError && (
-          <div className="active-material-dialog__material">
-            <div className="active-material-dialog__material-section">
-              <span className="active-material-dialog__material-icon"><BookOpen size={19} strokeWidth={1.8} aria-hidden="true" /></span>
-              <span>{material.section}</span>
+          <div className="active-material-dialog__material-row">
+            <ExclamationMark side="left" />
+            <div className="active-material-dialog__material">
+              <MaterialLocationCard section={material.section} name={material.name} />
             </div>
-            <p className="active-material-dialog__material-name">{material.name}</p>
+            <ExclamationMark side="right" />
           </div>
         )}
         <p id="active-material-dialog-description" className="active-material-dialog__description">
