@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { ArrowUpRight, CircleAlert, ChevronRight } from 'lucide-react';
+import { BookOpen } from 'lucide-react';
 import type { ActiveMaterial } from '@/lib/activeMaterial';
 import './ActiveMaterialDialog.css';
 
@@ -11,17 +11,17 @@ type Props = {
 };
 
 export default function ActiveMaterialDialog({ material, verificationError, onClose, onOpenMaterial }: Props) {
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const materialButtonRef = useRef<HTMLButtonElement>(null);
+  const dismissButtonRef = useRef<HTMLButtonElement>(null);
+  const continueButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    buttonRef.current?.focus();
+    (continueButtonRef.current || dismissButtonRef.current)?.focus();
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
       if (event.key === 'Tab') {
-        const first = materialButtonRef.current || buttonRef.current;
-        const last = buttonRef.current;
+        const first = continueButtonRef.current || dismissButtonRef.current;
+        const last = dismissButtonRef.current;
         if (event.shiftKey && document.activeElement === first) {
           event.preventDefault();
           last?.focus();
@@ -42,13 +42,16 @@ export default function ActiveMaterialDialog({ material, verificationError, onCl
     <div className="active-material-dialog__backdrop">
       <section className="active-material-dialog" role="alertdialog" aria-modal="true"
         aria-labelledby="active-material-dialog-title" aria-describedby="active-material-dialog-description">
-        <div className="active-material-dialog__icon"><CircleAlert size={40} strokeWidth={1.8} aria-hidden="true" /></div>
+        <span className="active-material-dialog__exclamation" aria-hidden="true" />
         <h2 id="active-material-dialog-title">{verificationError ? 'Nu am putut verifica progresul' : 'Ai deja o rezolvare în desfășurare'}</h2>
         {material && !verificationError && (
-          <button ref={materialButtonRef} type="button" className="active-material-dialog__material"
-            onClick={() => onOpenMaterial(material)} aria-label={`Continuă rezolvarea: ${material.name}`}>
-            <span>{material.name}</span><ChevronRight size={20} strokeWidth={2} aria-hidden="true" />
-          </button>
+          <div className="active-material-dialog__material">
+            <div className="active-material-dialog__material-section">
+              <span className="active-material-dialog__material-icon"><BookOpen size={19} strokeWidth={1.8} aria-hidden="true" /></span>
+              <span>{material.section}</span>
+            </div>
+            <p className="active-material-dialog__material-name">{material.name}</p>
+          </div>
         )}
         <p id="active-material-dialog-description" className="active-material-dialog__description">
           {verificationError ? (
@@ -57,9 +60,17 @@ export default function ActiveMaterialDialog({ material, verificationError, onCl
             'Trimite răspunsurile de acolo înainte de a începe alt material.'
           )}
         </p>
-        <button ref={buttonRef} type="button" className="active-material-dialog__button" onClick={onClose}>
-          Am înțeles <ArrowUpRight size={18} strokeWidth={1.8} aria-hidden="true" />
-        </button>
+        <div className="active-material-dialog__actions">
+          {material && !verificationError && (
+            <button ref={continueButtonRef} type="button" className="active-material-dialog__button active-material-dialog__button--continue"
+              onClick={() => onOpenMaterial(material)}>
+              Continuă rezolvarea
+            </button>
+          )}
+          <button ref={dismissButtonRef} type="button" className="active-material-dialog__button active-material-dialog__button--dismiss" onClick={onClose}>
+            Am înțeles
+          </button>
+        </div>
       </section>
     </div>
   );
