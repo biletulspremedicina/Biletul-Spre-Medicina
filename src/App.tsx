@@ -123,6 +123,23 @@ function AppContent() {
     setRoute('practice-solve');
   };
 
+  const handleOpenActiveMaterial = (material: ActiveMaterial) => {
+    setActiveMaterialNotice(null);
+    if (material.target.kind === 'simulation') {
+      setActiveSimulationId(material.target.id);
+      setActiveAttemptId(null);
+      setResumeSimulation(true);
+      setRoute('simulation');
+    } else {
+      setActivePracticeLessonId(material.lessonId || null);
+      setActivePracticeLessonTitle(material.lessonTitle || '');
+      setActivePracticeSetId(material.target.id);
+      setActivePracticeAttemptId(null);
+      setResumePracticeSet(true);
+      setRoute('practice-solve');
+    }
+  };
+
   const handlePracticeComplete = (attemptId: string) => {
     setActivePracticeAttemptId(attemptId);
     setRoute('practice-results');
@@ -163,6 +180,7 @@ function AppContent() {
           material={activeMaterialNotice.material}
           verificationError={activeMaterialNotice.verificationError}
           onClose={() => setActiveMaterialNotice(null)}
+          onOpenMaterial={handleOpenActiveMaterial}
         />
       )}
     </>
