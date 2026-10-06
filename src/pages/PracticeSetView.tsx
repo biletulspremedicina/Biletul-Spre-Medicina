@@ -20,6 +20,7 @@ type Props = {
   onExit: () => void;
   onHome: () => void;
   onComplete: (attemptId: string) => void;
+  canStart: () => Promise<boolean>;
 };
 
 const LETTERS = ['A', 'B', 'C', 'D', 'E'] as const;
@@ -102,7 +103,7 @@ type IntroMeta = {
   questionCount: number;
 };
 
-export default function PracticeSetView({ setId, resume = false, lessonId, lessonTitle, onExit, onHome, onComplete }: Props) {
+export default function PracticeSetView({ setId, resume = false, lessonId, lessonTitle, onExit, onHome, onComplete, canStart }: Props) {
   const { session } = useAuth();
   const [questions, setQuestions] = useState<PracticeQuestionRPC[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -210,6 +211,7 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
     setLoading(true);
     let didStart = false;
     try {
+      if (!await canStart()) return;
       for (let pass = 0; pass < 2; pass += 1) {
         const { data, error: startError } = await supabase.rpc('start_practice_attempt', {
           p_set_id: setId,
@@ -218,7 +220,9 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
         if (startError) {
           console.error('start_practice_attempt error:', startError);
           const msg = startError.message || '';
-          if (msg.includes('Abonament necesar')) {
+          if (msg.includes('active_material_in_progress')) {
+            if (await canStart()) setError('Există deja o altă rezolvare în desfășurare. Reîncearcă.');
+          } else if (msg.includes('Abonament necesar')) {
             setError('Ai nevoie de un abonament activ pentru a accesa acest set.');
           } else if (msg.includes('Limita de 3 încercări')) {
             setError('Ai folosit toate cele 3 încercări pentru acest set.');
@@ -314,7 +318,7 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
       startingRef.current = false;
       if (mountedRef.current && !didStart) setLoading(false);
     }
-  }, [setId, minutesInput]);
+  }, [setId, minutesInput, canStart]);
 
   // Load questions once started
   useEffect(() => {
