@@ -1,81 +1,152 @@
-import { useEffect, useRef } from 'react';
-import MaterialLocationCard from '@/components/MaterialLocationCard';
-import type { ActiveMaterial } from '@/lib/activeMaterial';
-import './ActiveMaterialDialog.css';
+.active-material-dialog__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  overflow-y: auto;
+  background: radial-gradient(circle at 50% 20%, rgb(45 105 77 / 20%), transparent 65%), rgb(12 31 26 / 49%);
+  backdrop-filter: blur(5px);
+  animation: active-material-backdrop 220ms ease-out both;
+}
 
-type Props = {
-  material: ActiveMaterial | null;
-  verificationError: boolean;
-  onClose: () => void;
-  onOpenMaterial: (material: ActiveMaterial) => void;
-};
+.active-material-dialog {
+  width: min(100%, 520px);
+  margin: auto;
+  padding: clamp(24px, 4vw, 38px);
+  border: 1px solid #dbe7df;
+  border-radius: 24px;
+  background-color: #fffefa;
+  background-image:
+    radial-gradient(circle at 1px 1px, rgb(42 100 72 / 9%) .7px, transparent 1px),
+    radial-gradient(circle at 50% -15%, rgb(228 246 234 / 45%), transparent 58%);
+  background-size: 14px 14px, 100% 100%;
+  box-shadow: 0 30px 90px rgb(8 40 30 / 18%);
+  color: #142b24;
+  animation: active-material-enter 280ms cubic-bezier(.2, .75, .2, 1) both;
+}
 
-export default function ActiveMaterialDialog({ material, verificationError, onClose, onOpenMaterial }: Props) {
-  const dismissButtonRef = useRef<HTMLButtonElement>(null);
-  const continueButtonRef = useRef<HTMLButtonElement>(null);
+.active-material-dialog h2 {
+  margin: 0;
+  font-family: Georgia, Cambria, 'Times New Roman', serif;
+  font-size: clamp(18px, 5vw, 29px);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -.025em;
+  text-align: center;
+  white-space: nowrap;
+}
+.active-material-dialog__title--error { white-space: normal; }
 
-  useEffect(() => {
-    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    (continueButtonRef.current || dismissButtonRef.current)?.focus();
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-      if (event.key === 'Tab') {
-        const first = continueButtonRef.current || dismissButtonRef.current;
-        const last = dismissButtonRef.current;
-        if (event.shiftKey && document.activeElement === first) {
-          event.preventDefault();
-          last?.focus();
-        } else if (!event.shiftKey && document.activeElement === last) {
-          event.preventDefault();
-          first?.focus();
-        }
-      }
-    };
-    document.addEventListener('keydown', onKeyDown);
-    return () => {
-      document.removeEventListener('keydown', onKeyDown);
-      previousFocus?.focus();
-    };
-  }, [onClose]);
+.active-material-dialog__material-row {
+  display: grid;
+  grid-template-columns: minmax(34px, 1fr) minmax(0, 310px) minmax(34px, 1fr);
+  align-items: center;
+  gap: 5px;
+  margin: 25px auto 0;
+}
 
-  return (
-    <div className="active-material-dialog__backdrop">
-      <section className="active-material-dialog" role="alertdialog" aria-modal="true"
-        aria-labelledby="active-material-dialog-title" aria-describedby="active-material-dialog-description">
-        <svg className="active-material-dialog__accent" viewBox="0 0 240 240" aria-hidden="true" focusable="false">
-          <path d="M60 0H240V176C151 145 98 88 60 0Z" fill="#e2f2ec" />
-          <path d="M164 0H240V121C193 90 170 49 164 0Z" fill="#cbe7dc" />
-          <path d="M25 0C65 107 103 127 164 152C207 169 222 198 240 231" fill="none" stroke="#add9c9" strokeWidth="1" />
-        </svg>
-        <h2 id="active-material-dialog-title" className={verificationError ? 'active-material-dialog__title--error' : undefined}>
-          {verificationError ? 'Nu am putut verifica progresul' : 'Rezolvare în desfășurare'}
-        </h2>
-        {material && !verificationError && (
-          <div className="active-material-dialog__material-row">
-            <div className="active-material-dialog__material">
-              <MaterialLocationCard section={material.section} name={material.name} />
-            </div>
-          </div>
-        )}
-        <p id="active-material-dialog-description" className="active-material-dialog__description">
-          {verificationError ? (
-            'Încearcă din nou în câteva momente. Nu am pornit un material nou, pentru a-ți păstra progresul.'
-          ) : (
-            'Trimite răspunsurile de acolo înainte de a începe alt material.'
-          )}
-        </p>
-        <div className="active-material-dialog__actions">
-          {material && !verificationError && (
-            <button ref={continueButtonRef} type="button" className="active-material-dialog__button active-material-dialog__button--continue"
-              onClick={() => onOpenMaterial(material)}>
-              Continuă rezolvarea
-            </button>
-          )}
-          <button ref={dismissButtonRef} type="button" className="active-material-dialog__button active-material-dialog__button--dismiss" onClick={onClose}>
-            Am înțeles
-          </button>
-        </div>
-      </section>
-    </div>
-  );
+.active-material-dialog__material {
+  min-width: 0;
+  padding: 4px;
+  border-radius: 15px;
+  background: #175d47;
+  box-shadow: 0 12px 25px rgb(11 74 51 / 17%);
+  color: white;
+}
+
+.active-material-dialog__exclamation {
+  display: block;
+  width: 100%;
+  height: 86px;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.active-material-dialog__exclamation img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.active-material-dialog__exclamation--left { transform: rotate(-17deg); }
+.active-material-dialog__exclamation--right { transform: rotate(17deg); }
+
+.active-material-dialog__exclamation-fallback {
+  display: block;
+  color: #ff3139;
+  font-family: Arial, sans-serif;
+  font-size: 76px;
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
+  -webkit-text-stroke: 2px #14211b;
+}
+
+.active-material-dialog__description {
+  margin: 24px 0 32px;
+  color: #55645c;
+  font-size: 16px;
+  line-height: 1.65;
+  text-align: center;
+}
+
+.active-material-dialog__actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.active-material-dialog__button {
+  display: flex;
+  width: 100%;
+  min-height: 56px;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 12px;
+  border: 1px solid #175d47;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+  cursor: pointer;
+  transition: background 180ms ease, color 180ms ease, transform 180ms ease;
+}
+
+.active-material-dialog__button--continue { background: #175d47; color: white; }
+.active-material-dialog__button--dismiss { background: transparent; color: #175d47; }
+.active-material-dialog__button:only-child { grid-column: 1 / -1; }
+.active-material-dialog__button--continue:hover { background: #0e4937; transform: translateY(-1px); }
+.active-material-dialog__button--dismiss:hover { background: #eaf4ed; transform: translateY(-1px); }
+.active-material-dialog__button:focus-visible { outline: 3px solid #7bc9a0; outline-offset: 3px; }
+
+@media (max-height: 700px) {
+  .active-material-dialog { padding-block: 26px; }
+  .active-material-dialog__material-row { margin-top: 18px; }
+  .active-material-dialog__description { margin-block: 18px 22px; }
+}
+
+@media (max-width: 420px) {
+  .active-material-dialog__material-row {
+    grid-template-columns: 28px minmax(0, 1fr) 28px;
+    gap: 3px;
+  }
+  .active-material-dialog__exclamation { height: 68px; }
+  .active-material-dialog__exclamation-fallback { font-size: 60px; }
+  .active-material-dialog__button { font-size: 14px; }
+}
+
+@media (max-width: 370px) {
+  .active-material-dialog h2 { font-size: 16px; }
+}
+
+@keyframes active-material-backdrop { from { opacity: 0; } to { opacity: 1; } }
+@keyframes active-material-enter { from { opacity: 0; transform: translateY(14px) scale(.98); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .active-material-dialog__backdrop, .active-material-dialog { animation: none; }
+  .active-material-dialog__button { transition: none; }
 }
