@@ -36,6 +36,7 @@
   import StudentSettings from '@/pages/StudentSettings';
   import StudentPerformance from '@/components/StudentPerformance';
   import PracticeLibrary from '@/components/PracticeLibrary';
+  import MaterialLocationCard from '@/components/MaterialLocationCard';
   import { medicalFactForDate } from '@/lib/dailyMedicalFacts';
   import { biologySimulationName, practiceSetName, umfcdSimulationKind, umfcdSimulationName, umfcdSimulationYear } from '@/lib/materialDisplayNames';
   import './StudentDashboard.review.css';
@@ -1139,19 +1140,6 @@
     );
   }
 
-  function ReleaseSectionVisual({ label }: { label: string }) {
-    if (label === 'Antrenament pe capitole') {
-      return <SidebarNavIcon src={NAV_IMAGE_SOURCES.practice} fallback={<GraduationCap size={28} />} size={32} />;
-    }
-    if (label === 'Simulări biologie') {
-      return <SidebarNavIcon src={NAV_IMAGE_SOURCES.all} fallback={<FileText size={28} />} size={32} />;
-    }
-    if (label === 'Examene UMFCD') {
-      return <SidebarNavIcon src={NAV_IMAGE_SOURCES.umfcd || UMFCD_IMAGE_SRC} fallback={<Crown size={28} />} size={36} />;
-    }
-    return <BookOpen size={28} className="text-[#70e0b8]" strokeWidth={1.8} />;
-  }
-
   function ReleaseDestination({ release, simulations, practiceSets, practiceLessons }: {
     release: MaterialReleaseRPC;
     simulations: SimWithStatus[];
@@ -1169,22 +1157,7 @@
           ? umfcdSimulationName(simulation)
           : biologySimulationName(simulation.display_order ?? 1)
         : release.out_title;
-    return (
-      <div className="rounded-[14px] border border-white/15 bg-white/[0.08] px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-        <div className="flex min-w-0 items-center justify-center gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/10">
-            <ReleaseSectionVisual label={release.out_section_label} />
-          </span>
-          <p className="min-w-0 text-[15px] font-semibold leading-tight text-white sm:text-[17px]">
-            {release.out_section_label}
-          </p>
-        </div>
-        <div className="mx-auto my-2.5 h-px w-4/5 bg-white/15" />
-        <p className="break-words text-center text-[clamp(17px,1.4vw,22px)] font-bold leading-tight text-white" style={serif}>
-          {materialName}
-        </p>
-      </div>
-    );
+    return <MaterialLocationCard section={release.out_section_label} name={materialName} />;
   }
 
   function CompactCountdown({ target, onComplete }: { target: string; onComplete: () => void }) {
