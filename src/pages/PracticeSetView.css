@@ -458,7 +458,7 @@
   color: #214e40;
   cursor: pointer;
   font-family: Inter, "Plus Jakarta Sans", sans-serif;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   text-align: left;
   transition: border-color .18s ease, background-color .18s ease;
@@ -466,6 +466,22 @@
 .practice-exam__side-action:hover:not(:disabled) { border-color: #9ab9a8; background: #f8fbf8; }
 .practice-exam__side-action:disabled { cursor: not-allowed; opacity: .5; }
 .practice-exam__side-action svg { flex: none; }
+.practice-exam__bookmark {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+}
+.practice-exam__bookmark-fill {
+  position: absolute;
+  inset: 0;
+  clip-path: inset(100% 0 0 0);
+  transition: clip-path 340ms cubic-bezier(.22, .61, .36, 1);
+}
+.practice-exam__side-action[aria-pressed="true"] .practice-exam__bookmark-fill {
+  clip-path: inset(0 0 0 0);
+}
 .practice-exam__side-action strong,
 .practice-exam__side-action small { display: block; }
 .practice-exam__side-action strong { font-size: 13px; font-weight: 600; }
@@ -733,6 +749,7 @@
   .practice-exam__comfort-swatch { transition: none; }
   .practice-exam__timer-ring-accent { transition: none; }
   .practice-exam__side-action { transition: none; }
+  .practice-exam__bookmark-fill { transition: none; }
   .practice-exam__header-action { transition: none; }
   .support-chat--header-anchor > div { animation: none; }
 }
