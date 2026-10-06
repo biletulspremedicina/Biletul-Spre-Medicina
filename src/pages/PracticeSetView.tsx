@@ -715,7 +715,7 @@ export default function PracticeSetView({ setId, lessonId, lessonTitle, onExit, 
           )}
         </main>
 
-        <aside className={`practice-exam__progress${timeLeft === null ? ' practice-exam__progress--untimed' : ''}`} aria-label="Progresul setului">
+        <aside className="practice-exam__progress" aria-label="Progresul setului">
           <div className="practice-exam__sticky">
             <span className="practice-exam__section-label">Parcurs</span>
             <p><strong>{answeredCount}</strong> din {questions.length} completate</p>
@@ -729,22 +729,24 @@ export default function PracticeSetView({ setId, lessonId, lessonTitle, onExit, 
             <div className="practice-exam__progress-track" role="progressbar" aria-valuenow={answeredCount} aria-valuemin={0} aria-valuemax={questions.length} aria-label="Grile completate">
               <span style={{ width: `${questions.length ? (answeredCount / questions.length) * 100 : 0}%` }} />
             </div>
-            {timeLeft !== null && (
-              <div className={`practice-exam__timer-ring${timeLeft < 300 ? ' practice-exam__timer-ring--urgent' : ''}`}>
+              <div className={`practice-exam__timer-ring${timeLeft === null ? ' practice-exam__timer-ring--untimed' : timeLeft < 300 ? ' practice-exam__timer-ring--urgent' : ''}`}>
                 <svg viewBox="0 0 240 240" aria-hidden="true" focusable="false">
                   <circle className="practice-exam__timer-ring-track" cx="120" cy="120" r="86" />
-                  <circle className="practice-exam__timer-ring-accent" cx="120" cy="120" r="86" pathLength="100" strokeDasharray={`${ringProgress} 100`} />
+                  <circle className="practice-exam__timer-ring-accent" cx="120" cy="120" r="86" pathLength="100" strokeDasharray={`${timeLeft === null ? 100 : ringProgress} 100`} />
                 </svg>
-                <button
+                {timeLeft === null ? (
+                  <span className="practice-exam__timer-value practice-exam__timer-value--infinity" role="img" aria-label="Fără limită de timp">
+                    <span aria-hidden="true">∞</span>
+                  </span>
+                ) : <button
                   type="button"
                   className="practice-exam__timer-value"
                   disabled={timeLeft >= 3600}
                   aria-pressed={timeLeft < 3600 ? !showSeconds : undefined}
                   aria-label={`Timp rămas: ${formatPracticeTime(timeLeft, showSeconds)}${timeLeft < 3600 ? `. ${showSeconds ? 'Ascunde secundele' : 'Afișează secundele'}` : ''}`}
                   onClick={() => setShowSeconds((current) => !current)}
-                >{formatPracticeTime(timeLeft, showSeconds)}</button>
+                >{formatPracticeTime(timeLeft, showSeconds)}</button>}
               </div>
-            )}
             <div className="practice-exam__side-actions">
               <button className="practice-exam__side-action" type="button" disabled={!activeQuestionId} aria-pressed={activeQuestionId ? markedIds.has(activeQuestionId) : false} onClick={() => { if (activeQuestionId) toggleMark(activeQuestionId); }}>
                 <Bookmark size={18} strokeWidth={1.8} aria-hidden="true" />
