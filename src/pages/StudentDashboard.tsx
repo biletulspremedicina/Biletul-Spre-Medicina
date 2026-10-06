@@ -4,6 +4,7 @@
     Bell,
     BookOpen,
     Bookmark,
+    Box,
     CheckCircle2,
     ChevronDown,
     ChevronRight,
@@ -42,7 +43,7 @@
   import './StudentDashboard.review.css';
 
   type IncomingTab = 'all' | 'practice' | 'umfcd' | 'chemistry' | 'dashboard';
-  type PageId = 'home' | 'all' | 'practice' | 'umfcd' | 'chemistry' | 'review' | 'settings';
+  type PageId = 'home' | 'all' | 'practice' | 'umfcd' | 'chemistry' | 'review' | 'biology3d' | 'settings';
 
   type Props = {
     onStartSimulation: (simulationId: string, resume?: boolean) => void;
@@ -82,6 +83,7 @@
     practice: '/Capitole.png', // Aici pui sursa imaginii ANTRENAMENT PE CAPITOLE
     umfcd: '', // Aici pui sursa imaginii EXAMENE UMFCD
     review: '/Revizie2.png', // Aici pui sursa imaginii INTREBARI DE REVIZUIT
+    biology3d: '', // Imagine opțională pentru secțiunea Biologie 3D
     chemistry: '/Chimie.png',
   };
 
@@ -603,6 +605,7 @@
       { id: 'chemistry', label: 'Lecții de chimie', icon: <FlaskConical size={20} />, imageSrc: NAV_IMAGE_SOURCES.chemistry },
       { id: 'umfcd', label: 'Examene UMFCD', icon: <UmfcdIcon size={19} imageSize={28} />, imageSrc: NAV_IMAGE_SOURCES.umfcd },
       { id: 'review', label: 'Întrebări de revizuit', icon: <Bookmark size={19} />, imageSrc: NAV_IMAGE_SOURCES.review },
+      { id: 'biology3d', label: 'Biologie 3D', icon: <Box size={20} />, imageSrc: NAV_IMAGE_SOURCES.biology3d },
     ];
 
     const sidebar = (
@@ -1020,6 +1023,16 @@
                     ))}
                   </div>
                 )}
+              </section>
+            ) : page === 'biology3d' ? (
+              <section aria-labelledby="biology-3d-title" className="rounded-[24px] border border-[#dce8e1] bg-[#f7faf8] px-6 py-8 sm:px-10 sm:py-10">
+                <h1 id="biology-3d-title" className="text-3xl font-bold text-[#123e31] sm:text-4xl" style={serif}>Biologie 3D</h1>
+                <p className="mt-3 text-base text-[#62766b]">O nouă perspectivă asupra biologiei.</p>
+                <div className="mt-8 rounded-2xl border border-[#dce8e1] bg-white px-6 py-12 text-center">
+                  <Box size={40} strokeWidth={1.4} className="mx-auto text-[#28614c]" aria-hidden="true" />
+                  <h2 className="mt-5 text-xl font-semibold text-[#183e31]">Nu există încă materiale 3D.</h2>
+                  <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-[#62766b]">Materialele adăugate în această secțiune vor apărea aici.</p>
+                </div>
               </section>
             ) : (
               <section className="review-workspace">
