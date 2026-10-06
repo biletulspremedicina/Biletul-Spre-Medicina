@@ -697,7 +697,10 @@ export default function SimulationView({ simulationId, onExit, onComplete, canSt
             </div>
             <div className="practice-exam__side-actions">
               <button className="practice-exam__side-action" type="button" disabled={!activeQuestionId} aria-pressed={activeQuestionId ? markedIds.has(activeQuestionId) : false} onClick={() => { if (activeQuestionId) toggleMark(activeQuestionId); }}>
-                <Bookmark size={18} strokeWidth={1.8} aria-hidden="true" />
+                <span className="practice-exam__bookmark" aria-hidden="true">
+                  <Bookmark size={18} strokeWidth={1.8} />
+                  <Bookmark className="practice-exam__bookmark-fill" size={18} strokeWidth={1.8} fill="currentColor" />
+                </span>
                 <span>{activeQuestionId && markedIds.has(activeQuestionId) ? 'Demarchează grila' : 'Marchează grila'}</span>
               </button>
             </div>
