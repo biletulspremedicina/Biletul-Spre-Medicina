@@ -178,6 +178,15 @@
 .simulation-intro__stats p + p { border-left: 1px solid #dce2dc; }
 .simulation-intro__stats strong { font-weight: 700; }
 
+.simulation-intro__stats p.simulation-intro__remaining {
+  align-self: center;
+  padding-inline: 10px;
+  font-size: clamp(16px, 1.4vw, 22px);
+  line-height: 1.35;
+  white-space: normal;
+  text-wrap: balance;
+}
+
 .simulation-intro__time-field {
   display: flex;
   align-items: baseline;
