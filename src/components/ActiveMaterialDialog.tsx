@@ -1,22 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import MaterialLocationCard from '@/components/MaterialLocationCard';
 import type { ActiveMaterial } from '@/lib/activeMaterial';
 import './ActiveMaterialDialog.css';
-
-// OpenMoji project, 2757 (red exclamation mark), CC BY-SA 4.0:
-// https://github.com/hfg-gmuend/openmoji/blob/17.0.0/color/svg/2757.svg
-const EXCLAMATION_SRC = 'https://cdn.jsdelivr.net/gh/hfg-gmuend/openmoji@17.0.0/color/svg/2757.svg';
-
-function ExclamationMark({ side }: { side: 'left' | 'right' }) {
-  const [imageFailed, setImageFailed] = useState(false);
-  return (
-    <span className={`active-material-dialog__exclamation active-material-dialog__exclamation--${side}`} aria-hidden="true">
-      {imageFailed ? <span className="active-material-dialog__exclamation-fallback">!</span> : (
-        <img src={EXCLAMATION_SRC} alt="" onError={() => setImageFailed(true)} draggable={false} />
-      )}
-    </span>
-  );
-}
 
 type Props = {
   material: ActiveMaterial | null;
@@ -57,16 +42,19 @@ export default function ActiveMaterialDialog({ material, verificationError, onCl
     <div className="active-material-dialog__backdrop">
       <section className="active-material-dialog" role="alertdialog" aria-modal="true"
         aria-labelledby="active-material-dialog-title" aria-describedby="active-material-dialog-description">
+        <svg className="active-material-dialog__accent" viewBox="0 0 240 240" aria-hidden="true" focusable="false">
+          <path d="M60 0H240V176C151 145 98 88 60 0Z" fill="#e2f2ec" />
+          <path d="M164 0H240V121C193 90 170 49 164 0Z" fill="#cbe7dc" />
+          <path d="M25 0C65 107 103 127 164 152C207 169 222 198 240 231" fill="none" stroke="#add9c9" strokeWidth="1" />
+        </svg>
         <h2 id="active-material-dialog-title" className={verificationError ? 'active-material-dialog__title--error' : undefined}>
           {verificationError ? 'Nu am putut verifica progresul' : 'Rezolvare în desfășurare'}
         </h2>
         {material && !verificationError && (
           <div className="active-material-dialog__material-row">
-            <ExclamationMark side="left" />
             <div className="active-material-dialog__material">
               <MaterialLocationCard section={material.section} name={material.name} />
             </div>
-            <ExclamationMark side="right" />
           </div>
         )}
         <p id="active-material-dialog-description" className="active-material-dialog__description">
