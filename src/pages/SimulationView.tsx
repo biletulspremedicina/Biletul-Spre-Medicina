@@ -53,8 +53,9 @@ function mapRpcAttempt(row: RpcAttemptRow): Attempt {
   };
 }
 
-export default function SimulationView({ simulationId, resume = false, onExit, onComplete, canStart }: Props) {
+export default function SimulationView({ simulationId, onExit, onComplete, canStart }: Props) {
   const { profile, session } = useAuth();
+  const userId = session?.user.id;
   const [simulation, setSimulation] = useState<Simulation | null>(null);
   const [questions, setQuestions] = useState<ExamQuestion[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -68,6 +69,8 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
   const [error, setError] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<SaveState>('idle');
   const [questionCount, setQuestionCount] = useState(0);
+  const [introRemaining, setIntroRemaining] = useState<number | null>(null);
+  const resume = introRemaining !== null;
   const [activeQuestion, setActiveQuestion] = useState(0);
   const { markedIds, toggleMark } = useQuestionMarks(attempt?.id ?? null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -107,12 +110,17 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
 
   // Load simulation + question count
   useEffect(() => {
+    let active = true;
+    if (!userId) return;
     (async () => {
+      setLoading(true);
+      setIntroRemaining(null);
       const { data: sim } = await supabase
         .from('simulations')
         .select('*')
         .eq('id', simulationId)
         .maybeSingle();
+      if (!active) return;
       if (!sim) {
         setLoading(false);
         return;
@@ -120,14 +128,36 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
       setSimulation(sim as Simulation);
 
       const { data: qc } = await supabase.rpc('get_exam_question_count', { p_simulation_id: simulationId });
+      if (!active) return;
       if (qc && qc.length > 0) {
         const row = qc[0] as { question_count: number };
         setQuestionCount(Number(row.question_count));
       }
 
+      // Read the saved checkpoint without starting or resuming the timer.
+      const { data: openAttempt, error: attemptError } = await supabase
+        .from('attempts').select('timer_remaining_seconds, expires_at')
+        .eq('simulation_id', simulationId).eq('user_id', userId)
+        .is('submitted_at', null).order('started_at', { ascending: false })
+        .limit(1).maybeSingle();
+      if (!active) return;
+      if (attemptError) {
+        setError('Nu s-a putut încărca timpul salvat. Reîncarcă simularea și încearcă din nou.');
+      } else if (openAttempt) {
+        const saved = openAttempt.timer_remaining_seconds;
+        const expiresAt = openAttempt.expires_at ? Date.parse(openAttempt.expires_at) : NaN;
+        if (saved !== null && Number.isFinite(Number(saved))) {
+          setIntroRemaining(Math.max(0, Number(saved)));
+        } else if (Number.isFinite(expiresAt)) {
+          setIntroRemaining(Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000)));
+        } else {
+          setError('Timpul salvat nu este disponibil. Reîncarcă simularea și încearcă din nou.');
+        }
+      }
       setLoading(false);
     })();
-  }, [simulationId]);
+    return () => { active = false; };
+  }, [simulationId, userId]);
 
   const startAttempt = useCallback(async () => {
     if (!profile || startingRef.current) return;
@@ -570,7 +600,9 @@ export default function SimulationView({ simulationId, resume = false, onExit, o
               <h2 id="simulation-intro-summary">{displayName}</h2>
               <div className="simulation-intro__stats">
                 <p><strong>{questionCount}</strong> {questionCount === 1 ? 'grilă' : 'grile'}</p>
-                <p><strong>{simulation.duration_minutes}</strong> min</p>
+                <p className={resume ? 'simulation-intro__remaining' : undefined}>{introRemaining !== null
+                  ? <><strong>{Math.ceil(introRemaining / 60)}</strong> {Math.ceil(introRemaining / 60) === 1 ? 'minut rămas' : 'minute rămase'}</>
+                  : <><strong>{simulation.duration_minutes}</strong> min</>}</p>
               </div>
               <div className="simulation-intro__actions">
                 <button onClick={startAttempt} className="simulation-intro__start" type="button" disabled={starting}>
