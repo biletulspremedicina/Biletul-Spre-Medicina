@@ -432,7 +432,15 @@
 }
 .practice-exam__timer-value:disabled { cursor: default; opacity: 1; }
 .practice-exam__timer-value--infinity { cursor: default; }
-.practice-exam__timer-value--infinity > span { font-size: 1.6em; }
+.practice-exam__timer-value--infinity .practice-exam__infinity-symbol {
+  width: 62%;
+  height: auto;
+  overflow: visible;
+}
+.practice-exam__timer-ring--untimed .practice-exam__timer-ring-accent {
+  stroke-dasharray: none;
+  transition: none;
+}
 .practice-exam__timer-ring--urgent { --timer-accent: #a53838; --timer-text: #a53838; }
 
 .practice-exam__side-actions { display: flex; flex-direction: column; gap: 9px; margin-top: auto; }
