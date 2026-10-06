@@ -5,13 +5,15 @@
   display: grid;
   place-items: center;
   padding: 20px;
+  overflow-y: auto;
   background: rgb(12 31 26 / 48%);
   backdrop-filter: blur(5px);
   animation: active-material-backdrop 220ms ease-out both;
 }
 
 .active-material-dialog {
-  width: min(100%, 460px);
+  width: min(100%, 500px);
+  margin: auto;
   padding: clamp(28px, 5vw, 42px);
   border: 1px solid #dbe7df;
   border-radius: 24px;
@@ -21,85 +23,140 @@
   animation: active-material-enter 280ms cubic-bezier(.2, .75, .2, 1) both;
 }
 
-.active-material-dialog__icon {
-  display: grid;
-  width: 72px;
-  height: 72px;
-  margin: 0 auto 25px;
-  place-items: center;
+.active-material-dialog__exclamation {
+  position: relative;
+  display: block;
+  width: 42px;
+  height: 124px;
+  margin: 0 auto 13px;
+}
+
+.active-material-dialog__exclamation::before,
+.active-material-dialog__exclamation::after {
+  position: absolute;
+  display: block;
+  background: #ff3139;
+  content: '';
+}
+
+.active-material-dialog__exclamation::before {
+  top: 0;
+  left: 7px;
+  width: 28px;
+  height: 84px;
+  border-radius: 9px 9px 13px 13px;
+  transform: rotate(-3deg);
+}
+
+.active-material-dialog__exclamation::after {
+  bottom: 0;
+  left: 6px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  background: #fff0ec;
-  color: #d94335;
 }
 
 .active-material-dialog h2 {
   margin: 0;
   font-family: Georgia, Cambria, 'Times New Roman', serif;
-  font-size: clamp(27px, 4vw, 34px);
+  font-size: clamp(29px, 4vw, 38px);
   font-weight: 700;
   line-height: 1.13;
   text-align: center;
 }
 
 .active-material-dialog__material {
-  display: flex;
-  width: fit-content;
-  max-width: 100%;
-  min-height: 54px;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin: 26px auto 0;
-  padding: 10px 17px;
-  border: 1px solid #cadfd2;
+  width: min(100%, 310px);
+  margin: 24px auto 0;
+  padding: 13px 18px 16px;
   border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 7px 20px rgb(17 82 57 / 9%);
-  color: #175d47;
-  font-size: 17px;
-  font-weight: 700;
-  line-height: 1.3;
-  text-align: center;
-  cursor: pointer;
-  transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+  background: #175d47;
+  box-shadow: 0 12px 25px rgb(11 74 51 / 17%);
+  color: white;
 }
 
-.active-material-dialog__material:hover { background: #f1f8f3; border-color: #9fc7ad; transform: translateY(-2px); }
-.active-material-dialog__material:focus-visible { outline: 3px solid #7bc9a0; outline-offset: 3px; }
-.active-material-dialog__material svg { flex: none; }
+.active-material-dialog__material-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.active-material-dialog__material-icon {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  place-items: center;
+  border-radius: 7px;
+  background: rgb(255 255 255 / 12%);
+  color: #dcf4e8;
+}
+
+.active-material-dialog__material-name {
+  margin: 10px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid rgb(255 255 255 / 19%);
+  font-family: Georgia, Cambria, 'Times New Roman', serif;
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+}
 
 .active-material-dialog__description {
-  margin: 20px 0 30px;
+  margin: 24px 0 32px;
   color: #55645c;
   font-size: 16px;
   line-height: 1.65;
   text-align: center;
 }
 
+.active-material-dialog__actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
 .active-material-dialog__button {
   display: flex;
   width: 100%;
-  min-height: 52px;
+  min-height: 56px;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  border: 0;
+  padding: 9px 12px;
+  border: 1px solid #175d47;
   border-radius: 12px;
-  background: #175d47;
-  color: white;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
   cursor: pointer;
-  transition: background 180ms ease, transform 180ms ease;
+  transition: background 180ms ease, color 180ms ease, transform 180ms ease;
 }
 
-.active-material-dialog__button:hover { background: #0e4937; transform: translateY(-1px); }
+.active-material-dialog__button--continue { background: #175d47; color: white; }
+.active-material-dialog__button--dismiss { background: transparent; color: #175d47; }
+.active-material-dialog__button:only-child { grid-column: 1 / -1; }
+.active-material-dialog__button--continue:hover { background: #0e4937; transform: translateY(-1px); }
+.active-material-dialog__button--dismiss:hover { background: #eaf4ed; transform: translateY(-1px); }
 .active-material-dialog__button:focus-visible { outline: 3px solid #7bc9a0; outline-offset: 3px; }
+
+@media (max-height: 700px) {
+  .active-material-dialog { padding-block: 26px; }
+  .active-material-dialog__exclamation { transform: scale(.82); margin-block: -10px 2px; }
+  .active-material-dialog__material { margin-top: 18px; }
+  .active-material-dialog__description { margin-block: 18px 22px; }
+}
 
 @keyframes active-material-backdrop { from { opacity: 0; } to { opacity: 1; } }
 @keyframes active-material-enter { from { opacity: 0; transform: translateY(14px) scale(.98); } to { opacity: 1; transform: none; } }
 
 @media (prefers-reduced-motion: reduce) {
   .active-material-dialog__backdrop, .active-material-dialog { animation: none; }
-  .active-material-dialog__button, .active-material-dialog__material { transition: none; }
+  .active-material-dialog__button { transition: none; }
 }
