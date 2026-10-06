@@ -732,11 +732,13 @@ export default function PracticeSetView({ setId, lessonId, lessonTitle, onExit, 
               <div className={`practice-exam__timer-ring${timeLeft === null ? ' practice-exam__timer-ring--untimed' : timeLeft < 300 ? ' practice-exam__timer-ring--urgent' : ''}`}>
                 <svg viewBox="0 0 240 240" aria-hidden="true" focusable="false">
                   <circle className="practice-exam__timer-ring-track" cx="120" cy="120" r="86" />
-                  <circle className="practice-exam__timer-ring-accent" cx="120" cy="120" r="86" pathLength="100" strokeDasharray={`${timeLeft === null ? 100 : ringProgress} 100`} />
+                  <circle className="practice-exam__timer-ring-accent" cx="120" cy="120" r="86" pathLength="100" strokeDasharray={timeLeft === null ? undefined : `${ringProgress} 100`} />
                 </svg>
                 {timeLeft === null ? (
                   <span className="practice-exam__timer-value practice-exam__timer-value--infinity" role="img" aria-label="Fără limită de timp">
-                    <span aria-hidden="true">∞</span>
+                    <svg className="practice-exam__infinity-symbol" viewBox="0 0 200 90" aria-hidden="true" focusable="false">
+                      <path fill="currentColor" fillRule="evenodd" d="M100 39C78 17 60 2 40 2C17 2 2 21 2 45C2 69 18 88 40 88C62 88 79 69 100 49C121 71 139 88 160 88C184 88 198 68 198 45C198 21 183 2 160 2C138 2 120 21 100 39ZM89 47C69 65 55 83 40 83C20 83 13 65 13 48C13 29 25 18 42 18C57 18 72 31 89 47ZM111 43C130 23 145 7 160 7C179 7 187 25 187 42C187 61 175 72 158 72C143 72 128 58 111 43Z" />
+                    </svg>
                   </span>
                 ) : <button
                   type="button"
