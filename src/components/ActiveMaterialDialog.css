@@ -23,21 +23,13 @@
 
 .active-material-dialog__icon {
   display: grid;
-  width: 52px;
-  height: 52px;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 25px;
   place-items: center;
-  border-radius: 16px;
-  background: #eaf4ed;
-  color: #176048;
-}
-
-.active-material-dialog__eyebrow {
-  margin: 30px 0 10px;
-  color: #47705e;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: .14em;
-  text-transform: uppercase;
+  border-radius: 50%;
+  background: #fff0ec;
+  color: #d94335;
 }
 
 .active-material-dialog h2 {
@@ -46,16 +38,43 @@
   font-size: clamp(27px, 4vw, 34px);
   font-weight: 700;
   line-height: 1.13;
+  text-align: center;
 }
 
+.active-material-dialog__material {
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 54px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 26px auto 0;
+  padding: 10px 17px;
+  border: 1px solid #cadfd2;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 7px 20px rgb(17 82 57 / 9%);
+  color: #175d47;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
+  cursor: pointer;
+  transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+.active-material-dialog__material:hover { background: #f1f8f3; border-color: #9fc7ad; transform: translateY(-2px); }
+.active-material-dialog__material:focus-visible { outline: 3px solid #7bc9a0; outline-offset: 3px; }
+.active-material-dialog__material svg { flex: none; }
+
 .active-material-dialog__description {
-  margin: 18px 0 30px;
+  margin: 20px 0 30px;
   color: #55645c;
   font-size: 16px;
   line-height: 1.65;
+  text-align: center;
 }
-
-.active-material-dialog__description strong { color: #174b3d; }
 
 .active-material-dialog__button {
   display: flex;
@@ -82,5 +101,5 @@
 
 @media (prefers-reduced-motion: reduce) {
   .active-material-dialog__backdrop, .active-material-dialog { animation: none; }
-  .active-material-dialog__button { transition: none; }
+  .active-material-dialog__button, .active-material-dialog__material { transition: none; }
 }
