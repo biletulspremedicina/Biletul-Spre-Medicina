@@ -431,6 +431,8 @@
   white-space: nowrap;
 }
 .practice-exam__timer-value:disabled { cursor: default; opacity: 1; }
+.practice-exam__timer-value--infinity { cursor: default; }
+.practice-exam__timer-value--infinity > span { font-size: 1.6em; }
 .practice-exam__timer-ring--urgent { --timer-accent: #a53838; --timer-text: #a53838; }
 
 .practice-exam__side-actions { display: flex; flex-direction: column; gap: 9px; margin-top: auto; }
@@ -624,6 +626,15 @@
 .practice-exam--vanilla .practice-exam__number--active,
 .practice-exam--blue .practice-exam__number--active { border-bottom-color: var(--exam-accent); }
 
+.practice-exam .practice-exam__timer-ring--untimed {
+  --timer-accent: #17634a;
+  --timer-text: #17634a;
+}
+.practice-exam--dark .practice-exam__timer-ring--untimed {
+  --timer-accent: #85c69d;
+  --timer-text: #85c69d;
+}
+
 @media (max-width: 1200px) {
   .practice-exam__layout { grid-template-columns: 116px minmax(0, 1fr) 235px; }
   .practice-exam__questions { padding-inline: 36px; }
@@ -649,7 +660,6 @@
   .practice-exam__side-actions { grid-area: actions; flex-direction: row; margin-top: 4px; }
   .practice-exam__side-action { flex: 1; min-width: 0; }
   .practice-exam__progress .practice-exam__submit { grid-area: submit; width: 100%; min-width: 0; margin: 4px 0 0; }
-  .practice-exam__progress--untimed .practice-exam__sticky { grid-template-columns: minmax(0, 1fr); grid-template-areas: "label" "count" "save" "track" "actions" "submit"; }
   .practice-exam__rail .practice-exam__sticky { padding: 26px 14px 26px 24px; }
   .practice-exam__questions { padding: 36px 30px 70px; }
   .practice-exam__breadcrumb { overflow: hidden; }
