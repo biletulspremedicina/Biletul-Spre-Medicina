@@ -103,8 +103,9 @@ type IntroMeta = {
   questionCount: number;
 };
 
-export default function PracticeSetView({ setId, resume = false, lessonId, lessonTitle, onExit, onHome, onComplete, canStart }: Props) {
+export default function PracticeSetView({ setId, lessonId, lessonTitle, onExit, onHome, onComplete, canStart }: Props) {
   const { session } = useAuth();
+  const userId = session?.user.id;
   const [questions, setQuestions] = useState<PracticeQuestionRPC[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
@@ -113,6 +114,9 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
   const [saveState, setSaveState] = useState<SaveState>('idle');
   const [started, setStarted] = useState(false);
   const [introMeta, setIntroMeta] = useState<IntroMeta | null>(null);
+  const [introAttemptId, setIntroAttemptId] = useState<string | null>(null);
+  const [introRemaining, setIntroRemaining] = useState<number | null>(null);
+  const resume = introAttemptId !== null;
   const [minutesInput, setMinutesInput] = useState('');
   const [minutesError, setMinutesError] = useState<string | null>(null);
   const [deadline, setDeadline] = useState<number | null>(null);
@@ -146,7 +150,11 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
 
   useEffect(() => {
     let active = true;
+    if (!userId) return;
     (async () => {
+      setLoading(true);
+      setIntroAttemptId(null);
+      setIntroRemaining(null);
       let resolvedLessonId = lessonId;
       if (!resolvedLessonId) {
         const { data: set, error: setLookupError } = await supabase
@@ -185,6 +193,24 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
         if (lessonError) console.error('practice_lessons lookup error:', lessonError);
         resolvedLessonTitle = lesson?.title || 'Capitol';
       }
+      const { data: openAttempt, error: attemptError } = await supabase
+        .from('practice_attempts').select('id')
+        .eq('set_id', setId).eq('user_id', userId)
+        .is('submitted_at', null).order('started_at', { ascending: false })
+        .limit(1).maybeSingle();
+      if (!active) return;
+      if (attemptError) {
+        setError('Nu s-a putut încărca progresul salvat. Reîncarcă setul și încearcă din nou.');
+        setLoading(false);
+        return;
+      }
+      if (openAttempt) {
+        const savedRemaining = readPracticeRemaining(openAttempt.id);
+        const savedDeadline = readPracticeDeadline(openAttempt.id);
+        setIntroAttemptId(openAttempt.id);
+        setIntroRemaining(savedRemaining ?? (savedDeadline === null
+          ? null : Math.max(0, Math.ceil((savedDeadline - Date.now()) / 1000))));
+      }
       setIntroMeta({
         lessonTitle: resolvedLessonTitle || 'Capitol',
         position: selectedSet.out_position + 1,
@@ -193,12 +219,12 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
       setLoading(false);
     })();
     return () => { active = false; };
-  }, [setId, lessonId, lessonTitle]);
+  }, [setId, lessonId, lessonTitle, userId]);
 
   // Start or resume attempt
   const startAttempt = useCallback(async () => {
     if (startingRef.current) return;
-    const selectedMinutes = minutesInput.trim() === '' ? null : Number(minutesInput);
+    const selectedMinutes = resume || minutesInput.trim() === '' ? null : Number(minutesInput);
     if (selectedMinutes !== null && (
       !Number.isInteger(selectedMinutes) || selectedMinutes < 1 || selectedMinutes > MAX_TIME_LIMIT_MINUTES
     )) {
@@ -318,7 +344,7 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
       startingRef.current = false;
       if (mountedRef.current && !didStart) setLoading(false);
     }
-  }, [setId, minutesInput, canStart]);
+  }, [setId, minutesInput, canStart, resume]);
 
   // Load questions once started
   useEffect(() => {
@@ -590,7 +616,7 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
             <div className="simulation-intro__rule" />
             <h2>De știut înainte de start</h2>
             <ol className="simulation-intro__steps">
-              <li><span className="simulation-intro__step-number">1</span><span>Poți introduce timpul-limită pentru acest set.<strong className="simulation-intro__step-note">( Câmp gol = Fără limită )</strong></span></li>
+              <li><span className="simulation-intro__step-number">1</span><span>{resume ? <>Reiei rezolvarea cu <strong>răspunsurile și timpul păstrate.</strong></> : <>Poți introduce timpul-limită pentru acest set.<strong className="simulation-intro__step-note">( Câmp gol = Fără limită )</strong></>}</span></li>
               <li><span className="simulation-intro__step-number">2</span><span><strong>Revino la set când dorești.</strong> Cronometrul pornește din nou doar când reiei rezolvarea.</span></li>
               <li><span className="simulation-intro__step-number">3</span><span>La expirare, răspunsurile <strong>se trimit automat.</strong></span></li>
             </ol>
@@ -608,7 +634,9 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
               )}
               <div className="simulation-intro__stats">
                 <p><strong>{introMeta.questionCount}</strong> {introMeta.questionCount === 1 ? 'grilă' : 'grile'}</p>
-                <label className="simulation-intro__time-field">
+                {resume ? (
+                  <p className="simulation-intro__remaining">{introRemaining === null ? 'Fără limită de timp' : <><strong>{Math.ceil(introRemaining / 60)}</strong> {Math.ceil(introRemaining / 60) === 1 ? 'minut rămas' : 'minute rămase'}</>}</p>
+                ) : <label className="simulation-intro__time-field">
                   <input
                     type="text"
                     inputMode="numeric"
@@ -626,7 +654,7 @@ export default function PracticeSetView({ setId, resume = false, lessonId, lesso
                     aria-describedby={minutesError ? 'practice-time-error' : undefined}
                   />
                   <span>minute</span>
-                </label>
+                </label>}
               </div>
               {minutesError && <p id="practice-time-error" className="simulation-intro__time-error" role="alert">{minutesError}</p>}
               <div className="simulation-intro__actions">
