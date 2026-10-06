@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, type ReactNode } from 'react';
 import { supabase } from '@/lib/supabase';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import LandingPage from '@/pages/LandingPage';
@@ -13,6 +13,8 @@ import PracticeResultsView from '@/pages/PracticeResultsView';
 import ChemistryLessonView from '@/pages/ChemistryLessonView';
 import Loading from '@/components/Loading';
 import SupportChat from '@/components/SupportChat';
+import ActiveMaterialDialog from '@/components/ActiveMaterialDialog';
+import { findOtherActiveMaterial, type ActiveMaterial, type MaterialTarget } from '@/lib/activeMaterial';
 
 type Route =
   | 'landing'
@@ -43,6 +45,8 @@ function AppContent() {
   const [practiceSubNonce, setPracticeSubNonce] = useState(0);
   const [studentInitialTab, setStudentInitialTab] = useState<'all' | 'practice' | 'umfcd' | 'chemistry' | 'dashboard'>('all');
   const [showStudentOnboarding, setShowStudentOnboarding] = useState(false);
+  const [activeMaterialNotice, setActiveMaterialNotice] = useState<{ material: ActiveMaterial | null; verificationError: boolean } | null>(null);
+  const checkingMaterialRef = useRef(false);
   useEffect(() => {
     if (loading) return;
     if (!session) {
@@ -64,7 +68,28 @@ function AppContent() {
   const handleSignIn = () => setRoute('signin');
   const handleBackToLanding = () => setRoute('landing');
 
-  const handleStartSimulation = (simId: string, resume = false) => {
+  const canOpenMaterial = async (target: MaterialTarget): Promise<boolean> => {
+    if (checkingMaterialRef.current) return false;
+    checkingMaterialRef.current = true;
+    try {
+      if (!session?.user.id) return false;
+      const material = await findOtherActiveMaterial(session.user.id, target);
+      if (material) {
+        setActiveMaterialNotice({ material, verificationError: false });
+        return false;
+      }
+      return true;
+    } catch (error) {
+      console.error('Active material check failed:', error);
+      setActiveMaterialNotice({ material: null, verificationError: true });
+      return false;
+    } finally {
+      checkingMaterialRef.current = false;
+    }
+  };
+
+  const handleStartSimulation = async (simId: string, resume = false) => {
+    if (!await canOpenMaterial({ kind: 'simulation', id: simId })) return;
     setActiveSimulationId(simId);
     setActiveAttemptId(null);
     setResumeSimulation(resume);
@@ -90,7 +115,8 @@ function AppContent() {
     setRoute('student-dashboard');
   };
 
-  const handleStartPracticeSet = (setId: string, resume = false) => {
+  const handleStartPracticeSet = async (setId: string, resume = false) => {
+    if (!await canOpenMaterial({ kind: 'practice', id: setId })) return;
     setActivePracticeSetId(setId);
     setActivePracticeAttemptId(null);
     setResumePracticeSet(resume);
@@ -128,6 +154,19 @@ function AppContent() {
       setPracticeBuyingSub(false);
     }
   };
+
+  const withMaterialNotice = (content: ReactNode) => (
+    <>
+      {content}
+      {activeMaterialNotice && (
+        <ActiveMaterialDialog
+          material={activeMaterialNotice.material}
+          verificationError={activeMaterialNotice.verificationError}
+          onClose={() => setActiveMaterialNotice(null)}
+        />
+      )}
+    </>
+  );
 
   if (loading) {
     return (
@@ -169,7 +208,7 @@ function AppContent() {
   }
 
   if (route === 'practice-solve' && activePracticeSetId) {
-    return (
+    return withMaterialNotice(
       <>
         <PracticeSetView
           key={activePracticeSetId}
@@ -180,6 +219,7 @@ function AppContent() {
           onExit={() => { setStudentInitialTab('practice'); setRoute('student-dashboard'); }}
           onHome={() => { setStudentInitialTab('dashboard'); setRoute('student-dashboard'); }}
           onComplete={handlePracticeComplete}
+          canStart={() => canOpenMaterial({ kind: 'practice', id: activePracticeSetId })}
         />
         <SupportChat hideFloatingButton />
       </>
@@ -187,7 +227,7 @@ function AppContent() {
   }
 
   if (route === 'practice-results' && activePracticeSetId) {
-    return (
+    return withMaterialNotice(
       <>
         <PracticeResultsView
           setId={activePracticeSetId}
@@ -201,7 +241,7 @@ function AppContent() {
   }
 
   if (route === 'simulation' && activeSimulationId) {
-    return (
+    return withMaterialNotice(
       <>
         <SimulationView
           key={activeSimulationId}
@@ -209,6 +249,7 @@ function AppContent() {
           resume={resumeSimulation}
           onExit={() => { setRoute('student-dashboard'); setActiveSimulationId(null); }}
           onComplete={handleSimulationComplete}
+          canStart={() => canOpenMaterial({ kind: 'simulation', id: activeSimulationId })}
         />
         <SupportChat hideFloatingButton />
       </>
@@ -216,7 +257,7 @@ function AppContent() {
   }
 
   if (route === 'results' && activeSimulationId) {
-    return (
+    return withMaterialNotice(
       <>
         <ResultsView
           simulationId={activeSimulationId}
@@ -229,7 +270,7 @@ function AppContent() {
     );
   }
 
-  return (
+  return withMaterialNotice(
     <>
       <StudentDashboard
         onStartSimulation={handleStartSimulation}
