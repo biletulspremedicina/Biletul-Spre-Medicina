@@ -6,106 +6,83 @@
   place-items: center;
   padding: 20px;
   overflow-y: auto;
-  background: rgb(12 31 26 / 48%);
+  background: radial-gradient(circle at 50% 20%, rgb(45 105 77 / 20%), transparent 65%), rgb(12 31 26 / 49%);
   backdrop-filter: blur(5px);
   animation: active-material-backdrop 220ms ease-out both;
 }
 
 .active-material-dialog {
-  width: min(100%, 500px);
+  width: min(100%, 520px);
   margin: auto;
-  padding: clamp(28px, 5vw, 42px);
+  padding: clamp(24px, 4vw, 38px);
   border: 1px solid #dbe7df;
   border-radius: 24px;
-  background: #fffefa;
+  background-color: #fffefa;
+  background-image:
+    radial-gradient(circle at 1px 1px, rgb(42 100 72 / 9%) .7px, transparent 1px),
+    radial-gradient(circle at 50% -15%, rgb(228 246 234 / 45%), transparent 58%);
+  background-size: 14px 14px, 100% 100%;
   box-shadow: 0 30px 90px rgb(8 40 30 / 18%);
   color: #142b24;
   animation: active-material-enter 280ms cubic-bezier(.2, .75, .2, 1) both;
 }
 
-.active-material-dialog__exclamation {
-  position: relative;
-  display: block;
-  width: 42px;
-  height: 124px;
-  margin: 0 auto 13px;
-}
-
-.active-material-dialog__exclamation::before,
-.active-material-dialog__exclamation::after {
-  position: absolute;
-  display: block;
-  background: #ff3139;
-  content: '';
-}
-
-.active-material-dialog__exclamation::before {
-  top: 0;
-  left: 7px;
-  width: 28px;
-  height: 84px;
-  border-radius: 9px 9px 13px 13px;
-  transform: rotate(-3deg);
-}
-
-.active-material-dialog__exclamation::after {
-  bottom: 0;
-  left: 6px;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-}
-
 .active-material-dialog h2 {
   margin: 0;
   font-family: Georgia, Cambria, 'Times New Roman', serif;
-  font-size: clamp(29px, 4vw, 38px);
+  font-size: clamp(18px, 5vw, 29px);
   font-weight: 700;
-  line-height: 1.13;
+  line-height: 1.2;
+  letter-spacing: -.025em;
   text-align: center;
+  white-space: nowrap;
+}
+.active-material-dialog__title--error { white-space: normal; }
+
+.active-material-dialog__material-row {
+  display: grid;
+  grid-template-columns: minmax(34px, 1fr) minmax(0, 310px) minmax(34px, 1fr);
+  align-items: center;
+  gap: 5px;
+  margin: 25px auto 0;
 }
 
 .active-material-dialog__material {
-  width: min(100%, 310px);
-  margin: 24px auto 0;
-  padding: 13px 18px 16px;
-  border-radius: 12px;
+  min-width: 0;
+  padding: 4px;
+  border-radius: 15px;
   background: #175d47;
   box-shadow: 0 12px 25px rgb(11 74 51 / 17%);
   color: white;
 }
 
-.active-material-dialog__material-section {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.25;
-  text-align: center;
+.active-material-dialog__exclamation {
+  display: block;
+  width: 100%;
+  height: 86px;
+  overflow: visible;
+  pointer-events: none;
 }
 
-.active-material-dialog__material-icon {
-  display: grid;
-  width: 28px;
-  height: 28px;
-  flex: none;
-  place-items: center;
-  border-radius: 7px;
-  background: rgb(255 255 255 / 12%);
-  color: #dcf4e8;
+.active-material-dialog__exclamation img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
-.active-material-dialog__material-name {
-  margin: 10px 0 0;
-  padding-top: 10px;
-  border-top: 1px solid rgb(255 255 255 / 19%);
-  font-family: Georgia, Cambria, 'Times New Roman', serif;
-  font-size: 19px;
-  font-weight: 700;
-  line-height: 1.25;
+.active-material-dialog__exclamation--left { transform: rotate(-17deg); }
+.active-material-dialog__exclamation--right { transform: rotate(17deg); }
+
+.active-material-dialog__exclamation-fallback {
+  display: block;
+  color: #ff3139;
+  font-family: Arial, sans-serif;
+  font-size: 76px;
+  font-weight: 900;
+  line-height: 1;
   text-align: center;
+  -webkit-text-stroke: 2px #14211b;
 }
 
 .active-material-dialog__description {
@@ -148,9 +125,22 @@
 
 @media (max-height: 700px) {
   .active-material-dialog { padding-block: 26px; }
-  .active-material-dialog__exclamation { transform: scale(.82); margin-block: -10px 2px; }
-  .active-material-dialog__material { margin-top: 18px; }
+  .active-material-dialog__material-row { margin-top: 18px; }
   .active-material-dialog__description { margin-block: 18px 22px; }
+}
+
+@media (max-width: 420px) {
+  .active-material-dialog__material-row {
+    grid-template-columns: 28px minmax(0, 1fr) 28px;
+    gap: 3px;
+  }
+  .active-material-dialog__exclamation { height: 68px; }
+  .active-material-dialog__exclamation-fallback { font-size: 60px; }
+  .active-material-dialog__button { font-size: 14px; }
+}
+
+@media (max-width: 370px) {
+  .active-material-dialog h2 { font-size: 16px; }
 }
 
 @keyframes active-material-backdrop { from { opacity: 0; } to { opacity: 1; } }
