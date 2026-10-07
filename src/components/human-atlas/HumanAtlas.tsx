@@ -29,7 +29,7 @@ export default function HumanAtlas() {
   useEffect(() => {
     const controller = new AbortController();
     const modelRoot = sex === 'female' ? '/human-atlas/female-models' : '/human-atlas/models';
-    const assetRevision = sex === 'female' ? '?v=2.2-aligned-split' : '';
+    const assetRevision = sex === 'female' ? '?v=2.1-aligned' : '';
     setAtlas(null); setError(''); setProgress(0); setChosen(null); setQuery(''); setState(initialState(sex));
     fetch(`${modelRoot}/atlas.json${assetRevision}`, { signal: controller.signal })
       .then(response => { if (!response.ok) throw new Error('Nu s-a putut încărca atlasul.'); return response.json(); })
