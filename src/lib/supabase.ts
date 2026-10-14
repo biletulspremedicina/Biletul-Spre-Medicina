@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import type { ExamFaculty } from './examFaculty';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
@@ -36,6 +37,7 @@ export type Simulation = {
   display_order: number | null;
   umfcd_kind: 'Examen' | 'Simulare' | null;
   umfcd_year: number | null;
+  faculty: ExamFaculty | null;
 };
 
 export type AppSettings = {

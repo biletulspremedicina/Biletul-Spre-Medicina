@@ -41,6 +41,8 @@
   import Biology3D from '@/components/Biology3D';
   import { medicalFactForDate } from '@/lib/dailyMedicalFacts';
   import { biologySimulationName, practiceSetName, umfcdSimulationKind, umfcdSimulationName, umfcdSimulationYear } from '@/lib/materialDisplayNames';
+  import FacultyFilter from '@/components/FacultyFilter';
+  import { facultyLabel, matchesFaculty, type FacultyFilter as FacultyFilterValue } from '@/lib/examFaculty';
   import './StudentDashboard.review.css';
 
   type IncomingTab = 'all' | 'practice' | 'umfcd' | 'chemistry' | 'dashboard';
@@ -254,6 +256,7 @@
     const [focusedSimulationId, setFocusedSimulationId] = useState<string | null>(null);
     const [umfcdKindFilter, setUmfcdKindFilter] = useState<'all' | 'Examen' | 'Simulare'>('all');
     const [umfcdYearFilter, setUmfcdYearFilter] = useState<number | null>(null);
+    const [facultyFilter, setFacultyFilter] = useState<FacultyFilterValue>('all');
     const openSimulationHistories = useRef<Record<string, boolean>>({});
 
     const confirmSignOut = async () => {
@@ -493,6 +496,7 @@
           }
           setUmfcdKindFilter('all');
           setUmfcdYearFilter(null);
+          setFacultyFilter('all');
           setFocusedSimulationId(sourceId);
           setPage(section === 'umfcd' ? 'umfcd' : 'all');
           setMobileMenuOpen(false);
@@ -549,6 +553,9 @@
         return;
       }
       setFocusedSimulationId(materialRelease.out_source_id);
+      setFacultyFilter('all');
+      setUmfcdKindFilter('all');
+      setUmfcdYearFilter(null);
       setPage(materialRelease.out_section_label === 'Examene UMFCD' ? 'umfcd' : 'all');
       setMobileMenuOpen(false);
     };
@@ -693,7 +700,7 @@
     const selectedUmfcdYear = umfcdYearFilter !== null && availableUmfcdYears.includes(umfcdYearFilter)
       ? umfcdYearFilter : null;
     const filteredSims = page === 'umfcd'
-      ? umfcdTypeSims.filter((sim) => selectedUmfcdYear === null || umfcdSimulationYear(sim) === selectedUmfcdYear)
+      ? umfcdTypeSims.filter((sim) => (selectedUmfcdYear === null || umfcdSimulationYear(sim) === selectedUmfcdYear) && matchesFaculty(sim.faculty, facultyFilter))
       : sectionSims;
     const completedInCategory = filteredSims.filter((sim) => sim.hasSubmitted).length;
     const simulationProgress = filteredSims.length
@@ -967,6 +974,7 @@
                   <h2>{page === 'all' ? 'Rezolvă. Verifică. Înțelege.' : 'Aplică ce ai învățat!'}</h2>
                   {page === 'umfcd' && (
                     <div className="simulation-library__filters" role="group" aria-label="Filtrează examenele UMFCD">
+                      <FacultyFilter value={facultyFilter} onChange={setFacultyFilter} />
                       <label className="simulation-library__filter">
                         <span className="sr-only">Tipul materialului</span>
                         <span className="simulation-library__filter-control">
@@ -1009,7 +1017,7 @@
                   <div className="px-6 pb-8">
                     <EmptyState icon={<Archive size={36} />}
                       title={page === 'all' ? 'Nu există simulări în această categorie.' : (sectionSims.length ? 'Nu există materiale pentru filtrele alese.' : 'Nu există examene UMFCD disponibile.')}
-                      text={page === 'umfcd' && sectionSims.length ? 'Încearcă alt tip sau alt an.' : 'Revino mai târziu pentru materiale noi.'} />
+                      text={page === 'umfcd' && sectionSims.length ? 'Încearcă altă facultate, alt tip sau alt an.' : 'Revino mai târziu pentru materiale noi.'} />
                   </div>
                 ) : (
                   <div className="simulation-library__grid">
@@ -1493,6 +1501,7 @@
               {isUmfcd ? (umfcdYear ?? '—') : String(sim.display_order ?? index + 1).padStart(2, '0')}
             </span>
           </div>
+          {isUmfcd && <p className="mb-2 text-sm">Facultate: {facultyLabel(sim.faculty)}</p>}
           <div className="simulation-library__biology-meta">
             <span><strong>{sim.questionCount}</strong> grile</span>
             <span aria-hidden="true">·</span>
@@ -1587,6 +1596,7 @@
           <h3 className="line-clamp-2 min-w-0 flex-1 font-display text-base font-semibold leading-snug text-stone-900">
             {isUmfcd ? umfcdSimulationName(sim) : biologySimulationName(sim.display_order ?? index + 1)}
           </h3>
+          {isUmfcd && <span className="text-sm text-stone-600">Facultate: {facultyLabel(sim.faculty)}</span>}
           {sim.hasInProgress ? (
             <span className="badge shrink-0 bg-amber-100 text-amber-700">În curs</span>
           ) : hasSubmitted ? (

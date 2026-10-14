@@ -11,6 +11,8 @@ import Logo from '@/components/Logo';
 import Loading from '@/components/Loading';
 import ContentTools from '@/components/admin/ContentTools';
 import { biologySimulationName, umfcdSimulationKind, umfcdSimulationName, umfcdSimulationYear } from '@/lib/materialDisplayNames';
+import FacultyFilter from '@/components/FacultyFilter';
+import { EXAM_FACULTIES, facultyLabel, isExamFaculty, matchesFaculty, type FacultyFilter as FacultyFilterValue } from '@/lib/examFaculty';
 
 type Props = {
   onExit: () => void;
@@ -178,6 +180,7 @@ function SimulationsTab({
   heading: string;
 }) {
   const [savingOrder, setSavingOrder] = useState(false);
+  const [facultyFilter, setFacultyFilter] = useState<FacultyFilterValue>('all');
   const [orderError, setOrderError] = useState<string | null>(null);
   const orderedSimulations = [...simulations].sort((first, second) =>
     (first.display_order ?? Number.MAX_SAFE_INTEGER) - (second.display_order ?? Number.MAX_SAFE_INTEGER)
@@ -226,6 +229,12 @@ function SimulationsTab({
       </div>
 
       {orderError && <div role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{orderError}</div>}
+      {studentSection === 'umfcd' && (
+        <div className="mb-4 max-w-sm"><FacultyFilter value={facultyFilter} onChange={setFacultyFilter} /></div>
+      )}
+      {studentSection === 'umfcd' && simulations.length > 0 && !simulations.some((sim) => matchesFaculty(sim.faculty, facultyFilter)) && (
+        <p role="status" className="py-6 text-stone-600">Nu există examene pentru facultatea aleasă.</p>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {simulations.length === 0 && (
@@ -235,7 +244,7 @@ function SimulationsTab({
             <p className="text-sm mt-1">Creează prima simulare pentru a începe.</p>
           </div>
         )}
-        {orderedSimulations.map((sim, index) => (
+        {orderedSimulations.map((sim, index) => studentSection === 'umfcd' && !matchesFaculty(sim.faculty, facultyFilter) ? null : (
           <SimAdminCard key={sim.id} sim={sim} order={index + 1} total={orderedSimulations.length}
             studentSection={studentSection}
             savingOrder={savingOrder} onMoveTo={(target) => void moveSimulation(index, target)}
@@ -335,6 +344,7 @@ function SimAdminCard({ sim, order, total, studentSection, savingOrder, onMoveTo
       </label>
       <div className="min-w-0 flex-1">
         <h3 className="break-words font-display text-lg font-semibold leading-snug text-stone-900">{displayName}</h3>
+        {sim.student_section === 'umfcd' && <p className="text-sm text-stone-600">Facultate: {facultyLabel(sim.faculty)}</p>}
         <div className="mt-2">
           {sim.is_active && isScheduled ? (
             <span className="badge bg-blue-100 text-blue-700"><CalendarClock size={12} /> Programată</span>
@@ -387,6 +397,7 @@ function SimAdminCard({ sim, order, total, studentSection, savingOrder, onMoveTo
 function SimForm({ sim, studentSection, nextOrder, onSaved, onCancel }: { sim?: Simulation; studentSection: 'all' | 'umfcd'; nextOrder?: number; onSaved: () => void; onCancel: () => void }) {
   const [umfcdKind, setUmfcdKind] = useState<'Examen' | 'Simulare'>(sim ? umfcdSimulationKind(sim) : 'Examen');
   const [umfcdYear, setUmfcdYear] = useState(sim ? String(umfcdSimulationYear(sim) ?? '') : '');
+  const [faculty, setFaculty] = useState(sim?.faculty ?? '');
   const [duration, setDuration] = useState(sim?.duration_minutes?.toString() || '120');
   const [requiresSub, setRequiresSub] = useState(sim ? sim.requires_subscription : false);
   const existingFutureRelease = !!sim?.available_at && new Date(sim.available_at).getTime() > Date.now();
@@ -400,6 +411,10 @@ function SimForm({ sim, studentSection, nextOrder, onSaved, onCancel }: { sim?: 
 
   const handleSave = async () => {
     setError(null);
+    if (studentSection === 'umfcd' && !isExamFaculty(faculty)) {
+      setError('Alege facultatea: Medicină Generală sau Stomatologie.');
+      return;
+    }
     const year = Number(umfcdYear);
     if (studentSection === 'umfcd' && (!/^\d{4}$/.test(umfcdYear) || year < 1900 || year > 2100)) {
       setError('Introdu un an valid între 1900 și 2100.');
@@ -418,7 +433,8 @@ function SimForm({ sim, studentSection, nextOrder, onSaved, onCancel }: { sim?: 
     const existingSection = sim?.student_section || studentSection;
     const payload = {
       title: studentSection === 'all' ? 'Simulare' : `${umfcdKind} ${year}`,
-      description: '',
+      description: sim?.description ?? '',
+      ...(studentSection === 'umfcd' ? { faculty } : {}),
       umfcd_kind: studentSection === 'umfcd' ? umfcdKind : null,
       umfcd_year: studentSection === 'umfcd' ? year : null,
       duration_minutes: dur,
@@ -477,6 +493,14 @@ function SimForm({ sim, studentSection, nextOrder, onSaved, onCancel }: { sim?: 
       <div className="grid gap-4 sm:grid-cols-2">
         {studentSection === 'umfcd' && (
           <>
+            <div className="sm:col-span-2">
+              <label className="label" htmlFor="umfcd-faculty">Facultate <span aria-hidden="true">*</span></label>
+              <select id="umfcd-faculty" className="input" required value={faculty} onChange={(event) => setFaculty(event.target.value)}>
+                <option value="" disabled>Alege facultatea</option>
+                {EXAM_FACULTIES.map((option) => <option key={option} value={option}>{option}</option>)}
+              </select>
+              {sim && !sim.faculty && <p className="mt-1 text-sm text-stone-600">Acest examen nu are încă o facultate. Alege una pentru a salva modificările.</p>}
+            </div>
             <div>
               <label className="label" htmlFor="umfcd-kind">Tip</label>
               <select id="umfcd-kind" className="input" value={umfcdKind}

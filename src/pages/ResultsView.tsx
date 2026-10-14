@@ -5,6 +5,7 @@ import { Lock, Trophy, CheckCircle2, XCircle, ChevronLeft, Clock, Crown, RotateC
 import Logo from '@/components/Logo';
 import Loading from '@/components/Loading';
 import { biologySimulationName, umfcdSimulationName } from '@/lib/materialDisplayNames';
+import { facultyLabel } from '@/lib/examFaculty';
 
 type Props = {
   simulationId: string;
@@ -159,6 +160,7 @@ export default function ResultsView({ simulationId, attemptId, onExit, onRetake 
           {simulation.student_section === 'all' ? biologySimulationName(simulation.display_order ?? 1) : umfcdSimulationName(simulation)}
         </h1>
         <p className="text-stone-500 text-sm mb-6">Rezultate și explicații</p>
+        {simulation.student_section === 'umfcd' && <p className="mb-4 text-sm text-stone-600">Facultate: {facultyLabel(simulation.faculty)}</p>}
 
         {!canViewDetails && (
           <div className="card p-12 text-center">

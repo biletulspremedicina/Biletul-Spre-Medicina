@@ -1400,3 +1400,20 @@
     .simulation-library,
     .practice-sets-page { animation: none; }
   }
+
+/* Keep the faculty selector readable beside the existing year/type filters. */
+.simulation-library--umfcd .simulation-library__filters {
+  grid-column: 1 / -1;
+  grid-row: auto;
+  justify-self: stretch;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+.simulation-library--umfcd .simulation-library__filters > label {
+  flex: 0 1 auto;
+  min-width: 130px;
+  max-width: 100%;
+}
+.simulation-library--umfcd .simulation-library__filters > label:first-child {
+  min-width: 210px;
+}

@@ -9,6 +9,7 @@ import Loading from '@/components/Loading';
 import { useVisualComfort } from '@/hooks/useVisualComfort';
 import { useQuestionMarks } from '@/hooks/useQuestionMarks';
 import { biologySimulationName, umfcdSimulationName } from '@/lib/materialDisplayNames';
+import { facultyLabel } from '@/lib/examFaculty';
 import './SimulationView.css';
 import './PracticeSetView.css';
 
@@ -598,6 +599,7 @@ export default function SimulationView({ simulationId, onExit, onComplete, canSt
             </p>
             <section className="simulation-intro__card" aria-labelledby="simulation-intro-summary">
               <h2 id="simulation-intro-summary">{displayName}</h2>
+              {simulation.student_section === 'umfcd' && <p>Facultate: {facultyLabel(simulation.faculty)}</p>}
               <div className="simulation-intro__stats">
                 <p><strong>{questionCount}</strong> {questionCount === 1 ? 'grilă' : 'grile'}</p>
                 <p className={resume ? 'simulation-intro__remaining' : undefined}>{introRemaining !== null
@@ -636,6 +638,7 @@ export default function SimulationView({ simulationId, onExit, onComplete, canSt
             <button type="button" onClick={handleExit}>{categoryName}</button>
             <span aria-hidden="true">/</span>
             <strong>{displayName}</strong>
+            {simulation.student_section === 'umfcd' && <span>Facultate: {facultyLabel(simulation.faculty)}</span>}
           </nav>
           <ExamHeaderTools comfortTheme={comfortTheme} onComfortChange={setComfortTheme} onHome={() => void handleExit()} />
         </div>
