@@ -1,0 +1,319 @@
+import { useState, useEffect, useRef, type ReactNode } from 'react';
+import { supabase } from '@/lib/supabase';
+import { AuthProvider, useAuth } from '@/context/AuthContext';
+import LandingPage from '@/pages/LandingPage';
+import AuthPage from '@/pages/AuthPage';
+import StudentDashboard from '@/pages/StudentDashboard';
+import StudentOnboarding from '@/pages/StudentOnboarding';
+import SimulationView from '@/pages/SimulationView';
+import ResultsView from '@/pages/ResultsView';
+import AdminDashboard from '@/pages/AdminDashboard';
+import PracticeSetView from '@/pages/PracticeSetView';
+import PracticeResultsView from '@/pages/PracticeResultsView';
+import ChemistryLessonView from '@/pages/ChemistryLessonView';
+import Loading from '@/components/Loading';
+import SupportChat from '@/components/SupportChat';
+import ActiveMaterialDialog from '@/components/ActiveMaterialDialog';
+import { findOtherActiveMaterial, type ActiveMaterial, type MaterialTarget } from '@/lib/activeMaterial';
+
+type Route =
+  | 'landing'
+  | 'signin'
+  | 'signup'
+  | 'student-dashboard'
+  | 'simulation'
+  | 'results'
+  | 'admin-dashboard'
+  | 'practice-solve'
+  | 'practice-results'
+  | 'chemistry-lesson';
+
+function AppContent() {
+  const { session, profile, loading } = useAuth();
+  const [route, setRoute] = useState<Route>('landing');
+  const [activeSimulationId, setActiveSimulationId] = useState<string | null>(null);
+  const [activeAttemptId, setActiveAttemptId] = useState<string | null>(null);
+  const [activePracticeLessonId, setActivePracticeLessonId] = useState<string | null>(null);
+  const [activePracticeLessonTitle, setActivePracticeLessonTitle] = useState<string>('');
+  const [focusedPracticeSetId, setFocusedPracticeSetId] = useState<string | null>(null);
+  const [activePracticeSetId, setActivePracticeSetId] = useState<string | null>(null);
+  const [activePracticeAttemptId, setActivePracticeAttemptId] = useState<string | null>(null);
+  const [resumePracticeSet, setResumePracticeSet] = useState(false);
+  const [resumeSimulation, setResumeSimulation] = useState(false);
+  const [activeChemistryLessonId, setActiveChemistryLessonId] = useState<string | null>(null);
+  const [practiceBuyingSub, setPracticeBuyingSub] = useState(false);
+  const [practiceSubNonce, setPracticeSubNonce] = useState(0);
+  const [studentInitialTab, setStudentInitialTab] = useState<'all' | 'practice' | 'umfcd' | 'chemistry' | 'dashboard'>('all');
+  const [showStudentOnboarding, setShowStudentOnboarding] = useState(false);
+  const [activeMaterialNotice, setActiveMaterialNotice] = useState<{ material: ActiveMaterial | null; verificationError: boolean } | null>(null);
+  const checkingMaterialRef = useRef(false);
+  useEffect(() => {
+    if (loading) return;
+    if (!session) {
+      if (route !== 'signin' && route !== 'signup') {
+        setRoute('landing');
+      }
+      return;
+    }
+    if (route === 'landing' || route === 'signin' || route === 'signup') {
+      if (profile?.role === 'admin') {
+        setRoute('admin-dashboard');
+      } else {
+        setRoute('student-dashboard');
+      }
+    }
+  }, [session, profile, loading, route]);
+
+  const handleGetStarted = () => setRoute('signup');
+  const handleSignIn = () => setRoute('signin');
+  const handleBackToLanding = () => setRoute('landing');
+
+  const canOpenMaterial = async (target: MaterialTarget): Promise<boolean> => {
+    if (checkingMaterialRef.current) return false;
+    checkingMaterialRef.current = true;
+    try {
+      if (!session?.user.id) return false;
+      const material = await findOtherActiveMaterial(session.user.id, target);
+      if (material) {
+        setActiveMaterialNotice({ material, verificationError: false });
+        return false;
+      }
+      return true;
+    } catch (error) {
+      console.error('Active material check failed:', error);
+      setActiveMaterialNotice({ material: null, verificationError: true });
+      return false;
+    } finally {
+      checkingMaterialRef.current = false;
+    }
+  };
+
+  const handleStartSimulation = async (simId: string, resume = false) => {
+    if (!await canOpenMaterial({ kind: 'simulation', id: simId })) return;
+    setActiveSimulationId(simId);
+    setActiveAttemptId(null);
+    setResumeSimulation(resume);
+    setRoute('simulation');
+  };
+
+  const handleViewResults = (simId: string, attemptId?: string) => {
+    setActiveSimulationId(simId);
+    setActiveAttemptId(attemptId || null);
+    setRoute('results');
+  };
+
+  const handleSimulationComplete = (attemptId: string) => {
+    setActiveAttemptId(attemptId);
+    setRoute('results');
+  };
+
+  const handleOpenPracticeLesson = (lessonId: string, lessonTitle: string, focusSetId?: string) => {
+    setActivePracticeLessonId(lessonId);
+    setActivePracticeLessonTitle(lessonTitle);
+    setFocusedPracticeSetId(focusSetId || null);
+    setStudentInitialTab('practice');
+    setRoute('student-dashboard');
+  };
+
+  const handleStartPracticeSet = async (setId: string, resume = false) => {
+    if (!await canOpenMaterial({ kind: 'practice', id: setId })) return;
+    setActivePracticeSetId(setId);
+    setActivePracticeAttemptId(null);
+    setResumePracticeSet(resume);
+    setRoute('practice-solve');
+  };
+
+  const handleOpenActiveMaterial = (material: ActiveMaterial) => {
+    setActiveMaterialNotice(null);
+    if (material.target.kind === 'simulation') {
+      setActiveSimulationId(material.target.id);
+      setActiveAttemptId(null);
+      setResumeSimulation(true);
+      setRoute('simulation');
+    } else {
+      setActivePracticeLessonId(material.lessonId || null);
+      setActivePracticeLessonTitle(material.lessonTitle || '');
+      setActivePracticeSetId(material.target.id);
+      setActivePracticeAttemptId(null);
+      setResumePracticeSet(true);
+      setRoute('practice-solve');
+    }
+  };
+
+  const handlePracticeComplete = (attemptId: string) => {
+    setActivePracticeAttemptId(attemptId);
+    setRoute('practice-results');
+  };
+
+  const handleViewPracticeResults = (setId: string, attemptId?: string) => {
+    setActivePracticeSetId(setId);
+    setActivePracticeAttemptId(attemptId || null);
+    setRoute('practice-results');
+  };
+
+  const handleOpenChemistryLesson = (lessonId: string) => {
+    setActiveChemistryLessonId(lessonId);
+    setRoute('chemistry-lesson');
+  };
+
+  const handleBuySubscription = async () => {
+    setPracticeBuyingSub(true);
+    try {
+      const { error: rpcError } = await supabase.rpc('activate_test_subscription');
+      if (rpcError) {
+        console.error('Subscription activation error:', rpcError);
+      } else {
+        setPracticeSubNonce((n) => n + 1);
+      }
+    } catch (err) {
+      console.error('Subscription error:', err);
+    } finally {
+      setPracticeBuyingSub(false);
+    }
+  };
+
+  const withMaterialNotice = (content: ReactNode) => (
+    <>
+      {content}
+      {activeMaterialNotice && (
+        <ActiveMaterialDialog
+          material={activeMaterialNotice.material}
+          verificationError={activeMaterialNotice.verificationError}
+          onClose={() => setActiveMaterialNotice(null)}
+          onOpenMaterial={handleOpenActiveMaterial}
+        />
+      )}
+    </>
+  );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-stone-50">
+        <Loading message="Se încarcă..." />
+      </div>
+    );
+  }
+
+  if (!session) {
+    if (route === 'signin') {
+      return <AuthPage mode="signin" onSuccess={() => setShowStudentOnboarding(false)} onSwitchMode={(m) => setRoute(m)} onBack={handleBackToLanding} />;
+    }
+    if (route === 'signup') {
+      return <AuthPage mode="signup" onSuccess={() => setShowStudentOnboarding(true)} onSwitchMode={(m) => setRoute(m)} onBack={handleBackToLanding} />;
+    }
+    return <LandingPage onGetStarted={handleGetStarted} onSignIn={handleSignIn} />;
+  }
+
+  if (profile?.role === 'admin') {
+    return <AdminDashboard onExit={() => setRoute('landing')} />;
+  }
+
+  if (profile?.role === 'student' && showStudentOnboarding) {
+    return <StudentOnboarding onComplete={() => setShowStudentOnboarding(false)} />;
+  }
+
+  // Practice routes
+  if (route === 'chemistry-lesson' && activeChemistryLessonId) {
+    return (
+      <>
+        <ChemistryLessonView
+          lessonId={activeChemistryLessonId}
+          onBack={() => { setStudentInitialTab('chemistry'); setRoute('student-dashboard'); }}
+        />
+        <SupportChat />
+      </>
+    );
+  }
+
+  if (route === 'practice-solve' && activePracticeSetId) {
+    return withMaterialNotice(
+      <>
+        <PracticeSetView
+          key={activePracticeSetId}
+          setId={activePracticeSetId}
+          resume={resumePracticeSet}
+          lessonId={activePracticeLessonId || undefined}
+          lessonTitle={activePracticeLessonTitle || undefined}
+          onExit={() => { setStudentInitialTab('practice'); setRoute('student-dashboard'); }}
+          onHome={() => { setStudentInitialTab('dashboard'); setRoute('student-dashboard'); }}
+          onComplete={handlePracticeComplete}
+          canStart={() => canOpenMaterial({ kind: 'practice', id: activePracticeSetId })}
+        />
+        <SupportChat hideFloatingButton />
+      </>
+    );
+  }
+
+  if (route === 'practice-results' && activePracticeSetId) {
+    return withMaterialNotice(
+      <>
+        <PracticeResultsView
+          setId={activePracticeSetId}
+          attemptId={activePracticeAttemptId || undefined}
+          onExit={() => { setStudentInitialTab('practice'); setRoute('student-dashboard'); }}
+          onRetake={() => handleStartPracticeSet(activePracticeSetId)}
+        />
+        <SupportChat />
+      </>
+    );
+  }
+
+  if (route === 'simulation' && activeSimulationId) {
+    return withMaterialNotice(
+      <>
+        <SimulationView
+          key={activeSimulationId}
+          simulationId={activeSimulationId}
+          resume={resumeSimulation}
+          onExit={() => { setRoute('student-dashboard'); setActiveSimulationId(null); }}
+          onComplete={handleSimulationComplete}
+          canStart={() => canOpenMaterial({ kind: 'simulation', id: activeSimulationId })}
+        />
+        <SupportChat hideFloatingButton />
+      </>
+    );
+  }
+
+  if (route === 'results' && activeSimulationId) {
+    return withMaterialNotice(
+      <>
+        <ResultsView
+          simulationId={activeSimulationId}
+          attemptId={activeAttemptId || undefined}
+          onExit={() => { setRoute('student-dashboard'); setActiveSimulationId(null); setActiveAttemptId(null); }}
+          onRetake={handleStartSimulation}
+        />
+        <SupportChat />
+      </>
+    );
+  }
+
+  return withMaterialNotice(
+    <>
+      <StudentDashboard
+        onStartSimulation={handleStartSimulation}
+        onViewResults={handleViewResults}
+        onOpenPracticeLesson={handleOpenPracticeLesson}
+        activePracticeLesson={activePracticeLessonId ? { id: activePracticeLessonId, title: activePracticeLessonTitle } : null}
+        focusedPracticeSetId={focusedPracticeSetId || undefined}
+        onBackToPracticeLessons={() => { setActivePracticeLessonId(null); setFocusedPracticeSetId(null); }}
+        onStartPracticeSet={handleStartPracticeSet}
+        onViewPracticeResults={handleViewPracticeResults}
+        onBuyPracticeSubscription={handleBuySubscription}
+        practiceBuyingSub={practiceBuyingSub}
+        practiceSubNonce={practiceSubNonce}
+        onOpenChemistryLesson={handleOpenChemistryLesson}
+        initialTab={studentInitialTab}
+      />
+      <SupportChat />
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+}
